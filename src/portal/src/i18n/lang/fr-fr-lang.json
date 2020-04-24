@@ -231,7 +231,7 @@
         "COUNT_QUOTA": "Quota de nombre",
         "STORAGE_QUOTA": "Quota de stockage",
         "COUNT_QUOTA_TIP": "Entrez un entier entre '1' et '100000000', ou '-1' pour un quota illimité",
-        "STORAGE_QUOTA_TIP": "La limite haute du Quota de stockage n'accepte que des valrus entières, au maximum '1024TB'. Entrez '-1' pour un quota illimité",
+        "STORAGE_QUOTA_TIP": "La limite haute du Quota de stockage n'accepte que des valeurs entières, au maximum '1024TB'. Entrez '-1' pour un quota illimité",
         "QUOTA_UNLIMIT_TIP": "Pour un quota illimité, entrez '-1'."
     },
     "PROJECT_DETAIL": {
