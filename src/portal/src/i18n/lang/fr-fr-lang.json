@@ -190,7 +190,7 @@
         "DELETE_SUCCESS": "Utilisateur supprimé avec succès.",
         "ITEMS": "items",
         "OF": "sur",
-        "RESET_Ok": "Réinitialisation du mot de passe de l'utilisateurs réussie",
+        "RESET_Ok": "Réinitialisation du mot de passe des utilisateurs réussie",
         "EXISTING_PASSWORD": "Le nouveau mot de passe ne pzut pas être égal à l'ancien"
     },
     "PROJECT": {
