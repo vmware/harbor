@@ -67,7 +67,7 @@
         "RESOURCE_FILTER": "Filtrer le type de ressources.",
         "PUSH_BASED": "Pousser les ressources du Harbor local vers le registre distant.",
         "PULL_BASED": "Tirer les ressources du registre distant vers le Harbor local.",
-        "DESTINATION_NAMESPACE": "Specifier le espace de nom de destination. Si vide, les ressources seront placées sous le même espace de nom que la source.",
+        "DESTINATION_NAMESPACE": "Specifier l'espace de nom de destination. Si vide, les ressources seront placées sous le même espace de nom que la source.",
         "OVERRIDE": "Spécifier s'il faut remplacer les ressources dans la destination si une ressource avec le même nom existe.",
         "EMAIL": "L'email doit être une adresse email valide comme name@example.com.",
         "USER_NAME": "Ne peut pas contenir de caractères spéciaux et la longueur maximale est de 255 caractères.",
