@@ -55,7 +55,7 @@
         "SWITCH_SUCCESS": "Bascule effectuée",
         "SWITCH_FAILURE": "Bascule échouée",
         "REPLICATE_SUCCESS": "Réplication effectuée",
-        "REPLICATE_FAILURE": "Réplication échoué",
+        "REPLICATE_FAILURE": "Réplication échouée",
         "STOP_SUCCESS": "Arrêt effectué",
         "STOP_FAILURE": "Arrêt échoué",
         "TIME_OUT": "Temps d'attente de la passerelle dépassé"
