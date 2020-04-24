@@ -1197,7 +1197,7 @@
         "RULE_NAME_1": " les images des {{number}} derniers jours",
         "RULE_NAME_2": " les {{number}} images les plus actives",
         "RULE_NAME_3": " les {{number}} images les plus récemment poussées",
-        "RULE_NAME_4": " les {{number}} images les plus récemment tirées",
+        "RULE_NAME_4": " les {{number}} images les plus récemment récupérées",
         "RULE_NAME_5": " toujours",
         "ADD_RULE": "AJOUTER UNE REGLE",
         "ADD_RULE_HELP_1": "Cliquez sur le bouton 'AJOUTER UNE REGLE' pour ajouter une règle.",
