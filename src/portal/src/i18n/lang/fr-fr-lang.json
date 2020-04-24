@@ -872,7 +872,7 @@
             "CLIENTSECRET": "Client Secret OIDC",
             "SCOPE": "Scope OIDC",
             "OIDC_VERIFYCERT": "Vérifier le certificat",
-            "OIDC_SETNAME": "Configurer le nom d'utilisateur OICD",
+            "OIDC_SETNAME": "Configurer le nom d'utilisateur OIDC",
             "OIDC_SETNAMECONTENT": "Vous devez créer un identifiant Harbor la première fois lors de la vérification par une tierce partie (OICD). Il sera utilisé au sein de Harbor pour être associé aux projets, rôles, etc.",
             "OIDC_USERNAME": "Nom d'utilisateur",
             "GROUP_CLAIM_NAME": "Nom de groupe Claim"
