@@ -94,7 +94,7 @@
         "OIDC_NAME": "Le nom du fournisseur oidc.",
         "OIDC_ENDPOINT": "L'url d'un serveur de plainte oidc.",
         "OIDC_SCOPE": "Le champ envoyé au serveur au cours de l'authentification oidc. Il doit contenir 'openid', et 'offline_access'. Si vous utilisez google, veuillez supprimer 'offline_access' de ce champ",
-        "OIDC_VERIFYCERT": "Décocher cette case si votre serveur oidc hébergé avec un certificat auto-signé.",
+        "OIDC_VERIFYCERT": "Décocher cette case si votre serveur oidc est hébergé avec un certificat auto-signé.",
         "OIDC_GROUP_CLAIM": "The name of Claim in the ID token whose value is the list of group names.",
         "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters.",
         "NEW_SECRET": "Le secret doit être composé de 8 à 20 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre."
