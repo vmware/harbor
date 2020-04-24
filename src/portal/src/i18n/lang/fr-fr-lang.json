@@ -583,7 +583,7 @@
         "NAME_TOOLTIP": "Le nom de la règle de réplication doit comporter au moins 2 caractères avec des minuscules, des chiffres et. _- et doit commencer par des caractères ou des chiffres.",
         "DESTINATION_NAME_TOOLTIP": "Le nom de la destinationdoit comporter au moins 2 caractères avec des minuscules, des chiffres et. _- et doit commencer par des caractères ou des chiffres.",
         "ACKNOWLEDGE": "Acquitter",
-        "RULE_DISABLED": "Cette règle a été désactivée car unlabel utilisé dans son filtre a été supprimé. \n Modifiez la règle et mettez à jour son filtre pour l'activer.",
+        "RULE_DISABLED": "Cette règle a été désactivée car un label utilisé dans son filtre a été supprimé. \n Modifiez la règle et mettez à jour son filtre pour l'activer.",
         "REPLI_MODE": "Mode de réplication",
         "SOURCE_REGISTRY": "Registre source",
         "SOURCE_NAMESPACES": "Namespaces sources",
