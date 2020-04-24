@@ -562,7 +562,7 @@
         "INVALID_DATE": "Date non valide.",
         "PLACEHOLDER": "Nous n'avons trouvé aucune règle de réplication !",
         "JOB_PLACEHOLDER": "Nous n'avons trouvé aucun travail de réplication !",
-        "NO_ENDPOINT_INFO": "Ajoutez un endpoint d'abord",
+        "NO_ENDPOINT_INFO": "Ajoutez d'abord un endpoint",
         "NO_PROJECT_INFO": "Ce projet n'existe pas",
         "SOURCE_RESOURCE_FILTER": "Filtre de ressource source",
         "SCHEDULED": "Planifiée",
