@@ -21,8 +21,6 @@ https:
 # internal_tls:
 #   # set enabled to true means internal tls is enabled
 #   enabled: true
-#   # verify_client_cert used to decide whether verify client certificate
-#   verify_client_cert: false
 #   # put your cert and key files on dir
 #   dir: /etc/harbor/tls/internal
 
@@ -42,8 +40,8 @@ database:
   # The maximum number of connections in the idle connection pool. If it <=0, no idle connections are retained.
   max_idle_conns: 50
   # The maximum number of open connections to the database. If it <= 0, then there is no limit on the number of open connections.
-  # Note: the default number of connections is 100 for postgres.
-  max_open_conns: 100
+  # Note: the default number of connections is 1024 for postgres of harbor.
+  max_open_conns: 1000
 
 # The default data volume
 data_volume: /data
@@ -173,9 +171,14 @@ _version: 2.0.0
 
 # Uncomment external_redis if using external Redis server
 # external_redis:
-#   host: redis
-#   port: 6379
+#   # support redis, redis+sentinel
+#   # host for redis: <host_redis>:<port_redis>
+#   # host for redis+sentinel:
+#   #  <host_sentinel1>:<port_sentinel1>,<host_sentinel2>:<port_sentinel2>,<host_sentinel3>:<port_sentinel3>
+#   host: redis:6379
 #   password:
+#   # sentinel_master_set must be set to support redis+sentinel
+#   #sentinel_master_set:
 #   # db_index 0 is for core, it's unchangeable
 #   registry_db_index: 1
 #   jobservice_db_index: 2

@@ -89,7 +89,7 @@ func (ua *UserAPI) Prepare() {
 	ua.SelfRegistration = self
 
 	if !ua.SecurityCtx.IsAuthenticated() {
-		if ua.Ctx.Input.IsPost() {
+		if ua.Ctx.Input.IsPost() && ua.SelfRegistration {
 			return
 		}
 		ua.SendUnAuthorizedError(errors.New("UnAuthorize"))

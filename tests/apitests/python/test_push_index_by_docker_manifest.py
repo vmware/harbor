@@ -5,6 +5,7 @@ import unittest
 
 import library.repository
 import library.docker_api
+import library.containerd
 from library.base import _assert_status_code
 from testutils import ADMIN_CLIENT
 from testutils import harbor_server
@@ -60,7 +61,8 @@ class TestProjects(unittest.TestCase):
             5. Get Artifacts successfully;
             6. Get index(IA) by reference successfully;
             7. Verify harbor index is index(IA) pushed by docker manifest CLI;
-            8. Verify harbor index(IA) can be pulled by docker CLI successfully;
+            8.1 Verify harbor index(IA) can be pulled by docker CLI successfully;
+            8.2 Verify harbor index(IA) can be pulled by docker CLI successfully;
             9. Get addition successfully;
             10. Unable to Delete artifact in manifest list;
             11. Delete index successfully.
@@ -101,8 +103,13 @@ class TestProjects(unittest.TestCase):
         self.assertEqual(manifests_sha256_harbor_ret.count(manifests_sha256_cli_ret[0]), 1)
         self.assertEqual(manifests_sha256_harbor_ret.count(manifests_sha256_cli_ret[1]), 1)
 
-        #8. Verify harbor index(IA) can be pulled by docker CLI successfully;
+        #8.1 Verify harbor index(IA) can be pulled by docker CLI successfully;
         pull_harbor_image(harbor_server, user_name, self.user_push_index_password, TestProjects.project_push_index_name+"/"+self.index_name, self.index_tag)
+
+        #8.2 Verify harbor index(IA) can be pulled by ctr successfully;
+        oci_ref = harbor_server+"/"+TestProjects.project_push_index_name+"/"+self.index_name+":"+self.index_tag
+        library.containerd.ctr_images_pull(user_name, self.user_push_index_password, oci_ref)
+        library.containerd.ctr_images_list(oci_ref = oci_ref)
 
         #9. Get addition successfully;
         addition_v = self.artifact.get_addition(TestProjects.project_push_index_name, self.index_name, self.index_tag, "vulnerabilities", **TestProjects.USER_CLIENT)

@@ -19,7 +19,8 @@
     "build": "ng build --aot",
     "release": "ng build --prod",
     "build-mock-api-server": "tsc -p server",
-    "mock-api-server": "npm run build-mock-api-server && node server/dist/server/src/mock-api.js"
+    "mock-api-server": "npm run build-mock-api-server && node server/dist/server/src/mock-api.js",
+    "generate-build-timestamp": "node scripts/generate-build-timestamp.js"
   },
   "private": true,
   "dependencies": {

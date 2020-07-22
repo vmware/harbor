@@ -4,7 +4,7 @@
         <clr-dg-action-bar>
             <div class="clr-row">
                 <div class="clr-col-7">
-                    <button id="new-webhook" type="button" class="btn  btn-secondary" (click)="newWebhook()">
+                    <button [disabled]="!hasCreatPermission" [clrLoading]="addBtnState" id="new-webhook" type="button" class="btn  btn-secondary" (click)="newWebhook()">
                         <clr-icon shape="plus" size="16"></clr-icon>
                         {{'WEBHOOK.NEW_WEBHOOK' | translate}}
                     </button>
@@ -13,7 +13,7 @@
                             <clr-icon class="clr-icon" shape="caret down"></clr-icon></span>
                         <clr-dropdown-menu *clrIfOpen>
                             <button clrDropdownItem (click)="switchWebhookStatus()"
-                                    [disabled]="!(selectedRow && selectedRow.length === 1)">
+                                    [disabled]="!(selectedRow && selectedRow.length === 1) || !hasUpdatePermission">
                                   <span id="toggle-webhook">
                                        <span *ngIf="selectedRow[0] && !selectedRow[0].enabled">
                                            <clr-icon class="margin-top-2" size="16" shape="success-standard"></clr-icon>
@@ -26,13 +26,13 @@
                                   </span>
                             </button>
                             <button clrDropdownItem (click)="editWebhook()"
-                                    class="btn  btn-secondary" [disabled]="!(selectedRow && selectedRow.length === 1)">
+                                    class="btn  btn-secondary" [disabled]="!(selectedRow && selectedRow.length === 1) || !hasUpdatePermission">
                                 <clr-icon class="margin-top-0" size="16" shape="pencil"></clr-icon>
                                 <span id="edit-webhook" class="margin-left-10">{{'BUTTON.EDIT' | translate}}</span>
                             </button>
                             <div class="dropdown-divider"></div>
                             <button clrDropdownItem (click)="deleteWebhook()"
-                                    class="btn  btn-secondary" [disabled]="!(selectedRow && selectedRow.length >= 1)">
+                                    class="btn  btn-secondary" [disabled]="!(selectedRow && selectedRow.length >= 1) || !hasUpdatePermission">
                                 <clr-icon class="margin-top-0" size="16" shape="times"></clr-icon>
                                 <span id="delete-webhook"
                                       class="margin-left-10">{{'BUTTON.DELETE' | translate}}</span>
@@ -73,16 +73,16 @@
             </clr-dg-cell>
             <clr-dg-cell>{{w?.targets[0].type}}</clr-dg-cell>
             <clr-dg-cell>{{w?.targets[0].address}}</clr-dg-cell>
-            <clr-dg-cell>
+            <clr-dg-cell class="event-types">
                 <div class="cell" *ngIf="w?.event_types?.length">
                     <div  class="bar-state">
-                        <span class="label" *ngIf="w?.event_types[0]">{{eventTypeToText(w?.event_types[0])}}</span>
+                        <span class="label-flex" *ngIf="w?.event_types[0]">{{eventTypeToText(w?.event_types[0])}}</span>
                     </div>
                     <div class="signpost-item" [hidden]="w?.event_types?.length<=1">
                         <div class="trigger-item">
                             <clr-signpost>
-                                <button class="btn btn-link font-size-20" clrSignpostTrigger>...</button>
-                                <clr-signpost-content [clrPosition]="'left-top'" *clrIfOpen>
+                                <button class="btn btn-link ellipsis-btn font-size-20" clrSignpostTrigger>...</button>
+                                <clr-signpost-content [clrPosition]="'top-middle'" *clrIfOpen>
                                     <div>
                                         <div  *ngFor="let e of w?.event_types" class="bar-state">
                                             <span class="label not-scan">{{eventTypeToText(e)}}</span>

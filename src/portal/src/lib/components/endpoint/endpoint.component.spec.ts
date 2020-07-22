@@ -22,6 +22,7 @@ import { click, CURRENT_BASE_HREF } from "../../utils/utils";
 import { of } from "rxjs";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { HttpClient } from "@angular/common/http";
+import { AppConfigService } from '../../../app/services/app-config.service';
 
 describe("EndpointComponent (inline template)", () => {
   let adapterInfoMockData = {
@@ -313,6 +314,14 @@ describe("EndpointComponent (inline template)", () => {
   let config: IServiceConfig = {
     systemInfoEndpoint: CURRENT_BASE_HREF + "/endpoints/testing"
   };
+  const mockAppConfigService = {
+    getConfig: () => {
+      return {
+        project_creation_restriction: "",
+        with_chartmuseum: ""
+      };
+    }
+  };
 
   let endpointService: EndpointService;
   let spy: jasmine.Spy;
@@ -335,6 +344,7 @@ describe("EndpointComponent (inline template)", () => {
         { provide: EndpointService, useClass: EndpointDefaultService },
         { provide: OperationService },
         { provide: HttpClient, useValue: fakedHttp },
+        { provide: AppConfigService, useValue: mockAppConfigService }
       ]
     });
   }));

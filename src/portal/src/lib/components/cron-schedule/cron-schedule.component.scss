@@ -1,71 +1,20 @@
-.flex-layout {
-    margin: 20px 0;
-    font-size: .541667rem;
+.normal-wrapper-box {
+  display: flex;
+  align-items: center;
 }
-  
-  .normal-wrapper-box {
-    position: relative;
-    .normal-wrapper {
-      position: absolute;
-      width: 700px;
-      > span:not(:first-child) {
-        margin-right: 18px;
-      }
-      > a {
-        margin-left: -10px;
-      }
-    }
-    button {
-      margin: 35px 20px 0;
-    }
-  }
-  
-  .setting-wrapper {
-    position: relative;
-    .confirm-button {
-      margin: 11px 0 0;
-    }
-  
-    *:not(:first-child) {
-      margin-right: 18px;
-    }
-  
-    .select-schedule {
-      display: inline-block;
-      width: 100px;
-    }
 
-    .cron-input {
-      position: absolute;
-      display: inline-block;
-      width: 270px;
-    }
+.font-style {
+  display: inline-block;
+  color: #000;
+  font-size: .541667rem;
+}
 
-    .cron-label {
-      width: 195px;
-    }
-    .cron-tooltip {
-      color: gray;
-      cursor: default;
-      position: absolute;
-      .table-box {
-        width: 20rem;
-      }
+span.required {
+  &:after {
+    content: '*';
+    font-size: .58479532rem;
+    line-height: .5rem;
+    color: #c92100;
+    margin-left: .25rem;
   }
-  }
-
-  .font-style {
-    display: inline-block;
-    color: #000;
-    font-size: .541667rem;
-  }
-
-  span.required {
-    &:after {
-        content: '*';
-        font-size: .58479532rem;
-        line-height: .5rem;
-        color: #c92100;
-        margin-left: .25rem;
-    }
-  }
+}

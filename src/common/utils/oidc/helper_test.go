@@ -175,6 +175,7 @@ func TestUserInfoFromClaims(t *testing.T) {
 	s := []struct {
 		input      map[string]interface{}
 		groupClaim string
+		userClaim  string
 		expect     *UserInfo
 	}{
 		{
@@ -184,6 +185,7 @@ func TestUserInfoFromClaims(t *testing.T) {
 				"groups": []interface{}{"g1", "g2"},
 			},
 			groupClaim: "grouplist",
+			userClaim:  "",
 			expect: &UserInfo{
 				Issuer:        "",
 				Subject:       "",
@@ -200,6 +202,7 @@ func TestUserInfoFromClaims(t *testing.T) {
 				"groups": []interface{}{"g1", "g2"},
 			},
 			groupClaim: "groups",
+			userClaim:  "",
 			expect: &UserInfo{
 				Issuer:        "",
 				Subject:       "",
@@ -218,6 +221,7 @@ func TestUserInfoFromClaims(t *testing.T) {
 				"groupclaim": []interface{}{},
 			},
 			groupClaim: "groupclaim",
+			userClaim:  "",
 			expect: &UserInfo{
 				Issuer:        "issuer",
 				Subject:       "subject000",
@@ -227,9 +231,26 @@ func TestUserInfoFromClaims(t *testing.T) {
 				hasGroupClaim: true,
 			},
 		},
+		{
+			input: map[string]interface{}{
+				"name":   "Alvaro",
+				"email":  "airadier@gmail.com",
+				"groups": []interface{}{"g1", "g2"},
+			},
+			groupClaim: "grouplist",
+			userClaim:  "email",
+			expect: &UserInfo{
+				Issuer:        "",
+				Subject:       "",
+				Username:      "airadier@gmail.com",
+				Email:         "airadier@gmail.com",
+				Groups:        []string{},
+				hasGroupClaim: false,
+			},
+		},
 	}
 	for _, tc := range s {
-		out, err := userInfoFromClaims(&fakeClaims{tc.input}, tc.groupClaim)
+		out, err := userInfoFromClaims(&fakeClaims{tc.input}, tc.groupClaim, tc.userClaim)
 		assert.Nil(t, err)
 		assert.Equal(t, *tc.expect, *out)
 	}

@@ -11,6 +11,7 @@ import { MessageHandlerService } from "../../../shared/message-handler/message-h
 import { of } from 'rxjs';
 import { Webhook } from "../webhook";
 import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
+import { ErrorHandler } from '../../../../lib/utils/error-handler';
 
 describe('AddWebhookFormComponent', () => {
     let component: AddWebhookFormComponent;
@@ -91,6 +92,7 @@ describe('AddWebhookFormComponent', () => {
                 TranslateService,
                 { provide: WebhookService, useValue: mockWebhookService },
                 { provide: MessageHandlerService, useValue: mockMessageHandlerService },
+                ErrorHandler
 
 
             ]
@@ -127,14 +129,6 @@ describe('AddWebhookFormComponent', () => {
         nameInput.dispatchEvent(new Event('blur'));
         const errorEle: HTMLElement = fixture.nativeElement.querySelector("clr-control-error");
         expect(errorEle.innerText).toEqual('WEBHOOK.NAME_REQUIRED');
-    });
-    it("test button should work", async () => {
-        const spy: jasmine.Spy = spyOn(component, 'onTestEndpoint').and.returnValue(undefined);
-        const testButton: HTMLButtonElement = fixture.nativeElement.querySelector("#webhook-test-add");
-        testButton.dispatchEvent(new Event('click'));
-        fixture.detectChanges();
-        await fixture.whenStable();
-        expect(spy.calls.count()).toEqual(1);
     });
     it("add button should work", async () => {
         const spy: jasmine.Spy = spyOn(component, 'add').and.returnValue(undefined);

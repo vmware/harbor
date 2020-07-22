@@ -27,5 +27,15 @@ $color-f2: #f2f2f2;
 $color-657b83: #657b83;
 $color-fdf6e3:  #fdf6e3;
 $header-color: rgb(0, 74, 112);
+$color-yaml:  none;
+$filter-divider-bg-color: #ccc;
+$selectBox-option-hover-bg-color-start: #f5f5f5;
+$selectBox-option-hover-bg-color-end: #e8e8e8;
+$btn-tag-integration-active-bg-color: #0077b8;
+$btn-tag-integration-active-color: #fff;
+$hbr-result-tip-histogram-inner-bg-color: #fff;
+
+$harbor-icon-translate-x: 100%;
+$harbor-icon-drop-shadow-x: -56px;
 
 @import "./common.scss";

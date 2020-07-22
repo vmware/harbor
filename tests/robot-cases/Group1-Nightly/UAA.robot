@@ -57,8 +57,8 @@ Test Case - UAA User Push An Image
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
-    Create An New Project  project${d}
-    
+    Create An New Project And Go Into Project  project${d}
+
     Push Image  ${ip}  mike  zhu88jie  project${d}  hello-world:latest
     Go Into Project  project${d}
     Wait Until Page Contains  project${d}/hello-world

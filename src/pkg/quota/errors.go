@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
 // Errors contains all happened errors

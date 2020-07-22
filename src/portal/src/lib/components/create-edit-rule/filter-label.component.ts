@@ -30,7 +30,6 @@ export class FilterLabelComponent implements OnInit, OnChanges {
     @Output() closePanelEvent = new EventEmitter();
 
     constructor(private labelService: LabelService,
-        private ref: ChangeDetectorRef,
         private errorHandler: ErrorHandler) { }
 
     ngOnInit(): void {
@@ -50,17 +49,9 @@ export class FilterLabelComponent implements OnInit, OnChanges {
             .pipe(distinctUntilChanged())
             .subscribe((name: string) => {
                 if (this.filterLabelName.length) {
-
                     this.labelLists.forEach(data => {
-                        if (data.label.name.indexOf(this.filterLabelName) !== -1) {
-                            data.show = true;
-                        } else {
-                            data.show = false;
-                        }
+                        data.show = data.label.name.indexOf(this.filterLabelName) !== -1;
                     });
-                    setTimeout(() => {
-                        setInterval(() => this.ref.markForCheck(), 200);
-                    }, 1000);
                 }
             });
     }

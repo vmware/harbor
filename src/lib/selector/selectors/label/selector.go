@@ -15,8 +15,9 @@
 package label
 
 import (
-	iselector "github.com/goharbor/harbor/src/lib/selector"
 	"strings"
+
+	iselector "github.com/goharbor/harbor/src/lib/selector"
 )
 
 const (
@@ -48,11 +49,15 @@ func (s *selector) Select(artifacts []*iselector.Candidate) (selected []*iselect
 	return selected, nil
 }
 
-// New is factory method for list selector
-func New(decoration string, pattern string, extras string) iselector.Selector {
+// New is factory method for label selector
+func New(decoration string, pattern interface{}, extras string) iselector.Selector {
 	labels := make([]string, 0)
-	if len(pattern) > 0 {
-		labels = append(labels, strings.Split(pattern, ",")...)
+
+	if pattern != nil {
+		labelText, ok := pattern.(string)
+		if ok && len(labelText) > 0 {
+			labels = append(labels, strings.Split(labelText, ",")...)
+		}
 	}
 
 	return &selector{

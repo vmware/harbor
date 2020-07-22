@@ -16,11 +16,10 @@ package artifact
 
 import (
 	"fmt"
-	"net/url"
-
 	cmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/tag"
+	"github.com/goharbor/harbor/src/lib/encode/repository"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 )
@@ -41,7 +40,7 @@ func (artifact *Artifact) SetAdditionLink(addition, version string) {
 
 	projectName, repo := utils.ParseRepository(artifact.RepositoryName)
 	// encode slash as %252F
-	repo = url.PathEscape(url.PathEscape(repo))
+	repo = repository.Encode(repo)
 	href := fmt.Sprintf("/api/%s/projects/%s/repositories/%s/artifacts/%s/additions/%s", version, projectName, repo, artifact.Digest, addition)
 
 	artifact.AdditionLinks[addition] = &AdditionLink{HREF: href, Absolute: false}

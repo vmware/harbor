@@ -89,7 +89,7 @@ http {
 
       proxy_ssl_certificate         /etc/harbor/tls/proxy.crt;
       proxy_ssl_certificate_key     /etc/harbor/tls/proxy.key;
-      proxy_ssl_trusted_certificate /etc/harbor/tls/harbor_internal_ca.crt;
+      proxy_ssl_trusted_certificate /harbor_cust_cert/harbor_internal_ca.crt;
       proxy_ssl_verify_depth 2;
       proxy_ssl_verify        on;
       proxy_ssl_session_reuse on;
@@ -115,7 +115,7 @@ http {
 
       proxy_ssl_certificate         /etc/harbor/tls/proxy.crt;
       proxy_ssl_certificate_key     /etc/harbor/tls/proxy.key;
-      proxy_ssl_trusted_certificate /etc/harbor/tls/harbor_internal_ca.crt;
+      proxy_ssl_trusted_certificate /harbor_cust_cert/harbor_internal_ca.crt;
       proxy_ssl_verify_depth 2;
       proxy_ssl_verify        on;
       proxy_ssl_session_reuse on;
@@ -141,7 +141,7 @@ http {
 
       proxy_ssl_certificate         /etc/harbor/tls/proxy.crt;
       proxy_ssl_certificate_key     /etc/harbor/tls/proxy.key;
-      proxy_ssl_trusted_certificate /etc/harbor/tls/harbor_internal_ca.crt;
+      proxy_ssl_trusted_certificate /harbor_cust_cert/harbor_internal_ca.crt;
       proxy_ssl_verify_depth 2;
       proxy_ssl_verify        on;
       proxy_ssl_session_reuse on;
@@ -171,7 +171,7 @@ http {
 
       proxy_ssl_certificate         /etc/harbor/tls/proxy.crt;
       proxy_ssl_certificate_key     /etc/harbor/tls/proxy.key;
-      proxy_ssl_trusted_certificate /etc/harbor/tls/harbor_internal_ca.crt;
+      proxy_ssl_trusted_certificate /harbor_cust_cert/harbor_internal_ca.crt;
       proxy_ssl_verify_depth 2;
       proxy_ssl_verify        on;
       proxy_ssl_session_reuse on;
@@ -186,6 +186,8 @@ http {
       proxy_set_header X-Forwarded-Proto $scheme;
       proxy_buffering off;
       proxy_request_buffering off;
+      proxy_send_timeout 900;
+      proxy_read_timeout 900;
     }
 
     location /service/ {
@@ -194,7 +196,7 @@ http {
 
       proxy_ssl_certificate         /etc/harbor/tls/proxy.crt;
       proxy_ssl_certificate_key     /etc/harbor/tls/proxy.key;
-      proxy_ssl_trusted_certificate /etc/harbor/tls/harbor_internal_ca.crt;
+      proxy_ssl_trusted_certificate /harbor_cust_cert/harbor_internal_ca.crt;
       proxy_ssl_verify_depth 2;
       proxy_ssl_verify        on;
       proxy_ssl_session_reuse on;

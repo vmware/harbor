@@ -55,5 +55,6 @@ const (
 	ResourceTag                   = Resource("tag")
 	ResourceArtifactAddition      = Resource("artifact-addition")
 	ResourceArtifactLabel         = Resource("artifact-label")
+	ResourcePreatPolicy           = Resource("preheat-policy")
 	ResourceSelf                  = Resource("") // subresource for self
 )

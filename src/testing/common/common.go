@@ -14,4 +14,4 @@
 
 package common
 
-//go:generate mockery -case snake -dir ../../common/security -name Context -output ./security -outpkg security
+//go:generate mockery --case snake --dir ../../common/security --name Context --output ./security --outpkg security

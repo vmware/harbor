@@ -1,6 +1,7 @@
 .value-container {
     ::ng-deep pre {
         min-height: fit-content;
+        max-height: none !important;
     }
 }
 

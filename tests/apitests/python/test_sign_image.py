@@ -10,6 +10,7 @@ from library.project import Project
 from library.user import User
 from library.repository import Repository
 from library.repository import push_image_to_project
+from library.repository import push_special_image_to_project
 
 class TestProjects(unittest.TestCase):
     @classmethod
@@ -18,6 +19,7 @@ class TestProjects(unittest.TestCase):
         self.user = User()
         self.artifact = Artifact()
         self.repo = Repository()
+        self.repo_name_1 = "test1_sign"
 
     @classmethod
     def tearDown(self):
@@ -79,6 +81,13 @@ class TestProjects(unittest.TestCase):
         #7. Get signature of image with tag(TA), it should be exist.
         artifact = self.artifact.get_reference_info(TestProjects.project_sign_image_name, image, tag, **TestProjects.USER_sign_image_CLIENT)
         self.assertEqual(artifact[0].tags[0].signed, True)
+
+        push_special_image_to_project(TestProjects.project_sign_image_name, harbor_server, user_sign_image_name, user_001_password, self.repo_name_1, ['1.0'])
+        self.repo.delete_repoitory(TestProjects.project_sign_image_name, self.repo_name_1, **TestProjects.USER_sign_image_CLIENT)
+
+        ret = self.repo.delete_repoitory(TestProjects.project_sign_image_name, TestProjects.repo_name.split('/')[1], expect_status_code=412, **TestProjects.USER_sign_image_CLIENT)
+        self.assertIn("with signature cannot be deleted", ret)
+
 
 if __name__ == '__main__':
     unittest.main()

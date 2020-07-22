@@ -374,24 +374,53 @@
                 [(ngModel)]="currentConfig.oidc_scope.value" id="oidcScope" size="40" required
                 [disabled]="disabled(currentConfig.oidc_scope)" pattern="^(\w+,){0,}openid(,\w+){0,}$" />
                 <clr-control-error>{{'TOOLTIP.SCOPE_REQUIRED' | translate}}</clr-control-error>
-            </clr-input-container>
-            <clr-checkbox-container>
-                    <label for="oidc_verify_cert">{{'CONFIG.OIDC.OIDC_VERIFYCERT' | translate}}
-                            <clr-tooltip>
-                                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                                        <span>{{'TOOLTIP.OIDC_VERIFYCERT' | translate}}</span>
-                                    </clr-tooltip-content>
-                                </clr-tooltip>
-                    </label>
-                    <clr-checkbox-wrapper>
-                        <input type="checkbox" clrCheckbox name="oidc_verify_cert" id="oidc_verify_cert"
-                        [disabled]="disabled(currentConfig.oidc_verify_cert)"
-                        [(ngModel)]="currentConfig.oidc_verify_cert.value" />
-                    </clr-checkbox-wrapper>
-                </clr-checkbox-container>
+        </clr-input-container>
+        <clr-checkbox-container>
+                <label for="oidc_verify_cert">{{'CONFIG.OIDC.OIDC_VERIFYCERT' | translate}}
+                        <clr-tooltip>
+                                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                                    <span>{{'TOOLTIP.OIDC_VERIFYCERT' | translate}}</span>
+                                </clr-tooltip-content>
+                            </clr-tooltip>
+                </label>
+                <clr-checkbox-wrapper>
+                    <input type="checkbox" clrCheckbox name="oidc_verify_cert" id="oidc_verify_cert"
+                    [disabled]="disabled(currentConfig.oidc_verify_cert)"
+                    [(ngModel)]="currentConfig.oidc_verify_cert.value" />
+                </clr-checkbox-wrapper>
+        </clr-checkbox-container>
+        <clr-checkbox-container>
+            <label for="oidcAutoOnboard">{{'CONFIG.OIDC.OIDC_AUTOONBOARD' | translate}}
+                    <clr-tooltip>
+                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                                <span>{{'TOOLTIP.OIDC_AUTOONBOARD' | translate}}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input type="checkbox" clrCheckbox name="oidcAutoOnboard" id="oidcAutoOnboard"
+                [disabled]="disabled(currentConfig.oidc_auto_onboard)"
+                [(ngModel)]="currentConfig.oidc_auto_onboard.value" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>         
+        <clr-input-container>
+            <label  for="oidcUserClaim">{{'CONFIG.OIDC.USER_CLAIM' | translate}}
+                <clr-tooltip>
+                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        <span>{{'TOOLTIP.OIDC_USER_CLAIM' | translate}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <input clrInput name="oidcUserClaim" type="text" #oidcUserClaimInput="ngModel"
+                [(ngModel)]="currentConfig.oidc_user_claim.value" id="oidcUserClaim" size="40"
+                [disabled]="disabled(currentConfig.oidc_user_claim)" pattern="^[a-zA-Z0-9_-]*$">
+        </clr-input-container>
         <div class="oidc-tip">{{ 'CONFIG.OIDC.OIDC_REDIREC_URL' | translate}}
-            <span>{{redirectUrl}}/c/oidc/callback</span></div>
+            <span>{{redirectUrl}}/c/oidc/callback</span>
+        </div>
     </section>
 </form>
 <div>

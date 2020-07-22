@@ -396,7 +396,7 @@ func Test_isValidRole(t *testing.T) {
 		want bool
 	}{
 		{"project admin", args{1}, true},
-		{"master", args{4}, true},
+		{"maintainer", args{4}, true},
 		{"developer", args{2}, true},
 		{"guest", args{3}, true},
 		{"limited guest", args{5}, true},

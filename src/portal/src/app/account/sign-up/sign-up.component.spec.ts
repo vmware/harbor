@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
+import { ErrorHandler } from '../../../lib/utils/error-handler';
 
 describe('SignUpComponent', () => {
     let component: SignUpComponent;
@@ -47,7 +48,8 @@ describe('SignUpComponent', () => {
             providers: [
                 TranslateService,
                 { provide: SessionService, useValue: fakeSessionService },
-                { provide: UserService, useValue: fakeUserService }
+                { provide: UserService, useValue: fakeUserService },
+                ErrorHandler
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA]
         }).compileComponents();

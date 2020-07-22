@@ -40,6 +40,9 @@ services:
       - type: bind
         source: {{data_volume}}/secret/registry/root.crt
         target: /etc/registry/root.crt
+      - type: bind
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
 {% if gcs_keyfile %}
       - type: bind
         source: {{gcs_keyfile}}
@@ -47,11 +50,8 @@ services:
 {% endif %}
 {%if internal_tls.enabled %}
       - type: bind
-        source: {{internal_tls.core_key_path}}
+        source: {{internal_tls.core_crt_path}}
         target: /harbor_cust_cert/core.crt
-      - type: bind
-        source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /harbor_cust_cert/harbor_internal_ca.crt
       - type: bind
         source: {{internal_tls.registry_crt_path}}
         target: /etc/harbor/tls/registry.crt
@@ -90,10 +90,15 @@ services:
       - type: bind
         source: ./common/config/registryctl/config.yml
         target: /etc/registryctl/config.yml
-{%if internal_tls.enabled %}
       - type: bind
-        source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /harbor_cust_cert/harbor_internal_ca.crt
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{% if gcs_keyfile %}
+      - type: bind
+        source: {{gcs_keyfile}}
+        target: /etc/registry/gcs.key
+{% endif %}
+{%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.registryctl_crt_path}}
         target: /etc/harbor/ssl/registryctl.crt
@@ -172,15 +177,15 @@ services:
       - type: bind
         source: {{data_volume}}/secret/keys/secretkey
         target: /etc/core/key
+      - type: bind
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
 {% if uaa_ca_file %}
       - type: bind
         source: {{uaa_ca_file}}
         target: /etc/core/certificates/uaa_ca.pem
 {% endif %}
 {%if internal_tls.enabled %}
-      - type: bind
-        source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /harbor_cust_cert/harbor_internal_ca.crt 
       - type: bind
         source: {{internal_tls.core_crt_path}}
         target: /etc/harbor/ssl/core.crt
@@ -257,21 +262,16 @@ services:
       - type: bind
         source: ./common/config/jobservice/config.yml
         target: /etc/jobservice/config.yml
-{%if internal_tls.enabled %}
       - type: bind
-        source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /harbor_cust_cert/harbor_internal_ca.crt
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.job_service_crt_path}}
         target: /etc/harbor/ssl/job_service.crt
       - type: bind
         source: {{internal_tls.job_service_key_path}}
         target: /etc/harbor/ssl/job_service.key
-{% endif %}
-{% if protocol == 'https' %}
-      - type: bind
-        source: {{data_volume}}/secret/cert/server.crt
-        target: /harbor_cust_cert/harbor_ca.crt
 {% endif %}
     networks:
       - harbor
@@ -336,10 +336,10 @@ services:
 {% if protocol == 'https' %}
       - {{data_volume}}/secret/cert:/etc/cert:z
 {% endif %}
-{%if internal_tls.enabled %}
       - type: bind
-        source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /etc/harbor/tls/harbor_internal_ca.crt
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.proxy_crt_path}}
         target: /etc/harbor/tls/proxy.crt
@@ -388,10 +388,10 @@ services:
       - type: bind
         source: {{data_volume}}/secret/registry/root.crt
         target: /etc/notary/root.crt
-{%if internal_tls.enabled %}
       - type: bind
-        source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /etc/harbor/ssl/harbor_internal_ca.crt
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.notary_server_crt_path}}
         target: /etc/harbor/ssl/notary_server.crt
@@ -429,10 +429,10 @@ services:
       - type: bind
         source: {{data_volume}}/secret/notary/notary-signer.key
         target: /etc/notary/notary-signer.key
-{%if internal_tls.enabled %}
       - type: bind
-        source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /etc/harbor/ssl/harbor_internal_ca.crt
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.notary_signer_crt_path}}
         target: /etc/harbor/ssl/notary_signer.crt
@@ -477,10 +477,10 @@ services:
       - type: bind
         source: ./common/config/clair/config.yaml
         target: /etc/clair/config.yaml
-{%if internal_tls.enabled %}
       - type: bind
-        source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /harbor_cust_cert/harbor_internal_ca.crt
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.clair_crt_path}}
         target: /etc/harbor/ssl/clair.crt
@@ -514,11 +514,11 @@ services:
 {% if external_redis == False %}
       - redis
 {% endif %}
-{%if internal_tls.enabled %}
     volumes:
       - type: bind
-        source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /harbor_cust_cert/harbor_internal_ca.crt 
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.clair_adapter_crt_path}}
         target: /etc/harbor/ssl/clair_adapter.crt
@@ -555,15 +555,10 @@ services:
       - type: bind
         source: {{data_volume}}/trivy-adapter/reports
         target: /home/scanner/.cache/reports
-{% if protocol == 'https' %}
       - type: bind
-        source: {{data_volume}}/secret/cert/server.crt
-        target: /harbor_cust_cert/harbor_ca.crt
-{% endif %}
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
 {% if internal_tls.enabled %}
-      - type: bind
-        source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /harbor_cust_cert/harbor_internal_ca.crt
       - type: bind
         source: {{internal_tls.trivy_adapter_crt_path}}
         target: /etc/harbor/ssl/trivy_adapter.crt
@@ -599,10 +594,10 @@ services:
     volumes:
       - {{data_volume}}/chart_storage:/chart_storage:z
       - ./common/config/chartserver:/etc/chartserver:z
-{%if internal_tls.enabled %}
       - type: bind
-        source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /harbor_cust_cert/harbor_internal_ca.crt
+        source: ./common/config/shared/trust-certificates
+        target: /harbor_cust_cert
+{%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.chartmuseum_crt_path}}
         target: /etc/harbor/ssl/chartmuseum.crt

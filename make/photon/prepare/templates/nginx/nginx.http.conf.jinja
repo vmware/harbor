@@ -112,6 +112,9 @@ http {
       proxy_set_header X-Forwarded-Proto $scheme;
       proxy_buffering off;
       proxy_request_buffering off;
+
+      proxy_send_timeout 900;
+      proxy_read_timeout 900;
     }
 
     location /service/ {

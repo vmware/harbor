@@ -65,12 +65,12 @@ ${project_config_prevent_vulnerable_images_from_running_checkbox}  xpath=//input
 ${project_config_severity_select}  xpath=//select[@id='severity']
 ${project_config_public_checkbox_label}  xpath=//*[@id="clr-wrapper-public"]/div/clr-checkbox-wrapper/label
 ${project_config_prevent_vulenrability_checkbox_label}    xpath=//*[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
-${project_config_system_wl_radio_input}    xpath=//clr-radio-wrapper//label[contains(.,'System whitelist')]
-${project_config_project_wl_radio_input}    xpath=//clr-radio-wrapper//label[contains(.,'Project whitelist')]
-${project_config_system_wl_radio_input_id}    systemWhitelistOrProjectWhitelist
-${project_config_project_wl_radio_input_id}    systemWhitelistOrProjectWhitelist
+${project_config_system_wl_radio_input}    xpath=//clr-radio-wrapper//label[contains(.,'System allowlist')]
+${project_config_project_wl_radio_input}    xpath=//clr-radio-wrapper//label[contains(.,'Project allowlist')]
+${project_config_system_wl_radio_input_id}    systemAllowlistOrProjectAllowlist
+${project_config_project_wl_radio_input_id}    systemAllowlistOrProjectAllowlist
 ${project_config_project_wl_add_btn}    xpath=//*[@id='show-add-modal']
-${project_config_project_wl_add_confirm_btn}    xpath=//*[@id='add-to-whitelist']
+${project_config_project_wl_add_confirm_btn}    xpath=//*[@id='add-to-allowlist']
 ${project_config_save_btn}    xpath=//hbr-project-policy-config//button[contains(.,'SAVE')]
 ${project_add_count_quota_input_text_id}    xpath=//*[@id='create_project_count_limit']
 ${project_add_storage_quota_input_text_id}    xpath=//*[@id='create_project_storage_limit']

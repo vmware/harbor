@@ -1,0 +1,32 @@
+@import "../base.scss";
+$refrsh-btn-color: #007CBB;
+.refresh-btn {
+    @include refresh-button
+}
+
+.refresh-btn:hover {
+    @include refresh-button-hover($refrsh-btn-color);
+}
+
+.filter-pos {
+    float: right;
+    margin-right: 24px;
+    position: relative;
+    top: 10px;
+}
+
+.action-head-pos {
+    padding-right: 18px;
+    height: 24px;
+    display: flex;
+    justify-content: flex-end;
+}
+.no-wrapper {
+    white-space: nowrap;
+}
+.margin-top-5px {
+    margin-top: 5px;
+}
+.height-24 {
+    height: 24px;
+}

@@ -25,7 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib/log"
 	dr "github.com/goharbor/harbor/src/pkg/quota/driver"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/graph-gophers/dataloader"
 )
 
@@ -120,7 +120,7 @@ func (d *driver) CalculateUsage(ctx context.Context, key string) (types.Resource
 func newDriver() dr.Driver {
 	cfg := config.NewDBCfgManager()
 
-	loader := dataloader.NewBatchedLoader(getProjectsBatchFn)
+	loader := dataloader.NewBatchedLoader(getProjectsBatchFn, dataloader.WithClearCacheOnBatch())
 
 	return &driver{
 		cfg:     cfg,

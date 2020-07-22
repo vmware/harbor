@@ -21,7 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/quota/dao"
 	"github.com/goharbor/harbor/src/pkg/quota/models"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
 // Quota alias `models.Quota` to make it natural to use the Manager

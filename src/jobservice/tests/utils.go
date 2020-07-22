@@ -18,6 +18,7 @@ package tests
 import (
 	"errors"
 	"fmt"
+	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"os"
 	"time"
 
@@ -36,22 +37,14 @@ const (
 // GiveMeRedisPool ...
 func GiveMeRedisPool() *redis.Pool {
 	redisHost := getRedisHost()
-	redisPool := &redis.Pool{
-		MaxActive: 6,
-		MaxIdle:   6,
-		Wait:      true,
-		Dial: func() (redis.Conn, error) {
-			return redis.Dial(
-				"tcp",
-				fmt.Sprintf("%s:%d", redisHost, 6379),
-				redis.DialConnectTimeout(dialConnectionTimeout),
-				redis.DialReadTimeout(dialReadTimeout),
-				redis.DialWriteTimeout(dialWriteTimeout),
-			)
-		},
-	}
-
-	return redisPool
+	pool, _ := redislib.GetRedisPool("test", fmt.Sprintf("redis://%s:%d", redisHost, 6379), &redislib.PoolParam{
+		PoolMaxIdle:           6,
+		PoolMaxActive:         6,
+		DialConnectionTimeout: dialConnectionTimeout,
+		DialReadTimeout:       dialReadTimeout,
+		DialWriteTimeout:      dialWriteTimeout,
+	})
+	return pool
 }
 
 // GiveMeTestNamespace ...

@@ -32,6 +32,10 @@ const (
 	ReplicationScheduler = "IMAGE_REPLICATE"
 	// WebhookJob : the name of the webhook job in job service
 	WebhookJob = "WEBHOOK"
+	// SlackJob : the name of the slack job in job service
+	SlackJob = "SLACK"
 	// Retention : the name of the retention job
 	Retention = "RETENTION"
+	// P2PPreheat : the name of the P2P preheat job
+	P2PPreheat = "P2P_PREHEAT"
 )

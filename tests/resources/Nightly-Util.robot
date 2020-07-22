@@ -29,7 +29,7 @@ Nightly Test Setup
 
 CA Setup
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}=/ca/ca.crt
-    Run  mv ${cert} harbor_ca.crt
+    Run  cp ${cert} harbor_ca.crt
     Generate Certificate Authority For Chrome  ${HARBOR_PASSWORD}
     Prepare Docker Cert  ${ip}
     Prepare Helm Cert

@@ -33,7 +33,7 @@
                         <div *ngSwitchCase="'unknown' || ''"><clr-icon shape="exclamation-triangle" class="is-warning text-alignment" size="22"></clr-icon> Unknown</div>
                     </clr-dg-cell>
                     <clr-dg-cell class="flex-min-width">{{t.url}}</clr-dg-cell>
-                    <clr-dg-cell>{{t.type}}</clr-dg-cell>
+                    <clr-dg-cell>{{getAdapterText(t.type)}}</clr-dg-cell>
                     <clr-dg-cell>
                         {{!t.insecure}}
                     </clr-dg-cell>

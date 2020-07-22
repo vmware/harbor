@@ -15,6 +15,7 @@
 package scanner
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/models"
@@ -46,8 +47,8 @@ func TestController(t *testing.T) {
 	suite.Run(t, new(ControllerTestSuite))
 }
 
-// SetupSuite prepares env for the controller test suite
-func (suite *ControllerTestSuite) SetupSuite() {
+// SetupTest prepares env for the controller test suite
+func (suite *ControllerTestSuite) SetupTest() {
 	suite.mMgr = &scannertesting.Manager{}
 	suite.mMeta = new(MockProMetaManager)
 
@@ -225,6 +226,31 @@ func (suite *ControllerTestSuite) TestGetRegistrationByProject() {
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), r)
 	assert.Equal(suite.T(), "forUT", r.Name)
+}
+
+// TestGetRegistrationByProjectWhenPingError tests GetRegistrationByProject
+func (suite *ControllerTestSuite) TestGetRegistrationByProjectWhenPingError() {
+	m := make(map[string]string, 1)
+	m[proScannerMetaKey] = "uuid"
+
+	// Configured at project level
+	var pid int64 = 1
+	suite.sample.UUID = "uuid"
+
+	suite.mMeta.On("Get", pid, []string{proScannerMetaKey}).Return(m, nil)
+	suite.mMgr.On("Get", "uuid").Return(suite.sample, nil)
+
+	// Ping error
+	mc := &v1testing.Client{}
+	mc.On("GetMetadata").Return(nil, fmt.Errorf("getMetadata error"))
+
+	mcp := &v1testing.ClientPool{}
+	mocktesting.OnAnything(mcp, "Get").Return(mc, nil)
+	suite.c.clientPool = mcp
+
+	r, err := suite.c.GetRegistrationByProject(pid)
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), "unhealthy", r.Health)
 }
 
 // TestPing ...

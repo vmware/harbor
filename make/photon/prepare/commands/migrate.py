@@ -14,6 +14,9 @@ from migrations import accept_versions
 def migrate(input_, output, target):
     """
     migrate command will migrate config file style to specific version
+    :input_: is the path of the original config file
+    :output: is the destination path of config file, the generated configs will storage in it
+    :target: is the the target version of config file will upgrade to
     """
     if target not in accept_versions:
         click.echo('target version {} not supported'.format(target))

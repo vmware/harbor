@@ -47,8 +47,7 @@ Test Case - System Admin On-board New Member
     Sleep  2
     Page Should Not Contain  mike02
     Navigate To Projects
-    Create An New Project  project${d}
-    Go Into Project  project${d}  has_image=${false}
+    Create An New Project And Go Into Project  project${d}
     Switch To Member
     Add Guest Member To Project  mike02
     Page Should Contain  mike02
@@ -58,8 +57,7 @@ Test Case - LDAP User On-borad New Member
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  mike03  zhu88jie
-    Create An New Project  project${d}
-    Go Into Project  project${d}  has_image=${false}
+    Create An New Project And Go Into Project  project${d}
     Switch To Member
     Sleep  2
     Page Should Not Contain  mike04
@@ -94,7 +92,7 @@ Test Case - Ldap User Create Project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
-    Create An New Project  project${d}
+    Create An New Project And Go Into Project  project${d}
     Logout Harbor
     Manage Project Member  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  mike02  Add  has_image=${false}
     Close Browser
@@ -103,7 +101,7 @@ Test Case - Ldap User Push An Image
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
-    Create An New Project  project${d}
+    Create An New Project And Go Into Project  project${d}
 
     Push Image  ${ip}  mike  zhu88jie  project${d}  hello-world:latest
     Go Into Project  project${d}

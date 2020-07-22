@@ -47,7 +47,11 @@ var (
 var (
 	name      = fmt.Sprintf("(?P<name>%s)", ref.NameRegexp)
 	reference = fmt.Sprintf("(?P<reference>((%s)|(%s)))", ref.DigestRegexp, ref.TagRegexp)
+	dgt       = fmt.Sprintf("(?P<digest>%s)", ref.DigestRegexp)
 	sessionID = "(?P<session_id>[a-zA-Z0-9-_.=]+)"
+
+	// BlobURLRegexp regexp which match blob url
+	BlobURLRegexp = regexp.MustCompile(`^/v2/` + name + `/blobs/` + dgt)
 
 	// BlobUploadURLRegexp regexp which match blob upload url
 	BlobUploadURLRegexp = regexp.MustCompile(`^/v2/` + name + `/blobs/uploads/` + sessionID)

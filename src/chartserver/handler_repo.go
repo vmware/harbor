@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
-	helm_repo "k8s.io/helm/pkg/repo"
+	helm_repo "helm.sh/helm/v3/pkg/repo"
 
 	hlog "github.com/goharbor/harbor/src/lib/log"
 )

@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
+import { ErrorHandler } from '../../../lib/utils/error-handler';
 
 describe('PasswordSettingComponent', () => {
     let component: PasswordSettingComponent;
@@ -37,7 +38,8 @@ describe('PasswordSettingComponent', () => {
                 TranslateService,
                 { provide: PasswordSettingService, useValue: fakePasswordSettingService },
                 { provide: SessionService, useValue: fakeSessionService },
-                { provide: MessageHandlerService, useValue: fakeMessageHandlerService }
+                { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
+                ErrorHandler
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
         }).compileComponents();

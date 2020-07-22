@@ -15,8 +15,8 @@ import { Component, Output, EventEmitter } from "@angular/core";
 import { TranslateService } from "@ngx-translate/core";
 
 import { errorHandler } from "../../utils/shared/shared.utils";
-// tslint:disable-next-line:no-unused-variable
 import { Observable,  Subscription } from "rxjs";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
 
 @Component({
   selector: "hbr-inline-alert",
@@ -36,7 +36,9 @@ export class InlineAlertComponent {
 
   @Output() confirmEvt = new EventEmitter<boolean>();
 
-  constructor(private translate: TranslateService) {}
+  constructor(private translate: TranslateService,
+    private errHandler: ErrorHandler,
+    ) {}
 
   public get errorMessage(): string {
     return this.displayedText;
@@ -50,6 +52,7 @@ export class InlineAlertComponent {
         .get(this.displayedText)
         .subscribe((res: string) => (this.displayedText = res));
     }
+    this.errHandler.handleErrorPopupUnauthorized(error);
 
     this.inlineAlertType = "danger";
     this.showCancelAction = false;

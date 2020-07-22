@@ -86,7 +86,7 @@ Wait Until Element Is Visible And Enabled
 
 Retry Action Keyword
     [Arguments]  ${keyword}  @{param}
-    Retry Keyword When Error  ${keyword}  @{param}
+    Retry Keyword N Times When Error  3  ${keyword}  @{param}
 
 Retry Wait Element
     [Arguments]  ${element_xpath}
@@ -224,17 +224,19 @@ Command Should be Failed
     [Arguments]  ${cmd}
     ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
     Should Not Be Equal As Strings  '${rc}'  '0'
+    Log  ${output}
     [Return]  ${output}
 
-Retry Keyword When Error
-    [Arguments]  ${keyword}  @{elements}
-    :For  ${n}  IN RANGE  1  3
+Retry Keyword N Times When Error
+    [Arguments]  ${times}  ${keyword}  @{elements}
+    :For  ${n}  IN RANGE  1  ${times}
     \    Log To Console  Trying ${keyword} elements @{elements} ${n} times ...
     \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
     \    Log To Console  Return value is ${out} and ${out[0]}
+    \    Capture Page Screenshot  record
     \    Run Keyword If  '${keyword}'=='Make Swagger Client'  Exit For Loop If  '${out[0]}'=='PASS' and '${out[1]}'=='0'
     \    ...  ELSE  Exit For Loop If  '${out[0]}'=='PASS'
-    \    Sleep  2
+    \    Sleep  10
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
     [Return]  ${out[1]}
@@ -252,8 +254,8 @@ Retry Keyword When Return Value Mismatch
     Should Be Equal As Strings  ${status}  'PASS'
 
 Retry Double Keywords When Error
-    [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}  ${DoAssert}=${true}
-    :For  ${n}  IN RANGE  1  3
+    [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}  ${DoAssert}=${true}  ${times}=3
+    :For  ${n}  IN RANGE  1  ${times}
     \    Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
     \    ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
     \    Capture Page Screenshot

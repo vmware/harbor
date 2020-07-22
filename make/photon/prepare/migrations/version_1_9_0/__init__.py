@@ -3,14 +3,14 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined
 from utils.migration import read_conf
 
 revision = '1.9.0'
-down_revision = None
+down_revisions = []
 
 def migrate(input_cfg, output_cfg):
     config_dict = read_conf(input_cfg)
 
-    this_dir = os.path.dirname(__file__)
+    current_dir = os.path.dirname(__file__)
     tpl = Environment(
-        loader=FileSystemLoader(this_dir),
+        loader=FileSystemLoader(current_dir),
         undefined=StrictUndefined,
         trim_blocks=True,
         lstrip_blocks=True

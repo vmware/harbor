@@ -37,8 +37,6 @@ https:
 # internal_tls:
 #   # set enabled to true means internal tls is enabled
 #   enabled: true
-#   # verify_client_cert used to decide whether verify client certificate
-#   verify_client_cert: false
 #   # put your cert and key files on dir
 #   dir: /etc/harbor/tls/internal
 
@@ -308,9 +306,14 @@ external_database:
 
 {% if external_redis is defined %}
 external_redis:
-  host: {{ external_redis.host }}
-  port: {{ external_redis.port }}
+  # support redis, redis+sentinel
+  # host for redis: <host_redis>:<port_redis>
+  # host for redis+sentinel:
+  #  <host_sentinel1>:<port_sentinel1>,<host_sentinel2>:<port_sentinel2>,<host_sentinel3>:<port_sentinel3>
+  host: {{ external_redis.host }}:{{ external_redis.port }}
   password: {{ external_redis.password }}
+  # sentinel_master_set must be set to support redis+sentinel
+  #sentinel_master_set:
   # db_index 0 is for core, it's unchangeable
   registry_db_index: {{ external_redis.registry_db_index }}
   jobservice_db_index: {{ external_redis.jobservice_db_index }}
@@ -321,9 +324,14 @@ external_redis:
 {% else %}
 # Umcomments external_redis if using external Redis server
 # external_redis:
-#   host: redis
-#   port: 6379
+#   # support redis, redis+sentinel
+#   # host for redis: <host_redis>:<port_redis>
+#   # host for redis+sentinel:
+#   #  <host_sentinel1>:<port_sentinel1>,<host_sentinel2>:<port_sentinel2>,<host_sentinel3>:<port_sentinel3>
+#   host: redis:6379
 #   password:
+#   # sentinel_master_set must be set to support redis+sentinel
+#   #sentinel_master_set:
 #   # db_index 0 is for core, it's unchangeable
 #   registry_db_index: 1
 #   jobservice_db_index: 2

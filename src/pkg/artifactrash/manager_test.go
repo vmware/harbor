@@ -6,6 +6,7 @@ import (
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"time"
 )
 
 type fakeDao struct {
@@ -20,11 +21,11 @@ func (f *fakeDao) Delete(ctx context.Context, id int64) (err error) {
 	args := f.Called()
 	return args.Error(0)
 }
-func (f *fakeDao) Filter(ctx context.Context) (arts []model.ArtifactTrash, err error) {
+func (f *fakeDao) Filter(ctx context.Context, timeWindow time.Time) (arts []model.ArtifactTrash, err error) {
 	args := f.Called()
 	return args.Get(0).([]model.ArtifactTrash), args.Error(1)
 }
-func (f *fakeDao) Flush(ctx context.Context) (err error) {
+func (f *fakeDao) Flush(ctx context.Context, timeWindow time.Time) (err error) {
 	args := f.Called()
 	return args.Error(0)
 }
@@ -69,14 +70,14 @@ func (m *managerTestSuite) TestFilter() {
 			Digest:            "5678",
 		},
 	}, nil)
-	arts, err := m.mgr.Filter(nil)
+	arts, err := m.mgr.Filter(nil, 0)
 	m.Require().Nil(err)
 	m.Equal(len(arts), 1)
 }
 
 func (m *managerTestSuite) TestFlush() {
 	m.dao.On("Flush", mock.Anything).Return(nil)
-	err := m.mgr.Flush(nil)
+	err := m.mgr.Flush(nil, 0)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }

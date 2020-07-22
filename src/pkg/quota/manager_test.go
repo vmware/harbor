@@ -17,7 +17,7 @@ package quota
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
 )

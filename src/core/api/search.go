@@ -16,19 +16,20 @@ package api
 
 import (
 	"fmt"
-	pro "github.com/goharbor/harbor/src/common/dao/project"
-	"github.com/goharbor/harbor/src/common/security/local"
 	"strings"
 
+	"helm.sh/helm/v3/cmd/helm/search"
+
 	"github.com/goharbor/harbor/src/common/dao"
+	pro "github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"k8s.io/helm/cmd/helm/search"
 )
 
 type chartSearchHandler func(string, []string) ([]*search.Result, error)

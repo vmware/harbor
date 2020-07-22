@@ -16,12 +16,15 @@ package blob
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/blob"
+	"github.com/goharbor/harbor/src/lib"
+	pkg_blob "github.com/goharbor/harbor/src/pkg/blob"
+	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/google/uuid"
@@ -47,15 +50,15 @@ func (suite *PutManifestMiddlewareTestSuite) pushBlob(name string, digest string
 	suite.Equal(res.Code, http.StatusCreated)
 }
 
-func (suite *PutManifestMiddlewareTestSuite) TestMiddleware() {
-	body := `
+func (suite *PutManifestMiddlewareTestSuite) prepare(name string) (distribution.Manifest, distribution.Descriptor, *http.Request) {
+	body := fmt.Sprintf(`
 	{
 		"schemaVersion": 2,
 		"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
 		"config": {
 		"mediaType": "application/vnd.docker.container.image.v1+json",
 		"size": 6868,
-		"digest": "sha256:9b188f5fb1e6e1c7b10045585cb386892b2b4e1d31d62e3688c6fa8bf9fd32b5"
+		"digest": "%s"
 		},
 		"layers": [
 		{
@@ -89,15 +92,27 @@ func (suite *PutManifestMiddlewareTestSuite) TestMiddleware() {
 			"digest": "sha256:727f8da63ac248054cb7dda635ee16da76e553ec99be565a54180c83d04025a8"
 		}
 		]
-	}`
+	}`, suite.DigestString())
+
 	manifest, descriptor, err := distribution.UnmarshalManifest("application/vnd.docker.distribution.manifest.v2+json", []byte(body))
 	suite.Nil(err)
 
+	req := suite.NewRequest(http.MethodPut, fmt.Sprintf("/v2/%s/manifests/%s", name, descriptor.Digest.String()), strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/vnd.docker.distribution.manifest.v2+json")
+	info := lib.ArtifactInfo{
+		Repository: name,
+		Reference:  "latest",
+		Tag:        "latest",
+		Digest:     descriptor.Digest.String(),
+	}
+	return manifest, descriptor, req.WithContext(lib.WithArtifactInfo(req.Context(), info))
+}
+
+func (suite *PutManifestMiddlewareTestSuite) TestMiddleware() {
 	suite.WithProject(func(projectID int64, projectName string) {
 		name := fmt.Sprintf("%s/redis", projectName)
 
-		req := suite.NewRequest(http.MethodPut, fmt.Sprintf("/v2/%s/manifests/%s", name, descriptor.Digest.String()), strings.NewReader(body))
-		req.Header.Set("Content-Type", "application/vnd.docker.distribution.manifest.v2+json")
+		manifest, descriptor, req := suite.prepare(name)
 		res := httptest.NewRecorder()
 
 		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
@@ -127,6 +142,60 @@ func (suite *PutManifestMiddlewareTestSuite) TestMiddleware() {
 			if suite.Nil(err) {
 				suite.Equal(descriptor.MediaType, b.ContentType)
 				suite.Equal(descriptor.Size, b.Size)
+			}
+		}
+	})
+}
+
+func (suite *PutManifestMiddlewareTestSuite) TestMFInDeleting() {
+	suite.WithProject(func(projectID int64, projectName string) {
+		name := fmt.Sprintf("%s/photon", projectName)
+		_, descriptor, req := suite.prepare(name)
+		res := httptest.NewRecorder()
+
+		id, err := blob.Ctl.Ensure(suite.Context(), descriptor.Digest.String(), "application/vnd.docker.distribution.manifest.v2+json", 512)
+		suite.Nil(err)
+
+		// status-none -> status-delete -> status-deleting
+		_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), &blob_models.Blob{ID: id, Status: blob_models.StatusDelete})
+		suite.Nil(err)
+		_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), &blob_models.Blob{ID: id, Status: blob_models.StatusDeleting, Version: 1})
+		suite.Nil(err)
+
+		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
+		PutManifestMiddleware()(next).ServeHTTP(res, req)
+		suite.Equal(http.StatusNotFound, res.Code)
+	})
+}
+
+func (suite *PutManifestMiddlewareTestSuite) TestMFInDelete() {
+	suite.WithProject(func(projectID int64, projectName string) {
+		name := fmt.Sprintf("%s/photon", projectName)
+		manifest, descriptor, req := suite.prepare(name)
+		res := httptest.NewRecorder()
+
+		id, err := blob.Ctl.Ensure(suite.Context(), descriptor.Digest.String(), "application/vnd.docker.distribution.manifest.v2+json", 512)
+		suite.Nil(err)
+
+		// status-none -> status-delete -> status-deleting
+		_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), &blob_models.Blob{ID: id, Status: blob_models.StatusDelete})
+		suite.Nil(err)
+
+		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
+		PutManifestMiddleware()(next).ServeHTTP(res, req)
+		suite.Equal(http.StatusCreated, res.Code)
+
+		for _, reference := range manifest.References() {
+			opts := []blob.Option{
+				blob.IsAssociatedWithArtifact(descriptor.Digest.String()),
+				blob.IsAssociatedWithProject(projectID),
+			}
+
+			b, err := blob.Ctl.Get(suite.Context(), reference.Digest.String(), opts...)
+			if suite.Nil(err) {
+				suite.Equal(reference.MediaType, b.ContentType)
+				suite.Equal(reference.Size, b.Size)
+				suite.Equal(blob_models.StatusNone, b.Status)
 			}
 		}
 	})

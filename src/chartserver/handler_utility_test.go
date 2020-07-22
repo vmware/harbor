@@ -56,7 +56,6 @@ func TestGetChartVersion(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer s.Close()
-
 	chartVersion, err := c.GetChartVersionDetails("repo1", "harbor", "0.2.0")
 	if err != nil {
 		t.Fatal(err)

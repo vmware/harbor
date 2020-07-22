@@ -9,6 +9,7 @@ import { MessageHandlerService } from '../../../shared/message-handler/message-h
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClarityModule } from '@clr/angular';
 import { InlineAlertComponent } from '../../../shared/inline-alert/inline-alert.component';
+import { ErrorHandler } from '../../../../lib/utils/error-handler';
 
 describe('ResetPasswordComponent', () => {
     let component: ResetPasswordComponent;
@@ -30,6 +31,7 @@ describe('ResetPasswordComponent', () => {
                 TranslateService,
                 { provide: PasswordSettingService, useValue: fakePasswordSettingService },
                 { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
+                ErrorHandler
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA]
         }).compileComponents();

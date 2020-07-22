@@ -18,7 +18,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
 var (

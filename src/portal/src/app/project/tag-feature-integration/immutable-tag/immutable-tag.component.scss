@@ -22,18 +22,7 @@
 .font-size-54 {
   font-size: 0.541667rem;
 }
-::ng-deep {
-  .normal-wrapper-box {
-    .normal-wrapper {
-      .font-style {
-        width: 150px !important;
-      }
-    }
-    .btn {
-      margin-left: 150px !important;
-    }
-  }
-}
+
 .flex-150 {
   flex: 0 0 150px;
 }

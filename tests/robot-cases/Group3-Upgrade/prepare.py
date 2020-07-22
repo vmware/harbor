@@ -155,7 +155,7 @@ class HarborAPI:
         request(url+"projects/"+projectid+"", 'put', **body)
 
     @get_feature_branch
-    def add_sys_whitelist(self, cve_id_list, **kwargs):
+    def add_sys_allowlist(self, cve_id_list, **kwargs):
         cve_id_str = ""
         if kwargs["branch"] == 1:
             for index, cve_id in enumerate(cve_id_list["cve"]):
@@ -168,7 +168,7 @@ class HarborAPI:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
 
     @get_feature_branch
-    def update_project_setting_whitelist(self, project, reuse_sys_cve_whitelist, cve_id_list, **kwargs):
+    def update_project_setting_allowlist(self, project, reuse_sys_cve_whitelist, cve_id_list, **kwargs):
         r = request(url+"projects?name="+project+"", 'get')
         projectid = str(r.json()[0]['project_id'])
         cve_id_str = ""
@@ -188,8 +188,14 @@ class HarborAPI:
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
 
+    @get_feature_branch
+    def update_interrogation_services(self, cron, **kwargs):
+        payload = {"schedule":{"type":"Custom","cron": cron}}
+        print payload
+        body=dict(body=payload)
+        request(url+"system/scanAll/schedule", 'post', **body)
 
-    def update_systemsetting(self, emailfrom, emailhost, emailport, emailuser, creation, selfreg, token):
+    def update_systemsetting(self, emailfrom, emailhost, emailport, emailuser, creation, selfreg, token, robot_token):
         payload = {
             "auth_mode": "db_auth",
             "email_from": emailfrom,
@@ -203,6 +209,7 @@ class HarborAPI:
             "read_only": False,
             "self_registration": selfreg,
             "token_expiration": token,
+            "robot_token_duration":robot_token,
             "scan_all_policy": {
                 "type": "none",
                 "parameter": {
@@ -468,9 +475,11 @@ def do_data_creation():
                                         project["configuration"]["auto_scan"])
 
     for project in data["projects"]:
-        harborAPI.update_project_setting_whitelist(project["name"],
-                                    project["configuration"]["reuse_sys_cve_whitelist"],
-                                    project["configuration"]["deployment_security"],version=args.version)
+        harborAPI.update_project_setting_allowlist(project["name"],
+                                    project["configuration"]["reuse_sys_cve_allowlist"],
+                                    project["configuration"]["deployment_security"], version=args.version)
+
+    harborAPI.update_interrogation_services(data["interrogation_services"]["cron"], version=args.version)
 
     harborAPI.update_systemsetting(data["configuration"]["emailsetting"]["emailfrom"],
                                    data["configuration"]["emailsetting"]["emailserver"],
@@ -478,8 +487,9 @@ def do_data_creation():
                                    data["configuration"]["emailsetting"]["emailuser"],
                                    data["configuration"]["projectcreation"],
                                    data["configuration"]["selfreg"],
-                                   float(data["configuration"]["token"]))
+                                   float(data["configuration"]["token"]),
+                                   float(data["configuration"]["robot_token"])*60*24)
 
-    harborAPI.add_sys_whitelist(data["configuration"]["deployment_security"],version=args.version)
+    harborAPI.add_sys_allowlist(data["configuration"]["deployment_security"], version=args.version)
 
 do_data_creation()

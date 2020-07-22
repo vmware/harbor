@@ -65,10 +65,10 @@ func TestValidateProjectMetadata(t *testing.T) {
 func TestMetaAPI(t *testing.T) {
 	client := newHarborAPI()
 
-	// non-exist project
+	// non-exist project, it should return 401 if user is not logged in.
 	code, _, err := client.PostMeta(*unknownUsr, int64(1000), nil)
 	require.Nil(t, err)
-	assert.Equal(t, http.StatusNotFound, code)
+	assert.Equal(t, http.StatusUnauthorized, code)
 
 	// non-login
 	code, _, err = client.PostMeta(*unknownUsr, int64(1), nil)

@@ -19,14 +19,14 @@ type Option func(*Options)
 
 // Options options used by `Get` method of `Controller`
 type Options struct {
-	CVEWhitelist bool // get project with cve whitelist
+	CVEAllowlist bool // get project with cve allowlist
 	Metadata     bool // get project with metadata
 }
 
-// CVEWhitelist set CVEWhitelist for the Options
-func CVEWhitelist(whitelist bool) Option {
+// CVEAllowlist set CVEAllowlist for the Options
+func CVEAllowlist(allowlist bool) Option {
 	return func(opts *Options) {
-		opts.CVEWhitelist = whitelist
+		opts.CVEAllowlist = allowlist
 	}
 }
 

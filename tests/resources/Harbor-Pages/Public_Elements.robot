@@ -18,4 +18,7 @@ Documentation  This resource provides any keywords related to public
 *** Variables ***
 ${delete_btn}  //clr-modal//button[contains(.,'DELETE')]
 ${delete_btn_2}  //button[contains(.,'Delete')]
+${default_scanner_info_close_icon}  /html/body/harbor-app/harbor-shell/clr-main-container/div[1]/div[3]/clr-icon
+${back_to_home_link}  /html/body/harbor-app/harbor-shell/clr-main-container/div[2]/div/search-result/div/div[2]/a
+
 

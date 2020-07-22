@@ -3,8 +3,8 @@ package chartserver
 import (
 	"net/http"
 
-	"k8s.io/helm/cmd/helm/search"
-	helm_repo "k8s.io/helm/pkg/repo"
+	"helm.sh/helm/v3/cmd/helm/search"
+	helm_repo "helm.sh/helm/v3/pkg/repo"
 )
 
 // ServiceHandler defines the related methods to handle kinds of chart service requests.

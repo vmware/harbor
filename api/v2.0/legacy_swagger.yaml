@@ -1458,13 +1458,14 @@ paths:
     get:
       summary: List registries.
       description: |
-        This endpoint let user list filtered registries by name, if name is nil, list returns all registries.
+        List registries according to the query.
       parameters:
         - name: name
           in: query
           type: string
           required: false
-          description: Registry's name.
+          description: Deprecated, use `q` instead.
+        - $ref: '#/parameters/query'
       tags:
         - Products
       responses:
@@ -2533,38 +2534,38 @@ paths:
           description: User need to log in first.
         '403':
           description: User does not have permission to call this API
-  '/system/CVEWhitelist':
+  '/system/CVEAllowlist':
     get:
-      summary: Get the system level whitelist of CVE.
-      description: Get the system level whitelist of CVE.  This API can be called by all authenticated users.
+      summary: Get the system level allowlist of CVE.
+      description: Get the system level allowlist of CVE.  This API can be called by all authenticated users.
       tags:
         - Products
         - System
       responses:
         '200':
-          description: Successfully retrieved the CVE whitelist.
+          description: Successfully retrieved the CVE allowlist.
           schema:
-            $ref: "#/definitions/CVEWhitelist"
+            $ref: "#/definitions/CVEAllowlist"
         '401':
           description: User is not authenticated.
         '500':
           description: Unexpected internal errors.
     put:
-      summary: Update the system level whitelist of CVE.
-      description: This API overwrites the system level whitelist of CVE with the list in request body.  Only system Admin
+      summary: Update the system level allowlist of CVE.
+      description: This API overwrites the system level allowlist of CVE with the list in request body.  Only system Admin
         has permission to call this API.
       tags:
         - Products
         - System
       parameters:
         - in: body
-          name: whitelist
-          description: The whitelist with new content
+          name: allowlist
+          description: The allowlist with new content
           schema:
-            $ref: "#/definitions/CVEWhitelist"
+            $ref: "#/definitions/CVEAllowlist"
       responses:
         '200':
-          description: Successfully updated the CVE whitelist.
+          description: Successfully updated the CVE allowlist.
         '401':
           description: User is not authenticated.
         '403':
@@ -3755,9 +3756,9 @@ definitions:
       metadata:
         description: The metadata of the project.
         $ref: '#/definitions/ProjectMetadata'
-      cve_whitelist:
-        description: The CVE whitelist of the project.
-        $ref: '#/definitions/CVEWhitelist'
+      cve_allowlist:
+        description: The CVE allowlist of the project.
+        $ref: '#/definitions/CVEAllowlist'
       count_limit:
         type: integer
         format: int64
@@ -3766,6 +3767,10 @@ definitions:
         type: integer
         format: int64
         description: The storage quota of the project.
+      registry_id:
+        type: integer
+        format: int64
+        description: The ID of referenced registry when creating the proxy cache project
   Project:
     type: object
     properties:
@@ -3780,6 +3785,10 @@ definitions:
       name:
         type: string
         description: The name of the project.
+      registry_id:
+        type: integer
+        format: int64
+        description: The ID of referenced registry when the project is a proxy cache project.
       creation_time:
         type: string
         description: The creation time of the project.
@@ -3813,9 +3822,9 @@ definitions:
       metadata:
         description: The metadata of the project.
         $ref: '#/definitions/ProjectMetadata'
-      cve_whitelist:
-        description: The CVE whitelist of this project.
-        $ref: '#/definitions/CVEWhitelist'
+      cve_allowlist:
+        description: The CVE allowlist of this project.
+        $ref: '#/definitions/CVEAllowlist'
   ProjectMetadata:
     type: object
     properties:
@@ -3834,10 +3843,10 @@ definitions:
       auto_scan:
         type: string
         description: 'Whether scan images automatically when pushing. The valid values are "true", "false".'
-      reuse_sys_cve_whitelist:
+      reuse_sys_cve_allowlist:
         type: string
-        description: 'Whether this project reuse the system level CVE whitelist as the whitelist of its own.  The valid values are "true", "false".
-        If it is set to "true" the actual whitelist associate with this project, if any, will be ignored.'
+        description: 'Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false".
+        If it is set to "true" the actual allowlist associate with this project, if any, will be ignored.'
   ProjectSummary:
     type: object
     properties:
@@ -3850,9 +3859,9 @@ definitions:
       project_admin_count:
         type: integer
         description: The total number of project admin members.
-      master_count:
+      maintainer_count:
         type: integer
-        description: The total number of master members.
+        description: The total number of maintainer members.
       developer_count:
         type: integer
         description: The total number of developer members.
@@ -4584,7 +4593,7 @@ definitions:
     properties:
       role_id:
         type: integer
-        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest, 4 for master'
+        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest, 4 for maintainer'
       member_user:
         $ref: '#/definitions/UserEntity'
       member_group:
@@ -4594,7 +4603,7 @@ definitions:
     properties:
       role_id:
         type: integer
-        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest, 4 for master'
+        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest, 4 for maintainer'
   UserEntity:
     type: object
     properties:
@@ -5048,26 +5057,26 @@ definitions:
       metadata:
         type: object
         description: The metadata of namespace
-  CVEWhitelist:
+  CVEAllowlist:
     type: object
-    description: The CVE Whitelist for system or project
+    description: The CVE Allowlist for system or project
     properties:
       id:
         type: integer
-        description: ID of the whitelist
+        description: ID of the allowlist
       project_id:
         type: integer
-        description: ID of the project which the whitelist belongs to.  For system level whitelist this attribute is zero.
+        description: ID of the project which the allowlist belongs to.  For system level allowlist this attribute is zero.
       expires_at:
         type: integer
-        description: the time for expiration of the whitelist, in the form of seconds since epoch.  This is an optional attribute, if it's not set the CVE whitelist does not expire.
+        description: the time for expiration of the allowlist, in the form of seconds since epoch.  This is an optional attribute, if it's not set the CVE allowlist does not expire.
       items:
         type: array
         items:
-          $ref: "#/definitions/CVEWhitelistItem"
-  CVEWhitelistItem:
+          $ref: "#/definitions/CVEAllowlistItem"
+  CVEAllowlistItem:
     type: object
-    description: The item in CVE whitelist
+    description: The item in CVE allowlist
     properties:
       cve_id:
         type: string
@@ -5345,6 +5354,8 @@ definitions:
       decoration:
         type: string
       pattern:
+        type: string
+      extras:
         type: string
 
   RetentionExecution:
@@ -5658,3 +5669,10 @@ definitions:
     type: string
     description: Webhook supportted notify type.
     example: 'http'
+parameters:
+  query:
+    name: q
+    description: Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". The value of range and list can be string(enclosed by " or '), integer or time(in format "2020-04-09 02:36:00"). All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max]
+    in: query
+    type: string
+    required: false

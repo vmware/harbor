@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, getTestBed, TestBed, tick } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GlobalSearchComponent } from './global-search.component';
 import { SearchTriggerService } from './search-trigger.service';
@@ -15,6 +15,9 @@ describe('GlobalSearchComponent', () => {
         searchClearChan$: {
             subscribe: function () {
             }
+        },
+        triggerSearch() {
+            return undefined;
         }
     };
     let fakeAppConfigService = {
@@ -56,4 +59,16 @@ describe('GlobalSearchComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
+    it('should trigger search', fakeAsync(async () => {
+        const  service: SearchTriggerService = TestBed.get(SearchTriggerService);
+        const spy: jasmine.Spy = spyOn(service,  'triggerSearch').and.callThrough();
+        const input: HTMLInputElement = fixture.nativeElement.querySelector('#search_input');
+        expect(input).toBeTruthy();
+        input.value = 'test';
+        input.dispatchEvent(new Event('keyup'));
+        tick(500);
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(spy.calls.count()).toEqual(1);
+    }));
 });

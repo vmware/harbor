@@ -1,8 +1,14 @@
 <a *ngIf="hasSignedIn" (click)="backToProject()" class="backStyle"> {{'PROJECT_DETAIL.PROJECTS' | translate}}</a>
 <a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']"> {{'SEARCH.BACK' | translate}}</a>
 
-<h1 class="custom-h2" sub-header-title>{{currentProject.name}} <span class="role-label"
-        *ngIf="isMember">{{roleName | translate}}</span></h1>
+<h1 class="custom-h2" sub-header-title>
+    <clr-icon *ngIf="isProxyCacheProject" shape="cloud-traffic" size="30"></clr-icon>
+    <span class="ml-05">{{currentProject.name}}</span>
+    <span class="ml-05 role-label" *ngIf="isMember">{{roleName | translate}}</span>
+</h1>
+<div class="clr-row mt-0 line-height-10" *ngIf="isProxyCacheProject">
+    <span class="proxy-cache">{{ 'PROJECT.PROXY_CACHE' | translate }}</span>
+</div>
 <clr-tabs id="project-tabs" class="tabs" [class.in-overflow]="isTabLinkInOverFlow()">
     <ng-container *ngFor="let tab of tabLinkNavList;let i=index">
         <ng-container *ngIf="tab.permissions()">

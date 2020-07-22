@@ -19,16 +19,17 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	gooidc "github.com/coreos/go-oidc"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/lib/log"
-	"golang.org/x/oauth2"
 	"net/http"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	gooidc "github.com/coreos/go-oidc"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/log"
+	"golang.org/x/oauth2"
 )
 
 const (
@@ -294,7 +295,7 @@ func userInfoFromRemote(ctx context.Context, token *Token, setting models.OIDCSe
 	if err != nil {
 		return nil, err
 	}
-	return userInfoFromClaims(u, setting.GroupsClaim)
+	return userInfoFromClaims(u, setting.GroupsClaim, setting.UserClaim)
 }
 
 func userInfoFromIDToken(ctx context.Context, token *Token, setting models.OIDCSetting) (*UserInfo, error) {
@@ -305,13 +306,27 @@ func userInfoFromIDToken(ctx context.Context, token *Token, setting models.OIDCS
 	if err != nil {
 		return nil, err
 	}
-	return userInfoFromClaims(idt, setting.GroupsClaim)
+
+	return userInfoFromClaims(idt, setting.GroupsClaim, setting.UserClaim)
 }
 
-func userInfoFromClaims(c claimsProvider, g string) (*UserInfo, error) {
+func userInfoFromClaims(c claimsProvider, g, u string) (*UserInfo, error) {
 	res := &UserInfo{}
 	if err := c.Claims(res); err != nil {
 		return nil, err
+	}
+	if u != "" {
+		allClaims := make(map[string]interface{})
+		if err := c.Claims(&allClaims); err != nil {
+			return nil, err
+		}
+
+		username, ok := allClaims[u].(string)
+		if !ok {
+			return nil, fmt.Errorf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", u)
+		}
+		res.Username = username
+
 	}
 	res.Groups, res.hasGroupClaim = GroupsFromClaims(c, g)
 	return res, nil

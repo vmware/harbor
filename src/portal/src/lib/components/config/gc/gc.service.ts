@@ -14,13 +14,14 @@ export class GcRepoService {
         private errorHandler: ErrorHandler) {
     }
 
-    public manualGc(shouldDeleteUntagged: boolean): Observable<any> {
+    public manualGc(shouldDeleteUntagged: boolean, isDryRun: boolean): Observable<any> {
         const param = {
             "schedule": {
                 "type": "Manual"
             },
             parameters: {
-                delete_untagged: shouldDeleteUntagged
+                delete_untagged: shouldDeleteUntagged,
+                dry_run: isDryRun
             }
         };
         return this.gcApiRepository.postSchedule(param);

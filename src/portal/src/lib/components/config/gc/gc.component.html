@@ -1,15 +1,33 @@
-<form class="clr-form clr-form-horizontal">
-    <clr-checkbox-container>
-        <clr-checkbox-wrapper>
-            <input type="checkbox" clrCheckbox name="delete_untagged" id="delete_untagged"
-                   [(ngModel)]="shouldDeleteUntagged"/>
-            <label for="delete_untagged">{{'GC.DELETE_UNTAGGED' | translate}}</label>
-        </clr-checkbox-wrapper>
-    </clr-checkbox-container>
-</form>
 <div class="cron-selection">
-    <cron-selection [buttonMarginLeft]="'0'" [labelCurrent]="getLabelCurrent" #CronScheduleComponent [labelEdit]='getText'
+    <cron-selection [labelCurrent]="getLabelCurrent" #CronScheduleComponent [labelEdit]='getLabelCurrent'
                     [originCron]='originCron' (inputvalue)="scheduleGc($event)"></cron-selection>
-    <button class="btn btn-outline  gc-start-btn" (click)="gcNow()"
-            [disabled]="disableGC">{{'GC.GC_NOW' | translate}}</button>
 </div>
+<div class="clr-row">
+    <div class="clr-col-2 flex-200"></div>
+    <div class="clr-col">
+        <span class="explain">{{'GC.EXPLAIN' | translate}}</span>
+    </div>
+</div>
+<div class="clr-row">
+    <div class="clr-col-2 flex-200"></div>
+    <div class="clr-col">
+        <clr-toggle-container class="mt-05">
+            <clr-toggle-wrapper>
+                <input type="checkbox" clrToggle name="delete_untagged" id="delete_untagged"
+                       [(ngModel)]="shouldDeleteUntagged"/>
+                <label class="font-weight-400" for="delete_untagged">{{'GC.DELETE_UNTAGGED' | translate}}</label>
+            </clr-toggle-wrapper>
+        </clr-toggle-container>
+    </div>
+</div>
+<div class="clr-row">
+    <div class="clr-col-2 flex-200">
+        <button class="btn btn-primary  gc-start-btn" (click)="gcNow()"
+                [disabled]="disableGC">{{'GC.GC_NOW' | translate}}</button>
+    </div>
+    <div class="clr-col">
+        <button class="btn btn-outline  gc-start-btn" (click)="dryRun()"
+        [disabled]="dryRunOnGoing">{{'TAG_RETENTION.WHAT_IF_RUN' | translate}}</button>
+    </div>
+</div>
+

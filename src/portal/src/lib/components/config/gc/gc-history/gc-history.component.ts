@@ -9,6 +9,8 @@ const JOB_STATUS = {
   PENDING: "pending",
   RUNNING: "running"
 };
+const YES: string = 'Yes';
+const NO: string = 'No';
 @Component({
   selector: 'gc-history',
   templateUrl: './gc-history.component.html',
@@ -57,6 +59,16 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
         this.errorHandler.error(error);
         this.loading = false;
     });
+  }
+
+  isDryRun(param: string): string {
+    if (param) {
+      const paramObj: any = JSON.parse(param);
+      if (paramObj && paramObj.dry_run) {
+        return YES;
+      }
+    }
+    return NO;
   }
 
   ngOnDestroy() {

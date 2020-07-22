@@ -51,7 +51,7 @@ Test Case - OIDC User Sign In
 Test Case - Create An New Project
     Sign In Harbor With OIDC User  ${HARBOR_URL}
     ${d}=    Get Current Date    result_format=%m%s
-    Create An New Project  test${d}
+    Create An New Project And Go Into Project  test${d}
     Close Browser
 
 Test Case - Delete A Project
@@ -73,7 +73,7 @@ Test Case - Generate User CLI Secret
     ${d}=    Get current Date  result_format=%m%s
     ${image}=  Set Variable  hello-world
     Sign In Harbor With OIDC User  ${HARBOR_URL}
-    Create An New Project  project${d}
+    Create An New Project And Go Into Project  project${d}
     ${secret_old}=  Get Secrete By API  ${HARBOR_URL}
     Push image  ip=${ip}  user=${OIDC_USERNAME}  pwd=${secret_old}  project=project${d}  image=${image}
     ${secret_new}=  Generate And Return Secret  ${HARBOR_URL}

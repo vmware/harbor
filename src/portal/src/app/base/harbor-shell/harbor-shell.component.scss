@@ -32,22 +32,6 @@ clr-vertical-nav {
             justify-content: space-between;
         }
     }
-    .vertical-nav-footer {
-        margin: 5px 23px;
-        a {
-            display: inline-block;
-            line-height: 0;
-            padding: 0;
-            height: 24px;
-            &:hover {
-                background: transparent;
-                cursor: default;
-            }
-            .api-button {
-                margin: 0;
-            }
-        }
-	}
 }
 .font-size-13 {
     font-size: 13px;
@@ -57,7 +41,7 @@ clr-vertical-nav {
     margin-right: 0;
     margin-left: 0;
     background-color: #0079b8;
-    height: 2rem;
+    min-height: 2rem;
     color: #fff;
     align-items: center;
     font-size: 0.5rem;
@@ -81,24 +65,4 @@ clr-vertical-nav {
 }
 .right {
     text-align: right;
-}
-
-.theme-select {
-    width: 5.4rem;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    height: 100%;
-    font-size: 14px;
-    letter-spacing: 1px;
-    cursor: pointer;
-    &:hover {
-        opacity: 1;
-    }
-    clr-icon {
-        position: static;
-        transform: none;
-        margin-right: .2rem;
-        min-width: 20px;
-    }
 }

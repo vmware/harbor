@@ -8,7 +8,7 @@
         <div *ngIf="readme" class="md-div" [innerHTML]="readme | markdown"></div>
         <div *ngIf="!readme">{{'HELM_CHART.NO_README' | translate}}</div>
     </div>
-    <div class="col-md-4 summary-container">
+    <div class="col-md-4 summary-container mt-1">
         <div class="col-md-12 content-group">
             <div>
                 <label>{{'HELM_CHART.OVERVIEW' | translate }}</label>
@@ -55,7 +55,7 @@
                     <tr>
                         <td class="left cmd-title">{{'HELM_CHART.ADD_REPO' | translate }}</td>
                         <td class="left cmd-content">
-                            <input class="cmd-content" type="text" [(ngModel)]="addCMD" #addCMDInput readonly />
+                            <input class="cmd-content clr-input" type="text" [(ngModel)]="addCMD" #addCMDInput readonly />
                         </td>
                         <td class="left">
                             <span>
@@ -67,7 +67,7 @@
                     <tr>
                         <td class="left cmd-title">{{'HELM_CHART.INSTALL_CHART' | translate }}</td>
                         <td class="left">
-                            <input class="cmd-content" type="text" [(ngModel)]="installCMD" #installCMDInput readonly />
+                            <input class="cmd-content clr-input" type="text" [(ngModel)]="installCMD" #installCMDInput readonly />
                         </td>
                         <td class="left">
                             <span>
@@ -79,7 +79,7 @@
                     <tr *ngIf="prov_ready">
                         <td class="left cmd-title">{{'HELM_CHART.VERIFY_CHART' | translate }}</td>
                         <td class="left">
-                            <input class="cmd-content" type="text" [(ngModel)]="verifyCMD" #verifyCMDInput readonly />
+                            <input class="cmd-content clr-input" type="text" [(ngModel)]="verifyCMD" #verifyCMDInput readonly />
                         </td>
                         <td class="left">
                             <span>

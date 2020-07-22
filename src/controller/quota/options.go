@@ -17,15 +17,23 @@ package quota
 // Option option for `Refresh` method of `Controller`
 type Option func(*Options)
 
-// Options options used by `Refresh` method of `Controller`
+// Options options used by `Refresh`, `Get`, `List` methods of `Controller`
 type Options struct {
-	IgnoreLimitation bool
+	IgnoreLimitation    bool
+	WithReferenceObject bool
 }
 
 // IgnoreLimitation set IgnoreLimitation for the Options
 func IgnoreLimitation(ignoreLimitation bool) func(*Options) {
 	return func(opts *Options) {
 		opts.IgnoreLimitation = ignoreLimitation
+	}
+}
+
+// WithReferenceObject set WithReferenceObject to true for the Options
+func WithReferenceObject() func(*Options) {
+	return func(opts *Options) {
+		opts.WithReferenceObject = true
 	}
 }
 

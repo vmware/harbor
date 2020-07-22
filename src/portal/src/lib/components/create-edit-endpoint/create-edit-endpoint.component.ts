@@ -32,10 +32,12 @@ import { Endpoint, PingEndpoint } from "../../services/interface";
 import { clone, compareValue, CURRENT_BASE_HREF, isEmptyObject } from "../../utils/utils";
 import { HttpClient } from "@angular/common/http";
 import { catchError } from "rxjs/operators";
+import { AppConfigService } from '../../../app/services/app-config.service';
 
 const FAKE_PASSWORD = "rjGcfuRu";
 const FAKE_JSON_KEY = "No Change";
 const METADATA_URL = CURRENT_BASE_HREF + "/replication/adapterinfos";
+const HELM_HUB = "helm-hub";
 @Component({
   selector: "hbr-create-edit-endpoint",
   templateUrl: "./create-edit-endpoint.component.html",
@@ -78,21 +80,31 @@ export class CreateEditEndpointComponent
     private errorHandler: ErrorHandler,
     private translateService: TranslateService,
     private ref: ChangeDetectorRef,
-    private http: HttpClient
+    private http: HttpClient,
+    private appConfigService: AppConfigService,
   ) {}
 
   ngOnInit(): void {
+    this.getAdapters();
+    this.getAdapterInfo();
+  }
+  getAdapters() {
     this.endpointService.getAdapters().subscribe(
       adapters => {
         this.adapterList = adapters || [];
+        if (!this.appConfigService.getConfig().with_chartmuseum) { // disable helm-hub
+          for (let i = 0; i < this.adapterList.length; i++) {
+            if (this.adapterList[i] === HELM_HUB) {
+              this.adapterList.splice(i, 1);
+            }
+          }
+        }
       },
       error => {
         this.errorHandler.error(error);
       }
     );
-    this.getAdapterInfo();
   }
-
   getAdapterInfo() {
     this.http.get(METADATA_URL)
         .pipe(catchError(error => observableThrowError(error)))
@@ -464,5 +476,9 @@ export class CreateEditEndpointComponent
       }
     }
     return changes;
+  }
+
+  getAdapterText(adapter: string): string {
+    return this.endpointService.getAdapterText(adapter);
   }
 }

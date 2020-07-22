@@ -76,10 +76,15 @@ class TestProjects(unittest.TestCase):
         self.assertEqual(artifacts[0].type, 'CHART')
         self.assertEqual(artifacts[0].tags[0].name, self.verion)
 
-        #5. Get chart(CA) by reference successfully;
+        #5.1 Get chart(CA) by reference successfully;
         artifact = self.artifact.get_reference_info(TestProjects.project_push_chart_name, self.repo_name, self.verion, **TestProjects.USER_CLIENT)
         self.assertEqual(artifact[0].type, 'CHART')
         self.assertEqual(artifact[0].tags[0].name, self.verion)
+
+        #5.2 Chart bundle can be pulled by ctr successfully;
+        #oci_ref = harbor_server+"/"+TestProjects.project_push_chart_name+"/"+self.repo_name+":"+self.verion
+        #library.containerd.ctr_images_pull(user_name, self.user_push_chart_password, oci_ref)
+        #library.containerd.ctr_images_list(oci_ref = oci_ref)
 
         #6. Get addtion successfully;
         addition_r = self.artifact.get_addition(TestProjects.project_push_chart_name, self.repo_name, self.verion, "readme.md", **TestProjects.USER_CLIENT)

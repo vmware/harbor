@@ -259,6 +259,8 @@ export class UserComponent implements OnInit, OnDestroy {
                 this.selectedRow = [];
                 this.currentTerm = '';
                 this.refresh();
+            }, error => {
+                this.msgHandler.handleError(error);
             });
         }
     }
@@ -287,7 +289,7 @@ export class UserComponent implements OnInit, OnDestroy {
             this.translate.get(message).subscribe(res =>
                 operateChanges(operMessage, OperationState.failure, res)
             );
-            return observableThrowError(message);
+            return observableThrowError(error);
         }));
     }
 

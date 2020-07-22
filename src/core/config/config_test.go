@@ -58,6 +58,9 @@ func TestConfig(t *testing.T) {
 	}
 	defer os.Setenv("TOKEN_PRIVATE_KEY_PATH", oriKeyPath)
 
+	os.Setenv("JOBSERVICE_URL", "http://myjob:8888")
+	os.Setenv("GC_TIME_WINDOW_HOURS", "0")
+
 	Init()
 
 	if err := Load(); err != nil {
@@ -135,17 +138,8 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get database: %v", err)
 	}
 
-	clairDB, err := ClairDB()
-	if err != nil {
-		t.Fatalf("failed to get clair DB %v", err)
-	}
 	defaultConfig := test.GetDefaultConfigMap()
 	Upload(defaultConfig)
-	assert.Equal(defaultConfig[common.ClairDB], clairDB.Database)
-	assert.Equal(defaultConfig[common.ClairDBUsername], clairDB.Username)
-	assert.Equal(defaultConfig[common.ClairDBPassword], clairDB.Password)
-	assert.Equal(defaultConfig[common.ClairDBHost], clairDB.Host)
-	assert.Equal(defaultConfig[common.ClairDBPort], clairDB.Port)
 
 	if InternalNotaryEndpoint() != "http://notary-server:4443" {
 		t.Errorf("Unexpected notary endpoint: %s", InternalNotaryEndpoint())
@@ -195,6 +189,8 @@ func TestConfig(t *testing.T) {
 	assert.Equal("http://127.0.0.1:8080", localCoreURL)
 
 	assert.True(NotificationEnable())
+	assert.Equal(int64(0), GetGCTimeWindow())
+
 }
 
 func currPath() string {
@@ -260,8 +256,10 @@ func TestOIDCSetting(t *testing.T) {
 		common.OIDCName:         "test",
 		common.OIDCEndpoint:     "https://oidc.test",
 		common.OIDCVerifyCert:   "true",
+		common.OIDCAutoOnboard:  "false",
 		common.OIDCScope:        "openid, profile",
 		common.OIDCGroupsClaim:  "my_group",
+		common.OIDCUserClaim:    "username",
 		common.OIDCCLientID:     "client",
 		common.OIDCClientSecret: "secret",
 		common.ExtEndpoint:      "https://harbor.test",
@@ -273,8 +271,10 @@ func TestOIDCSetting(t *testing.T) {
 	assert.Equal(t, "https://oidc.test", v.Endpoint)
 	assert.True(t, v.VerifyCert)
 	assert.Equal(t, "my_group", v.GroupsClaim)
+	assert.False(t, v.AutoOnboard)
 	assert.Equal(t, "client", v.ClientID)
 	assert.Equal(t, "secret", v.ClientSecret)
 	assert.Equal(t, "https://harbor.test/c/oidc/callback", v.RedirectURL)
 	assert.ElementsMatch(t, []string{"openid", "profile"}, v.Scope)
+	assert.Equal(t, "username", v.UserClaim)
 }

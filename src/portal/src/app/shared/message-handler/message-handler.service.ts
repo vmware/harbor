@@ -51,6 +51,19 @@ export class MessageHandlerService implements ErrorHandler {
             }
         }
     }
+    public handleErrorPopupUnauthorized(error: any | string): void {
+
+        if (!(error.statusCode || error.status)) {
+            return;
+        }
+        let msg = errorHandler(error);
+        let code = error.statusCode || error.status;
+        if (code === httpStatusCode.Unauthorized) {
+            this.msgService.announceAppLevelMessage(code, msg, AlertType.DANGER);
+            // Session is invalid now, clare session cache
+            this.session.clear();
+        }
+    }
 
     public handleReadOnly(): void {
         this.msgService.announceAppLevelMessage(503, 'REPO_READ_ONLY', AlertType.WARNING);

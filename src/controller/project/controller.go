@@ -22,7 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/project"
-	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
+	"github.com/goharbor/harbor/src/pkg/scan/allowlist"
 )
 
 var (
@@ -45,14 +45,14 @@ func NewController() Controller {
 	return &controller{
 		projectMgr:   project.Mgr,
 		metaMgr:      metamgr.NewDefaultProjectMetadataManager(),
-		whitelistMgr: whitelist.NewDefaultManager(),
+		allowlistMgr: allowlist.NewDefaultManager(),
 	}
 }
 
 type controller struct {
 	projectMgr   project.Manager
 	metaMgr      metamgr.ProjectMetadataManager
-	whitelistMgr whitelist.Manager
+	allowlistMgr allowlist.Manager
 }
 
 func (c *controller) Get(ctx context.Context, projectID int64, options ...Option) (*models.Project, error) {
@@ -114,23 +114,23 @@ func (c *controller) assembleProject(ctx context.Context, p *models.Project, opt
 		}
 	}
 
-	if opts.CVEWhitelist {
-		if p.ReuseSysCVEWhitelist() {
-			wl, err := c.whitelistMgr.GetSys()
+	if opts.CVEAllowlist {
+		if p.ReuseSysCVEAllowlist() {
+			wl, err := c.allowlistMgr.GetSys()
 			if err != nil {
-				log.Errorf("get system CVE whitelist failed, error: %v", err)
+				log.Errorf("get system CVE allowlist failed, error: %v", err)
 				return nil, err
 			}
 
 			wl.ProjectID = p.ProjectID
-			p.CVEWhitelist = *wl
+			p.CVEAllowlist = *wl
 		} else {
-			wl, err := c.whitelistMgr.Get(p.ProjectID)
+			wl, err := c.allowlistMgr.Get(p.ProjectID)
 			if err != nil {
 				return nil, err
 			}
 
-			p.CVEWhitelist = *wl
+			p.CVEAllowlist = *wl
 		}
 
 	}

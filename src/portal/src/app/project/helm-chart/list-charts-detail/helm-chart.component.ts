@@ -204,15 +204,15 @@ export class HelmChartComponent implements OnInit {
 
     return this.helmChartService.deleteHelmChart(this.projectName, chartName)
       .pipe(map(
-        () => operateChanges(operateMsg, OperationState.success),
+        () => operateChanges(operateMsg, OperationState.success)),
         catchError( error => {
           const message = errorHandlerFn(error);
           this.translateService.get(message).subscribe(res =>
             operateChanges(operateMsg, OperationState.failure, res)
           );
-          return observableThrowError(message);
+          return observableThrowError(error);
         }
-      )));
+      ));
   }
 
   deleteCharts(charts: HelmChartItem[]) {
@@ -220,12 +220,14 @@ export class HelmChartComponent implements OnInit {
     let chartsDelete$ = charts.map(chart => this.deleteChart(chart.name));
     forkJoin(chartsDelete$)
       .pipe(
-        catchError(err => observableThrowError(err)),
         finalize(() => {
           this.refresh();
           this.selectedRows = [];
         }))
-      .subscribe(() => { });
+      .subscribe(() => { }
+      , error => {
+        this.errorHandler.error(error);
+      });
   }
 
   downloadLatestVersion(evt?: Event, item?: HelmChartItem) {

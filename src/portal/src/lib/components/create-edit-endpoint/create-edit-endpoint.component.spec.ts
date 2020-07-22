@@ -22,6 +22,7 @@ import { of } from "rxjs";
 import { HttpClient } from "@angular/common/http";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { CURRENT_BASE_HREF } from "../../utils/utils";
+import { AppConfigService } from '../../../app/services/app-config.service';
 
 describe("CreateEditEndpointComponent (inline template)", () => {
   let mockData: Endpoint = {
@@ -263,6 +264,14 @@ describe("CreateEditEndpointComponent (inline template)", () => {
 
   let spy: jasmine.Spy;
   let spyAdapter: jasmine.Spy;
+  const mockAppConfigService = {
+    getConfig: () => {
+      return {
+        project_creation_restriction: "",
+        with_chartmuseum: ""
+      };
+    }
+  };
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [SharedModule, NoopAnimationsModule],
@@ -276,6 +285,7 @@ describe("CreateEditEndpointComponent (inline template)", () => {
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: EndpointService, useClass: EndpointDefaultService },
         { provide: HttpClient, useValue: fakedHttp },
+        { provide: AppConfigService, useValue: mockAppConfigService }
       ]
     });
   }));

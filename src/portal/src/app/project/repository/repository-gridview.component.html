@@ -30,12 +30,14 @@
                 <clr-dg-column [clrDgField]="'name'">{{'REPOSITORY.NAME' | translate}}</clr-dg-column>
                 <clr-dg-column>{{'REPOSITORY.ARTIFACTS_COUNT' | translate}}</clr-dg-column>
                 <clr-dg-column [clrDgSortBy]="'pull_count'">{{'REPOSITORY.PULL_COUNT' | translate}}</clr-dg-column>
+                <clr-dg-column [clrDgSortBy]="'update_time'">{{'REPOSITORY.LAST_MODIFIED' | translate}}</clr-dg-column>
                 <clr-dg-placeholder>{{'REPOSITORY.PLACEHOLDER' | translate }}</clr-dg-placeholder>
                 <clr-dg-row *ngFor="let r of repositories"  [clrDgItem]="r">
                     <clr-dg-cell><a href="javascript:void(0)" (click)="goIntoRepo(r)"><span *ngIf="withAdmiral" class="list-img"><img [src]="getImgLink(r)"/></span>{{r.name}}</a></clr-dg-cell>
                     <!-- to do -->
                     <clr-dg-cell>{{r.artifact_count}}</clr-dg-cell>
                     <clr-dg-cell>{{r.pull_count}}</clr-dg-cell>
+                    <clr-dg-cell>{{r.update_time | date:'short'}}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
                     <span *ngIf="totalCount">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}</span>
@@ -72,11 +74,15 @@
                     </div>
                     <div class="form-group">
                         <label>{{'REPOSITORY.ARTIFACTS_COUNT' | translate}}</label>
-                        <div>{{item.tags_count}}</div>
+                        <div>{{item.artifact_count}}</div>
                     </div>
                     <div class="form-group">
                         <label>{{'REPOSITORY.PULL_COUNT' | translate}}</label>
                         <div>{{item.pull_count}}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>{{'REPOSITORY.LAST_MODIFIED' | translate}}</label>
+                        <div>{{item.update_time | date: 'short'}}</div>
                     </div>
                 </div>
                 <div class="card-footer">

@@ -12,6 +12,22 @@ import { RequestQueryParams } from "./RequestQueryParams";
 import { Endpoint, ReplicationRule, PingEndpoint } from "./interface";
 import { catchError, map } from "rxjs/operators";
 
+const ADAPTERS_MAP = {
+  "ali-acr": "Alibaba ACR",
+  "aws-ecr": "Aws ECR",
+  "azure-acr": "Azure ACR",
+  "docker-hub": "Docker Hub",
+  "docker-registry": "Docker Registry",
+  "gitlab": "Gitlab",
+  "google-gcr": "Google GCR",
+  "harbor": "Harbor",
+  "helm-hub": "Helm Hub",
+  "huawei-SWR": "Huawei SWR",
+  "jfrog-artifactory": "jFrog Artifactory",
+  "quay-io": "Quay.io"
+};
+
+
 
 /**
  * Define the service methods to handle the endpoint related things.
@@ -125,6 +141,8 @@ export abstract class EndpointService {
   abstract getEndpointWithReplicationRules(
     endpointId: number | string
   ): Observable<any>;
+
+  abstract getAdapterText(adapter: string): string;
 }
 
 /**
@@ -247,5 +265,12 @@ export class EndpointDefaultService extends EndpointService {
       .get(requestUrl, HTTP_GET_OPTIONS)
       .pipe(map(response => response as ReplicationRule[])
       , catchError(error => observableThrowError(error)));
+  }
+
+  getAdapterText(adapter: string): string {
+    if (ADAPTERS_MAP && ADAPTERS_MAP[adapter]) {
+      return ADAPTERS_MAP[adapter];
+    }
+    return adapter;
   }
 }

@@ -159,7 +159,7 @@ export class ProjectQuotasComponent implements OnChanges {
       this.getQuotaList(this.currentState);
       this.errorHandler.info('QUOTA.SAVE_SUCCESS');
     }, error => {
-      this.errorHandler.error(error);
+      this.editQuotaDialog.inlineAlert.showInlineError(error);
       this.loading = false;
     });
   }
@@ -189,6 +189,7 @@ export class ProjectQuotasComponent implements OnChanges {
 
     this.quotaService.getQuotaList(QuotaType, pageNumber, this.pageSize, sortBy).pipe(finalize(() => {
       this.loading = false;
+      this.selectedRow = [];
     })).subscribe(res => {
       if (res.headers) {
         let xHeader: string = res.headers.get("X-Total-Count");

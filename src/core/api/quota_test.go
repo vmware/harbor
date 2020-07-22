@@ -23,7 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/quota/driver"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 	"github.com/goharbor/harbor/src/testing/mock"
 	drivertesting "github.com/goharbor/harbor/src/testing/pkg/quota/driver"

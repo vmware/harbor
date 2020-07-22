@@ -9,6 +9,7 @@
     <clr-dg-column [clrDgField]="'name'">{{'PROJECT.NAME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="accessLevelComparator">{{'PROJECT.ACCESS_LEVEL' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="roleComparator">{{'PROJECT.ROLE' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="typeComparator">{{'PROJECT.TYPE' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="repoCountComparator">{{'PROJECT.REPO_COUNT'| translate}}</clr-dg-column>
     <clr-dg-column *ngIf="withChartMuseum" [clrDgSortBy]="chartCountComparator">{{'PROJECT.CHART_COUNT'| translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="timeComparator">{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
@@ -18,6 +19,7 @@
         </clr-dg-cell>
         <clr-dg-cell>{{ (p.metadata.public === 'true' ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}}</clr-dg-cell>
         <clr-dg-cell>{{ roleInfo[p.current_user_role_id]? (roleInfo[p.current_user_role_id] | translate): "-"}}</clr-dg-cell>
+        <clr-dg-cell>{{projectTypeMap[p.registry_id ? 1 : 0]}}</clr-dg-cell>
         <clr-dg-cell>{{p.repo_count}}</clr-dg-cell>
         <clr-dg-cell *ngIf="withChartMuseum">{{p.chart_count}}</clr-dg-cell>
         <clr-dg-cell>{{p.creation_time | date: 'short'}}</clr-dg-cell>

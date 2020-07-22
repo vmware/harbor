@@ -18,9 +18,9 @@ export class Project {
       prevent_vul: string | boolean;
       severity: string;
       auto_scan: string | boolean;
-      reuse_sys_cve_whitelist?: string;
+      reuse_sys_cve_allowlist?: string;
     };
-    cve_whitelist?: object;
+    cve_allowlist?: object;
     constructor () {
         this.metadata.public = false;
         this.metadata.enable_content_trust = false;

@@ -20,7 +20,7 @@ import {ConfirmationDialogComponent} from '../../confirmation-dialog/confirmatio
 import {ConfirmationState, ConfirmationTargets} from '../../../entities/shared.const';
 import {ConfirmationAcknowledgement} from '../../confirmation-dialog/confirmation-state-message';
 import {
-    ConfigurationService, SystemCVEWhitelist, SystemInfo, SystemInfoService, VulnerabilityItem
+    ConfigurationService, SystemCVEAllowlist, SystemInfo, SystemInfoService, VulnerabilityItem
 } from '../../../services';
 import {forkJoin} from "rxjs";
 
@@ -42,8 +42,8 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
     private originalConfig: Configuration;
     downloadLink: string;
     robotTokenExpiration: string;
-    systemWhitelist: SystemCVEWhitelist;
-    systemWhitelistOrigin: SystemCVEWhitelist;
+    systemAllowlist: SystemCVEAllowlist;
+    systemAllowlistOrigin: SystemCVEAllowlist;
     cveIds: string;
     showAddModal: boolean = false;
     systemInfo: SystemInfo;
@@ -139,14 +139,14 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
      */
     public save(): void {
         let changes = this.getChanges();
-        if (!isEmpty(changes) || !compareValue(this.systemWhitelistOrigin, this.systemWhitelist)) {
+        if (!isEmpty(changes) || !compareValue(this.systemAllowlistOrigin, this.systemAllowlist)) {
             this.onGoing = true;
             let observables = [];
             if (!isEmpty(changes)) {
                 observables.push(this.configService.saveConfigurations(changes));
             }
-            if (!compareValue(this.systemWhitelistOrigin, this.systemWhitelist)) {
-                observables.push(this.systemInfoService.updateSystemWhitelist(this.systemWhitelist));
+            if (!compareValue(this.systemAllowlistOrigin, this.systemAllowlist)) {
+                observables.push(this.systemInfoService.updateSystemAllowlist(this.systemAllowlist));
             }
             forkJoin(observables).subscribe(result => {
                 this.onGoing = false;
@@ -163,8 +163,8 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
 
                     this.reloadSystemConfig.emit();
                 }
-                if (!compareValue(this.systemWhitelistOrigin, this.systemWhitelist)) {
-                    this.systemWhitelistOrigin = clone(this.systemWhitelist);
+                if (!compareValue(this.systemAllowlistOrigin, this.systemAllowlist)) {
+                    this.systemAllowlistOrigin = clone(this.systemAllowlist);
                 }
                 this.errorHandler.info('CONFIG.SAVE_SUCCESS');
             }, error => {
@@ -212,8 +212,8 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
             let changes = this.getChanges();
             this.reset(changes);
             this.initRobotToken();
-            if (!compareValue(this.systemWhitelistOrigin, this.systemWhitelist)) {
-                this.systemWhitelist = clone(this.systemWhitelistOrigin);
+            if (!compareValue(this.systemAllowlistOrigin, this.systemAllowlist)) {
+                this.systemAllowlist = clone(this.systemAllowlistOrigin);
             }
         }
     }
@@ -231,7 +231,7 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
      */
     public cancel(): void {
         let changes = this.getChanges();
-        if (!isEmpty(changes) || !compareValue(this.systemWhitelistOrigin, this.systemWhitelist)) {
+        if (!isEmpty(changes) || !compareValue(this.systemAllowlistOrigin, this.systemAllowlist)) {
             let msg = new ConfirmationMessage(
                 'CONFIG.CONFIRM_TITLE',
                 'CONFIG.CONFIRM_SUMMARY',
@@ -257,7 +257,7 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
 
     ngOnInit() {
         this.initRobotToken();
-        this.getSystemWhitelist();
+        this.getSystemAllowlist();
         this.getSystemInfo();
     }
 
@@ -266,22 +266,22 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
             .subscribe(systemInfo => this.systemInfo = systemInfo
                 , error => this.errorHandler.error(error));
     }
-    getSystemWhitelist() {
+    getSystemAllowlist() {
         this.onGoing = true;
-        this.systemInfoService.getSystemWhitelist()
-            .subscribe((systemWhitelist) => {
+        this.systemInfoService.getSystemAllowlist()
+            .subscribe((systemAllowlist) => {
                     this.onGoing = false;
-                    if (!systemWhitelist.items) {
-                        systemWhitelist.items = [];
+                    if (!systemAllowlist.items) {
+                        systemAllowlist.items = [];
                     }
-                    if (!systemWhitelist.expires_at) {
-                        systemWhitelist.expires_at = null;
+                    if (!systemAllowlist.expires_at) {
+                        systemAllowlist.expires_at = null;
                     }
-                    this.systemWhitelist = systemWhitelist;
-                    this.systemWhitelistOrigin = clone(systemWhitelist);
+                    this.systemAllowlist = systemAllowlist;
+                    this.systemAllowlistOrigin = clone(systemAllowlist);
                 }, error => {
                     this.onGoing = false;
-                    console.error('An error occurred during getting systemWhitelist');
+                    console.error('An error occurred during getting systemAllowlist');
                     // this.errorHandler.error(error);
                 }
             );
@@ -307,13 +307,13 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
     }
 
     deleteItem(index: number) {
-        this.systemWhitelist.items.splice(index, 1);
+        this.systemAllowlist.items.splice(index, 1);
     }
 
-    addToSystemWhitelist() {
-        // remove duplication and add to systemWhitelist
+    addToSystemAllowlist() {
+        // remove duplication and add to systemAllowlist
         let map = {};
-        this.systemWhitelist.items.forEach(item => {
+        this.systemAllowlist.items.forEach(item => {
             map[item.cve_id] = true;
         });
         this.cveIds.split(/[\n,]+/).forEach(id => {
@@ -321,7 +321,7 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
             cveObj.cve_id = id.trim();
             if (!map[cveObj.cve_id]) {
                 map[cveObj.cve_id] = true;
-                this.systemWhitelist.items.push(cveObj);
+                this.systemAllowlist.items.push(cveObj);
             }
         });
         // clear modal and close modal
@@ -329,8 +329,8 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
         this.showAddModal = false;
     }
 
-    get hasWhitelistChanged(): boolean {
-        return !compareValue(this.systemWhitelistOrigin, this.systemWhitelist);
+    get hasAllowlistChanged(): boolean {
+        return !compareValue(this.systemAllowlistOrigin, this.systemAllowlist);
     }
 
     isDisabled(): boolean {
@@ -339,34 +339,34 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
     }
 
     get expiresDate() {
-        if (this.systemWhitelist && this.systemWhitelist.expires_at) {
-            return new Date(this.systemWhitelist.expires_at * ONE_THOUSAND);
+        if (this.systemAllowlist && this.systemAllowlist.expires_at) {
+            return new Date(this.systemAllowlist.expires_at * ONE_THOUSAND);
         }
         return null;
     }
 
     set expiresDate(date) {
-        if (this.systemWhitelist && date) {
-            this.systemWhitelist.expires_at = Math.floor(date.getTime() / ONE_THOUSAND);
+        if (this.systemAllowlist && date) {
+            this.systemAllowlist.expires_at = Math.floor(date.getTime() / ONE_THOUSAND);
         }
     }
 
     get neverExpires(): boolean {
-        return !(this.systemWhitelist && this.systemWhitelist.expires_at);
+        return !(this.systemAllowlist && this.systemAllowlist.expires_at);
     }
 
     set neverExpires(flag) {
         if (flag) {
-            this.systemWhitelist.expires_at = null;
+            this.systemAllowlist.expires_at = null;
             this.systemInfoService.resetDateInput(this.dateInput);
         } else {
-            this.systemWhitelist.expires_at = Math.floor(new Date().getTime() / ONE_THOUSAND);
+            this.systemAllowlist.expires_at = Math.floor(new Date().getTime() / ONE_THOUSAND);
         }
     }
 
     get hasExpired(): boolean {
-        if (this.systemWhitelistOrigin && this.systemWhitelistOrigin.expires_at) {
-            return new Date().getTime() > this.systemWhitelistOrigin.expires_at * ONE_THOUSAND;
+        if (this.systemAllowlistOrigin && this.systemAllowlistOrigin.expires_at) {
+            return new Date().getTime() > this.systemAllowlistOrigin.expires_at * ONE_THOUSAND;
         }
         return false;
     }

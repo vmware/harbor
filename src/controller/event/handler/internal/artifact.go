@@ -16,26 +16,28 @@ package internal
 
 import (
 	"context"
-	beegorm "github.com/astaxie/beego/orm"
+	"time"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"time"
 )
 
 // Handler preprocess artifact event data
 type Handler struct {
+	Context func() context.Context
 }
 
 // Handle ...
 func (a *Handler) Handle(value interface{}) error {
 	switch v := value.(type) {
 	case *event.PullArtifactEvent:
-		return a.handle(v.ArtifactEvent)
+		return a.onPull(a.Context(), v.ArtifactEvent)
+	case *event.PushArtifactEvent:
+		return a.onPush(a.Context(), v.ArtifactEvent)
 	default:
 		log.Errorf("Can not handler this event type! %#v", v)
 	}
@@ -47,8 +49,7 @@ func (a *Handler) IsStateful() bool {
 	return false
 }
 
-func (a *Handler) handle(event *event.ArtifactEvent) error {
-	ctx := orm.NewContext(context.Background(), beegorm.NewOrm())
+func (a *Handler) onPull(ctx context.Context, event *event.ArtifactEvent) error {
 	go func() { a.updatePullTime(ctx, event) }()
 	go func() { a.addPullCount(ctx, event) }()
 	return nil
@@ -80,4 +81,14 @@ func (a *Handler) addPullCount(ctx context.Context, event *event.ArtifactEvent) 
 		log.Debugf("failed to add pull count repository %d, %v", event.Artifact.RepositoryID, err)
 	}
 	return
+}
+
+func (a *Handler) onPush(ctx context.Context, event *event.ArtifactEvent) error {
+	go func() {
+		if err := autoScan(ctx, &artifact.Artifact{Artifact: *event.Artifact}); err != nil {
+			log.Errorf("scan artifact %s@%s failed, error: %v", event.Artifact.RepositoryName, event.Artifact.Digest, err)
+		}
+	}()
+
+	return nil
 }

@@ -118,6 +118,12 @@ func (m *managerTestSuite) TestRemoveAllFrom() {
 	m.Require().Nil(err)
 }
 
+func (m *managerTestSuite) TestRemoveFromAllArtifacts() {
+	m.dao.On("DeleteReferences").Return(2, nil)
+	err := m.mgr.RemoveFromAllArtifacts(nil, 1)
+	m.Require().Nil(err)
+}
+
 func TestManager(t *testing.T) {
 	suite.Run(t, &managerTestSuite{})
 }

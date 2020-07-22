@@ -161,10 +161,20 @@
             <clr-dg-row *ngFor="let artifact of artifactList" [clrDgItem]="artifact" >
                 <clr-dg-cell class="truncated flex-max-width">
                     <div class="cell white-normal">
-                        <img class="artifact-icon" [title]="artifact.type"
+                        <img *ngIf="artifact?.type !== 'IMAGE';else elseBlock" class="artifact-icon" [title]="artifact.type"
                             [src]="artifact.type | selectArtifactIcon" />
-                        &nbsp; &nbsp;
-                        <a href="javascript:void(0)" class="max-width-100" (click)="goIntoArtifactSummaryPage(artifact)"
+                        <ng-template #elseBlock>
+                            <clr-tooltip>
+                                <div clrTooltipTrigger class="level-border">
+                                    <img class="artifact-icon" [title]="artifact.type"
+                                         [src]="artifact.type | selectArtifactIcon" />
+                                </div>
+                                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                                    <span>Docker and the Docker logo are trademarks or registered trademarks of Docker, Inc. in the United States and/or other countries.</span>
+                                </clr-tooltip-content>
+                            </clr-tooltip>
+                        </ng-template>
+                        <a href="javascript:void(0)" class="max-width-100 margin-left-5" (click)="goIntoArtifactSummaryPage(artifact)"
                             title="{{artifact.digest}}">
                             {{ artifact.digest  | slice:0:15}}</a>
                         <clr-tooltip *ngIf="artifact?.references && artifact?.references?.length">
@@ -254,7 +264,7 @@
                         <span *ngIf="!hasVul(artifact)">
                             {{'ARTIFACT.SCAN_UNSUPPORTED' | translate}}
                         </span>
-                        <hbr-vulnerability-bar *ngIf="hasVul(artifact)" [scanner]="handleScanOverview(artifact.scan_overview)?.scanner"
+                        <hbr-vulnerability-bar (scanFinished)="scanFinished($event)"  *ngIf="hasVul(artifact)" [scanner]="handleScanOverview(artifact.scan_overview)?.scanner"
                             (submitFinish)="submitFinish($event)" [projectName]="projectName" [repoName]="repoName"
                             [artifactDigest]="artifact.digest" [summary]="handleScanOverview(artifact.scan_overview)">
                         </hbr-vulnerability-bar>
@@ -289,7 +299,7 @@
                             <div class="trigger-item">
                                 <clr-signpost>
                                     <button class="btn btn-link" clrSignpostTrigger>...</button>
-                                    <clr-signpost-content [clrPosition]="'left-top'" *clrIfOpen>
+                                    <clr-signpost-content [clrPosition]="'top-middle'" *clrIfOpen>
                                         <div>
                                             <hbr-label-piece *ngFor="let label of artifact.labels" [label]="label">
                                             </hbr-label-piece>

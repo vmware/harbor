@@ -9,6 +9,8 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { InlineAlertComponent } from "../../../../shared/inline-alert/inline-alert.component";
 import { ImmutableRetentionRule } from "../../tag-retention/retention";
+import { ErrorHandler } from '../../../../../lib/utils/error-handler';
+
 describe('AddRuleComponent', () => {
   let component: AddRuleComponent;
   let fixture: ComponentFixture<AddRuleComponent>;
@@ -36,7 +38,9 @@ describe('AddRuleComponent', () => {
       ]
     }
   };
-
+  const mockErrorHandler = {
+    handleErrorPopupUnauthorized: () => {}
+  }
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [AddRuleComponent, InlineAlertComponent],
@@ -51,7 +55,11 @@ describe('AddRuleComponent', () => {
         TranslateModule.forRoot()
       ],
       providers: [
-        ImmutableTagService
+        ImmutableTagService,
+        ErrorHandler,
+        {
+          provide: ErrorHandler, useValue: mockErrorHandler
+        }
       ]
     })
       .compileComponents();

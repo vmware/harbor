@@ -3,7 +3,7 @@ import {Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
 import {compareValue, clone} from '../../utils/utils';
 import {ProjectService} from '../../services/project.service';
 import {ErrorHandler} from '../../utils/error-handler/error-handler';
-import {State, SystemCVEWhitelist} from '../../services/interface';
+import {State, SystemCVEAllowlist} from '../../services/interface';
 
 import {ConfirmationState, ConfirmationTargets} from '../../entities/shared.const';
 import {ConfirmationMessage} from '../confirmation-dialog/confirmation-message';
@@ -76,17 +76,17 @@ export class ProjectPolicyConfigComponent implements OnInit {
         {severity: 'low', severityLevel: 'VULNERABILITY.SEVERITY.LOW'},
         {severity: 'none', severityLevel: 'VULNERABILITY.SEVERITY.NONE'},
     ];
-    userSystemWhitelist: boolean = true;
+    userSystemAllowlist: boolean = true;
     showAddModal: boolean = false;
-    systemWhitelist: SystemCVEWhitelist;
+    systemAllowlist: SystemCVEAllowlist;
     cveIds: string;
     systemExpiresDate: Date;
     systemExpiresDateString: string;
-    userProjectWhitelist = false;
-    systemWhitelistOrProjectWhitelist: string;
-    systemWhitelistOrProjectWhitelistOrigin: string;
-    projectWhitelist;
-    projectWhitelistOrigin;
+    userProjectAllowlist = false;
+    systemAllowlistOrProjectAllowlist: string;
+    systemAllowlistOrProjectAllowlistOrigin: string;
+    projectAllowlist;
+    projectAllowlistOrigin;
 
     constructor(
         private errorHandler: ErrorHandler,
@@ -114,16 +114,16 @@ export class ProjectPolicyConfigComponent implements OnInit {
         // retrive project level policy data
         this.retrieve();
         this.getPermission();
-        this.getSystemWhitelist();
+        this.getSystemAllowlist();
     }
 
-    getSystemWhitelist() {
-        this.systemInfoService.getSystemWhitelist()
-            .subscribe((systemWhitelist) => {
-                    if (systemWhitelist) {
-                        this.systemWhitelist = systemWhitelist;
-                        if (this.systemWhitelist.expires_at) {
-                            this.systemExpiresDate = new Date(this.systemWhitelist.expires_at * ONE_THOUSAND);
+    getSystemAllowlist() {
+        this.systemInfoService.getSystemAllowlist()
+            .subscribe((systemAllowlist) => {
+                    if (systemAllowlist) {
+                        this.systemAllowlist = systemAllowlist;
+                        if (this.systemAllowlist.expires_at) {
+                            this.systemExpiresDate = new Date(this.systemAllowlist.expires_at * ONE_THOUSAND);
                             setTimeout( () => {
                                 this.systemExpiresDateString = this.dateSystemInput.nativeElement.value;
                             }, 100);
@@ -151,27 +151,27 @@ export class ProjectPolicyConfigComponent implements OnInit {
                 response => {
                     this.orgProjectPolicy.initByProject(response);
                     this.projectPolicy.initByProject(response);
-                    // get projectWhitelist
-                    if (!response.cve_whitelist) {
-                       response.cve_whitelist = {
+                    // get projectAllowlist
+                    if (!response.cve_allowlist) {
+                       response.cve_allowlist = {
                             items: [],
                             expires_at: null
                         };
                     }
-                    if (!response.cve_whitelist['items']) {
-                        response.cve_whitelist['items'] = [];
+                    if (!response.cve_allowlist['items']) {
+                        response.cve_allowlist['items'] = [];
                     }
-                    if (!response.cve_whitelist['expires_at']) {
-                        response.cve_whitelist['expires_at'] = null;
+                    if (!response.cve_allowlist['expires_at']) {
+                        response.cve_allowlist['expires_at'] = null;
                     }
-                    if (!response.metadata.reuse_sys_cve_whitelist) {
-                        response.metadata.reuse_sys_cve_whitelist = "true";
+                    if (!response.metadata.reuse_sys_cve_allowlist) {
+                        response.metadata.reuse_sys_cve_allowlist = "true";
                     }
-                    if (response && response.cve_whitelist) {
-                        this.projectWhitelist = clone(response.cve_whitelist);
-                        this.projectWhitelistOrigin = clone(response.cve_whitelist);
-                        this.systemWhitelistOrProjectWhitelist = response.metadata.reuse_sys_cve_whitelist;
-                        this.systemWhitelistOrProjectWhitelistOrigin = response.metadata.reuse_sys_cve_whitelist;
+                    if (response && response.cve_allowlist) {
+                        this.projectAllowlist = clone(response.cve_allowlist);
+                        this.projectAllowlistOrigin = clone(response.cve_allowlist);
+                        this.systemAllowlistOrProjectAllowlist = response.metadata.reuse_sys_cve_allowlist;
+                        this.systemAllowlistOrProjectAllowlistOrigin = response.metadata.reuse_sys_cve_allowlist;
                     }
                 }, error => this.errorHandler.error(error));
     }
@@ -193,15 +193,15 @@ export class ProjectPolicyConfigComponent implements OnInit {
     }
 
     save() {
-        if (!this.hasChanges() && !this.hasWhitelistChanged) {
+        if (!this.hasChanges() && !this.hasAllowlistChanged) {
             return;
         }
         this.onGoing = true;
         this.projectService.updateProjectPolicy(
             this.projectId,
             this.projectPolicy,
-            this.systemWhitelistOrProjectWhitelist,
-            this.projectWhitelist)
+            this.systemAllowlistOrProjectAllowlist,
+            this.projectAllowlist)
             .subscribe(() => {
                 this.onGoing = false;
                 this.translate.get('CONFIG.SAVE_SUCCESS').subscribe((res: string) => {
@@ -233,49 +233,49 @@ export class ProjectPolicyConfigComponent implements OnInit {
         if (ack && ack.source === ConfirmationTargets.CONFIG &&
             ack.state === ConfirmationState.CONFIRMED) {
             this.reset();
-            if (this.hasWhitelistChanged) {
-                this.projectWhitelist = clone(this.projectWhitelistOrigin);
-                this.systemWhitelistOrProjectWhitelist = this.systemWhitelistOrProjectWhitelistOrigin;
+            if (this.hasAllowlistChanged) {
+                this.projectAllowlist = clone(this.projectAllowlistOrigin);
+                this.systemAllowlistOrProjectAllowlist = this.systemAllowlistOrProjectAllowlistOrigin;
             }
         }
     }
 
-    isUseSystemWhitelist(): boolean {
-        return this.systemWhitelistOrProjectWhitelist === 'true';
+    isUseSystemAllowlist(): boolean {
+        return this.systemAllowlistOrProjectAllowlist === 'true';
     }
 
     deleteItem(index: number) {
-        this.projectWhitelist.items.splice(index, 1);
+        this.projectAllowlist.items.splice(index, 1);
     }
 
     addSystem() {
         this.showAddModal = false;
-        if (!(this.systemWhitelist && this.systemWhitelist.items && this.systemWhitelist.items.length > 0)) {
+        if (!(this.systemAllowlist && this.systemAllowlist.items && this.systemAllowlist.items.length > 0)) {
             return;
         }
-        if (this.projectWhitelist && !this.projectWhitelist.items) {
-            this.projectWhitelist.items = [];
+        if (this.projectAllowlist && !this.projectAllowlist.items) {
+            this.projectAllowlist.items = [];
         }
-        // remove duplication and add to projectWhitelist
+        // remove duplication and add to projectAllowlist
         let map = {};
-        this.projectWhitelist.items.forEach(item => {
+        this.projectAllowlist.items.forEach(item => {
             map[item.cve_id] = true;
         });
-        this.systemWhitelist.items.forEach(item => {
+        this.systemAllowlist.items.forEach(item => {
             if (!map[item.cve_id]) {
                 map[item.cve_id] = true;
-                this.projectWhitelist.items.push(item);
+                this.projectAllowlist.items.push(item);
             }
         });
     }
 
-    addToProjectWhitelist() {
-        if (this.projectWhitelist && !this.projectWhitelist.items) {
-            this.projectWhitelist.items = [];
+    addToProjectAllowlist() {
+        if (this.projectAllowlist && !this.projectAllowlist.items) {
+            this.projectAllowlist.items = [];
         }
-        // remove duplication and add to projectWhitelist
+        // remove duplication and add to projectAllowlist
         let map = {};
-        this.projectWhitelist.items.forEach(item => {
+        this.projectAllowlist.items.forEach(item => {
             map[item.cve_id] = true;
         });
         this.cveIds.split(/[\n,]+/).forEach(id => {
@@ -283,7 +283,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
             cveObj.cve_id = id.trim();
             if (!map[cveObj.cve_id]) {
                 map[cveObj.cve_id] = true;
-                this.projectWhitelist.items.push(cveObj);
+                this.projectAllowlist.items.push(cveObj);
             }
         });
         // clear modal and close modal
@@ -291,9 +291,9 @@ export class ProjectPolicyConfigComponent implements OnInit {
         this.showAddModal = false;
     }
 
-    get hasWhitelistChanged(): boolean {
-        return !(compareValue(this.projectWhitelist, this.projectWhitelistOrigin)
-            && this.systemWhitelistOrProjectWhitelistOrigin === this.systemWhitelistOrProjectWhitelist);
+    get hasAllowlistChanged(): boolean {
+        return !(compareValue(this.projectAllowlist, this.projectAllowlistOrigin)
+            && this.systemAllowlistOrProjectAllowlistOrigin === this.systemAllowlistOrProjectAllowlist);
     }
 
     isDisabled(): boolean {
@@ -302,34 +302,34 @@ export class ProjectPolicyConfigComponent implements OnInit {
     }
 
     get expiresDate() {
-        if (this.systemWhitelistOrProjectWhitelist === 'true') {
-            if (this.systemWhitelist && this.systemWhitelist.expires_at) {
-                return new Date(this.systemWhitelist.expires_at * ONE_THOUSAND);
+        if (this.systemAllowlistOrProjectAllowlist === 'true') {
+            if (this.systemAllowlist && this.systemAllowlist.expires_at) {
+                return new Date(this.systemAllowlist.expires_at * ONE_THOUSAND);
             }
         } else {
-            if (this.projectWhitelist && this.projectWhitelist.expires_at) {
-                return new Date(this.projectWhitelist.expires_at * ONE_THOUSAND);
+            if (this.projectAllowlist && this.projectAllowlist.expires_at) {
+                return new Date(this.projectAllowlist.expires_at * ONE_THOUSAND);
             }
         }
         return null;
     }
 
     set expiresDate(date) {
-        if (this.systemWhitelistOrProjectWhitelist === 'false') {
-            if (this.projectWhitelist && date) {
-                this.projectWhitelist.expires_at = Math.floor(date.getTime() / ONE_THOUSAND);
+        if (this.systemAllowlistOrProjectAllowlist === 'false') {
+            if (this.projectAllowlist && date) {
+                this.projectAllowlist.expires_at = Math.floor(date.getTime() / ONE_THOUSAND);
             }
         }
     }
 
     get neverExpires(): boolean {
-        if (this.systemWhitelistOrProjectWhitelist === 'true') {
-            if (this.systemWhitelist && this.systemWhitelist.expires_at) {
-                return !(this.systemWhitelist && this.systemWhitelist.expires_at);
+        if (this.systemAllowlistOrProjectAllowlist === 'true') {
+            if (this.systemAllowlist && this.systemAllowlist.expires_at) {
+                return !(this.systemAllowlist && this.systemAllowlist.expires_at);
             }
         } else {
-            if (this.projectWhitelist && this.projectWhitelist.expires_at) {
-                return !(this.projectWhitelist && this.projectWhitelist.expires_at);
+            if (this.projectAllowlist && this.projectAllowlist.expires_at) {
+                return !(this.projectAllowlist && this.projectAllowlist.expires_at);
             }
         }
         return true;
@@ -337,21 +337,21 @@ export class ProjectPolicyConfigComponent implements OnInit {
 
     set neverExpires(flag) {
         if (flag) {
-            this.projectWhitelist.expires_at = null;
+            this.projectAllowlist.expires_at = null;
             this.systemInfoService.resetDateInput(this.dateInput);
         } else {
-            this.projectWhitelist.expires_at = Math.floor(new Date().getTime() / ONE_THOUSAND);
+            this.projectAllowlist.expires_at = Math.floor(new Date().getTime() / ONE_THOUSAND);
         }
     }
 
     get hasExpired(): boolean {
-        if (this.systemWhitelistOrProjectWhitelist === 'true') {
-            if (this.systemWhitelist && this.systemWhitelist.expires_at) {
-                return new Date().getTime() > this.systemWhitelist.expires_at * ONE_THOUSAND;
+        if (this.systemAllowlistOrProjectAllowlist === 'true') {
+            if (this.systemAllowlist && this.systemAllowlist.expires_at) {
+                return new Date().getTime() > this.systemAllowlist.expires_at * ONE_THOUSAND;
             }
         } else {
-            if (this.projectWhitelistOrigin && this.projectWhitelistOrigin.expires_at) {
-                return new Date().getTime() > this.projectWhitelistOrigin.expires_at * ONE_THOUSAND;
+            if (this.projectAllowlistOrigin && this.projectAllowlistOrigin.expires_at) {
+                return new Date().getTime() > this.projectAllowlistOrigin.expires_at * ONE_THOUSAND;
             }
         }
         return false;

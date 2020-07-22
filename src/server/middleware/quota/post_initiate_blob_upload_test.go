@@ -20,7 +20,8 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/pkg/blob"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -60,6 +61,7 @@ func (suite *PostInitiateBlobUploadMiddlewareTestSuite) TestMiddleware() {
 			f := args.Get(4).(func() error)
 			f()
 		})
+		mock.OnAnything(suite.quotaController, "GetByRef").Return(&quota.Quota{}, nil).Once()
 
 		req := httptest.NewRequest(http.MethodPost, url, nil)
 		rr := httptest.NewRecorder()

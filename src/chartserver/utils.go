@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -35,62 +36,69 @@ func extractError(content []byte) (text string, err error) {
 }
 
 // Parse the redis configuration to the beego cache pattern
-// Config pattern is "address:port[,weight,password,db_index]"
-func parseRedisConfig(redisConfigV string) (string, error) {
+// redis://:password@host:6379/1
+// redis+sentinel://anonymous:password@host1:26379,host2:26379/mymaster/1
+func parseRedisConfig(redisConfigV string) (map[string]string, error) {
 	if len(redisConfigV) == 0 {
-		return "", errors.New("empty redis config")
+		return nil, errors.New("empty redis config")
 	}
 
 	redisConfig := make(map[string]string)
 	redisConfig["key"] = cacheCollectionName
 
-	// Try best to parse the configuration segments.
-	// If the related parts are missing, assign default value.
-	// The default database index for UI process is 0.
-	configSegments := strings.Split(redisConfigV, ",")
-	for i, segment := range configSegments {
-		if i > 3 {
-			// ignore useless segments
-			break
-		}
-
-		switch i {
-		// address:port
-		case 0:
-			redisConfig["conn"] = segment
-		// password, may not exist
-		case 2:
-			redisConfig["password"] = segment
-		// database index, may not exist
-		case 3:
-			redisConfig["dbNum"] = segment
-		}
+	if strings.Index(redisConfigV, "//") < 0 {
+		redisConfigV = "redis://" + redisConfigV
 	}
-
-	// Assign default value
-	if len(redisConfig["dbNum"]) == 0 {
-		redisConfig["dbNum"] = "0"
-	}
-
-	// Try to validate the connection address
-	fullAddr := redisConfig["conn"]
-	if strings.Index(fullAddr, "://") == -1 {
-		// Append schema
-		fullAddr = fmt.Sprintf("redis://%s", fullAddr)
-	}
-	// Validate it by url
-	_, err := url.Parse(fullAddr)
+	u, err := url.Parse(redisConfigV)
 	if err != nil {
-		return "", err
+		return nil, fmt.Errorf("bad _REDIS_URL:%s", redisConfigV)
+	}
+	if u.Scheme == "redis+sentinel" {
+		ps := strings.Split(u.Path, "/")
+		if len(ps) < 2 {
+			return nil, fmt.Errorf("bad redis sentinel url: no master name, %s", redisConfigV)
+		}
+		if _, err := strconv.Atoi(ps[1]); err == nil {
+			return nil, fmt.Errorf("bad redis sentinel url: master name should not be a number, %s", redisConfigV)
+		}
+		redisConfig["conn"] = u.Host
+
+		if u.User != nil {
+			password, isSet := u.User.Password()
+			if isSet {
+				redisConfig["password"] = password
+			}
+		}
+		if len(ps) > 2 {
+			if _, err := strconv.Atoi(ps[2]); err != nil {
+				return nil, fmt.Errorf("bad redis sentinel url: bad db, %s", redisConfigV)
+			}
+			redisConfig["dbNum"] = ps[2]
+		} else {
+			redisConfig["dbNum"] = "0"
+		}
+		redisConfig["masterName"] = ps[1]
+	} else if u.Scheme == "redis" {
+		redisConfig["conn"] = u.Host // host
+		if u.User != nil {
+			password, isSet := u.User.Password()
+			if isSet {
+				redisConfig["password"] = password
+			}
+		}
+		if len(u.Path) > 1 {
+			if _, err := strconv.Atoi(u.Path[1:]); err != nil {
+				return nil, fmt.Errorf("bad redis url: bad db, %s", redisConfigV)
+			}
+			redisConfig["dbNum"] = u.Path[1:]
+		} else {
+			redisConfig["dbNum"] = "0"
+		}
+	} else {
+		return nil, fmt.Errorf("bad redis scheme, %s", redisConfigV)
 	}
 
-	// Convert config map to string
-	cfgData, err := json.Marshal(redisConfig)
-	if err != nil {
-		return "", err
-	}
-
-	return string(cfgData), nil
+	return redisConfig, nil
 }
 
 // What's the cache driver if it is set
@@ -121,9 +129,18 @@ func getCacheConfig() (*ChartCacheConfig, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse redis configurations from '%s' with error: %s", redisCfg, err)
 	}
+	if _, isSet := redisCfg["masterName"]; isSet {
+		driver = "redis_sentinel"
+	}
+
+	// Convert config map to string
+	cfgData, err := json.Marshal(redisCfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse redis configurations from '%s' with error: %s", redisCfg, err)
+	}
 
 	return &ChartCacheConfig{
 		DriverType: driver,
-		Config:     redisCfg,
+		Config:     string(cfgData),
 	}, nil
 }

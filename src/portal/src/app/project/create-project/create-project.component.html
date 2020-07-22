@@ -13,7 +13,7 @@
                         <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
                     </div>
                     <clr-control-error *ngIf="!isNameValid" class="tooltip-content">
-                        {{ nameTooltipText | translate }}
+                        <span id="name-error">{{ nameTooltipText | translate }}</span>
                     </clr-control-error>
                 </div>
             </div>
@@ -41,7 +41,7 @@
                     </clr-tooltip>
                 </label>
                 <div class="clr-control-container" [class.clr-error]="(projectStorageLimit.invalid && (projectStorageLimit.dirty || projectStorageLimit.touched))||projectStorageLimit.errors">
-                    <input type="text" id="create_project_storage_limit" [(ngModel)]="storageLimit" name="create_project_storage_limit" class="mr-10 clr-input"
+                    <input type="text" id="create_project_storage_limit" [(ngModel)]="storageLimit" name="create_project_storage_limit" class="mr-10 clr-input width-182"
                         #projectStorageLimit="ngModel" autocomplete="off">
                     <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                     <div class="clr-select-wrapper">
@@ -58,10 +58,49 @@
                     </clr-control-error>
                 </div>
             </div>
+            <div class="clr-form-control" *ngIf="isSystemAdmin">
+                <label for="create_project_storage_limit" class="clr-control-label">{{ 'PROJECT.PROXY_CACHE' | translate }}
+                    <clr-tooltip>
+                        <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                        <clr-tooltip-content clrPosition="bottom-left" clrSize="lg" *clrIfOpen>
+                            <span>{{ 'PROJECT.PROXY_CACHE_TOOLTIP' | translate }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </label>
+                <clr-toggle-wrapper class="mt-02">
+                        <input type="checkbox" clrToggle name="proxy-cache" id="proxy-cache"
+                               [(ngModel)]="enableProxyCache"/>
+                </clr-toggle-wrapper>
+                <div *ngIf="enableProxyCache" class="clr-select-wrapper ml-1">
+                    <select class="width-164" id="registry" name="registry" [(ngModel)]="project.registry_id">
+                        <option class="display-none" value=""></option>
+                        <option *ngFor="let r of registries" [value]="r.id">{{r.name}}-{{r.url}}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="clr-form-control mt-0" *ngIf="isSystemAdmin && enableProxyCache">
+                <label for="create_project_storage_limit" class="clr-control-label"></label>
+                <div class="clr-control-container input-width">
+                    <div class="space-between" *ngIf=" enableProxyCache && !registries.length" >
+                        <span class="alert-label">{{"REPLICATION.NO_ENDPOINT_INFO" | translate}}</span>
+                        <a class="alert-label go-link" routerLink="/harbor/registries">{{'REPLICATION.ENDPOINTS' | translate}}</a>
+                    </div>
+                </div>
+            </div>
+            <div class="clr-form-control mt-05" *ngIf="isSystemAdmin && enableProxyCache">
+                <label for="create_project_storage_limit" class="clr-control-label"></label>
+                <div class="clr-control-container">
+                    <div class="clr-input-wrapper">
+                        <label class="clr-control-label endpoint">{{ 'PROJECT.ENDPOINT' | translate }}</label>
+                        <input placeholder="http(s)://192.168.1.1" [value]="getEndpoint()" readonly class="clr-input" type="text" id="endpoint"
+                               autocomplete="off">
+                    </div>
+                </div>
+            </div>
         </form>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
-        <button type="button" class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
+        <button id="new-project-cancel" type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
+        <button id="new-project-ok" type="button" class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
     </div>
 </clr-modal>

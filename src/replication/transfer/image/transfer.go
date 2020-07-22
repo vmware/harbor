@@ -16,12 +16,13 @@ package image
 
 import (
 	"errors"
+	"net/http"
+	"strings"
+
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"net/http"
-	"strings"
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema2"
@@ -243,12 +244,13 @@ func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo
 	// the media type of the layer or config can be "application/octet-stream",
 	// schema1.MediaTypeManifestLayer, schema2.MediaTypeLayer, schema2.MediaTypeImageConfig
 	default:
-		return t.copyBlob(srcRepo, dstRepo, digest)
+		return t.copyBlob(srcRepo, dstRepo, digest, content.Size)
 	}
 }
 
 // copy the layer or artifact config from the source registry to destination
-func (t *transfer) copyBlob(srcRepo, dstRepo, digest string) error {
+// the size parameter is taken from manifests.
+func (t *transfer) copyBlob(srcRepo, dstRepo, digest string, sizeFromDescriptor int64) error {
 	if t.shouldStop() {
 		return nil
 	}
@@ -269,6 +271,12 @@ func (t *transfer) copyBlob(srcRepo, dstRepo, digest string) error {
 		return err
 	}
 	defer data.Close()
+	// get size 0 from PullBlob, use size from distribution.Descriptor instead.
+	if size == 0 {
+		size = sizeFromDescriptor
+		t.logger.Debugf("the blob size from remote registry is 0, use size %d from manifests instead", size)
+	}
+
 	if err = t.dst.PushBlob(dstRepo, digest, size, data); err != nil {
 		t.logger.Errorf("failed to pushing the blob %s: %v", digest, err)
 		return err

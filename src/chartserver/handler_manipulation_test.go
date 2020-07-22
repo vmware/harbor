@@ -78,11 +78,11 @@ func TestGetChartVersionSummary(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if chartV.GetName() != "harbor" {
-		t.Fatalf("expect chart name 'harbor' but got '%s'", chartV.GetName())
+	if chartV.Name != "harbor" {
+		t.Fatalf("expect chart name 'harbor' but got '%s'", chartV.Name)
 	}
 
-	if chartV.GetVersion() != "0.2.0" {
-		t.Fatalf("expect chart version '0.2.0' but got '%s'", chartV.GetVersion())
+	if chartV.Version != "0.2.0" {
+		t.Fatalf("expect chart version '0.2.0' but got '%s'", chartV.Version)
 	}
 }

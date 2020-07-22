@@ -4,7 +4,24 @@ import importlib
 import os
 from collections import deque
 
-from migrations import MIGRATION_BASE_DIR
+class MigratioNotFound(Exception): ...
+
+class MigrationVersion:
+    '''
+    The version used to migration
+
+    Arttribute:
+        name(str): version name like `1.0.0`
+        module: the python module object for a specific migration which contains migrate info, codes and templates
+        down_versions(list): previous versions that can migrated to this version
+    '''
+    def __init__(self, version: str):
+        self.name = version
+        self.module = importlib.import_module("migrations.version_{}".format(version.replace(".","_")))
+
+    @property
+    def down_versions(self):
+        return self.module.down_revisions
 
 def read_conf(path):
     with open(path) as f:
@@ -15,29 +32,35 @@ def read_conf(path):
             exit(-1)
     return d
 
-def _to_module_path(ver):
-    return "migrations.version_{}".format(ver.replace(".","_"))
+def search(input_version: str, target_version: str) -> list :
+    """
+    Find the migration path by BFS
+    Args:
+        input_version(str): The version migration start from
+        target_version(str): The target version migrated to
+    Returns:
+        list: the module of migrations in the upgrade path
+    """
+    upgrade_path = []
+    next_version, visited, q = {}, set(), deque()
+    q.append(target_version)
+    found = False
+    while q: # BFS to find a valid path
+        version = MigrationVersion(q.popleft())
+        visited.add(version.name)
+        if version.name == input_version:
+            found = True
+            break # break loop cause migration path found
+        for v in version.down_versions:
+            next_version[v] = version.name
+            if v not in (visited.union(q)):
+                q.append(v)
 
-def search(input_ver: str, target_ver: str) -> deque :
-    """
-    Search accept a input version and the target version.
-    Returns the module of migrations in the upgrade path
-    """
-    upgrade_path, visited = deque(), set()
-    while True:
-        module_path = _to_module_path(target_ver)
-        visited.add(target_ver)  # mark current version for loop finding
-        if os.path.isdir(os.path.join(MIGRATION_BASE_DIR, 'version_{}'.format(target_ver.replace(".","_")))):
-            module = importlib.import_module(module_path)
-            if module.revision == input_ver:    # migration path found
-                break
-            elif module.down_revision is None:  # migration path not found
-                raise Exception('no migration path found')
-            else:
-                upgrade_path.appendleft(module)
-                target_ver = module.down_revision
-                if target_ver in visited: # version visited before, loop found
-                    raise Exception('find a loop caused by {} on migration path'.format(target_ver))
-        else:
-            raise Exception('{} not dir'.format(os.path.join(MIGRATION_BASE_DIR, 'versions', target_ver.replace(".","_"))))
-    return upgrade_path
+    if not found:
+        raise MigratioNotFound('no migration path found to target version')
+
+    current_version = MigrationVersion(input_version)
+    while current_version.name != target_version:
+        current_version = MigrationVersion(next_version[current_version.name])
+        upgrade_path.append(current_version)
+    return list(map(lambda x: x.module, upgrade_path))

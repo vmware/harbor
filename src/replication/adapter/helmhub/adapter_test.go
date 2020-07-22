@@ -37,7 +37,12 @@ func TestPrepareForPush(t *testing.T) {
 }
 
 func TestHealthCheck(t *testing.T) {
-	adapter, _ := newAdapter(nil)
+	registry := &model.Registry{
+		Type:     model.RegistryTypeHelmHub,
+		URL:      baseURL,
+		Insecure: true,
+	}
+	adapter, _ := newAdapter(registry)
 	status, err := adapter.HealthCheck()
 	require.Equal(t, model.Healthy, string(status))
 	require.Nil(t, err)

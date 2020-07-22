@@ -17,10 +17,12 @@ package core
 import (
 	"fmt"
 	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/lib/encode/repository"
 )
 
-func (c *client) ListAllArtifacts(project, repository string) ([]*modelsv2.Artifact, error) {
-	url := c.buildURL(fmt.Sprintf("/api/v2.0/projects/%s/repositories/%s/artifacts", project, repository)) // should query only tag
+func (c *client) ListAllArtifacts(project, repo string) ([]*modelsv2.Artifact, error) {
+	repo = repository.Encode(repo)
+	url := c.buildURL(fmt.Sprintf("/api/v2.0/projects/%s/repositories/%s/artifacts", project, repo))
 	var arts []*modelsv2.Artifact
 	if err := c.httpclient.GetAndIteratePagination(url, &arts); err != nil {
 		return nil, err
@@ -28,13 +30,14 @@ func (c *client) ListAllArtifacts(project, repository string) ([]*modelsv2.Artif
 	return arts, nil
 }
 
-func (c *client) DeleteArtifact(project, repository, digest string) error {
-	// /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}
-	url := c.buildURL(fmt.Sprintf("/api/v2.0/projects/%s/repositories/%s/artifacts/%s", project, repository, digest))
+func (c *client) DeleteArtifact(project, repo, digest string) error {
+	repo = repository.Encode(repo)
+	url := c.buildURL(fmt.Sprintf("/api/v2.0/projects/%s/repositories/%s/artifacts/%s", project, repo, digest))
 	return c.httpclient.Delete(url)
 }
 
-func (c *client) DeleteArtifactRepository(project, repository string) error {
-	url := c.buildURL(fmt.Sprintf("/api/repositories/%s/%s", project, repository))
+func (c *client) DeleteArtifactRepository(project, repo string) error {
+	repo = repository.Encode(repo)
+	url := c.buildURL(fmt.Sprintf("/api/repositories/%s/%s", project, repo))
 	return c.httpclient.Delete(url)
 }

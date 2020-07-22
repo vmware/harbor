@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import unittest
+import time
 
 from testutils import ADMIN_CLIENT
 from testutils import TEARDOWN
@@ -68,32 +69,35 @@ class TestProjects(unittest.TestCase):
 
         #2.1 Create a new project(PA) by user(UA);
         TestProjects.project_user_view_logs_id, project_user_view_logs_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_USER_VIEW_LOGS_CLIENT)
+        time.sleep(2)
 
         #2.2 In project(PA), there should be 1 'create' log record;
         operation = "create"
         log_count = self.projectv2.filter_project_logs(project_user_view_logs_name, user_user_view_logs_name, project_user_view_logs_name, "project", operation, **TestProjects.USER_USER_VIEW_LOGS_CLIENT)
         if log_count != 1:
-            self.test_result.add_test_result("1 - Failed to get log with user:{}, resource:{}, resource_type:{} and operation:{}".
-                                             format(user_user_view_logs_name, project_user_view_logs_name, "project", operation))
+            self.test_result.add_test_result("1 - Failed to get log with user:{}, resource:{}, resource_type:{} and operation:{}, expect count 1, but actual is {}.".
+                                             format(user_user_view_logs_name, project_user_view_logs_name, "project", operation, log_count))
 
         #3.1 Push a new image(IA) in project(PA) by admin;
         repo_name, tag = push_image_to_project(project_user_view_logs_name, harbor_server, admin_name, admin_password, "tomcat", "latest")
+        time.sleep(2)
 
         #3.2 In project(PA), there should be 1 'push' log record;
         operation = "create"
         log_count = self.projectv2.filter_project_logs(project_user_view_logs_name,  admin_name, r'{}:{}'.format(repo_name, tag), "artifact", operation, **TestProjects.USER_USER_VIEW_LOGS_CLIENT)
         if log_count != 1:
-            self.test_result.add_test_result("2 - Failed to get log with user:{}, resource:{}, resource_type:{} and operation:{}".
-                                             format(user_user_view_logs_name, project_user_view_logs_name, "artifact", operation))
+            self.test_result.add_test_result("2 - Failed to get log with user:{}, resource:{}, resource_type:{} and operation:{}, expect count 1, but actual is {}.".
+                                             format(user_user_view_logs_name, project_user_view_logs_name, "artifact", operation, log_count))
         #4.1 Delete repository(RA) by user(UA);
         self.repo.delete_repoitory(project_user_view_logs_name, repo_name.split('/')[1], **TestProjects.USER_USER_VIEW_LOGS_CLIENT)
+        time.sleep(6)
 
         #4.2 In project(PA), there should be 1 'delete' log record;
         operation = "delete"
         log_count = self.projectv2.filter_project_logs(project_user_view_logs_name, user_user_view_logs_name, repo_name, "repository", operation, **TestProjects.USER_USER_VIEW_LOGS_CLIENT)
         if log_count != 1:
-            self.test_result.add_test_result("5 - Failed to get log with user:{}, resource:{}, resource_type:{} and operation:{}".
-                                             format(user_user_view_logs_name, project_user_view_logs_name, "repository", operation))
+            self.test_result.add_test_result("5 - Failed to get log with user:{}, resource:{}, resource_type:{} and operation:{}, expect count 1, but actual is {}.".
+                                             format(user_user_view_logs_name, project_user_view_logs_name, "repository", operation, log_count))
 
 if __name__ == '__main__':
     unittest.main()

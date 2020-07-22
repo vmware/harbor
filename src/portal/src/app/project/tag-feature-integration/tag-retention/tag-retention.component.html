@@ -67,7 +67,7 @@
     </div>
 </div>
 <div class="cron-selection">
-    <cron-selection [buttonMarginLeft]="'150px'" [disabled]="!(retention?.rules?.length > 0)" #cronScheduleComponent [labelCurrent]="label" [labelEdit]='label' [originCron]='originCron()' (inputvalue)="openConfirm($event)"></cron-selection>
+    <cron-selection [labelWidth]="'150px'" [disabled]="!(retention?.rules?.length > 0)" #cronScheduleComponent [labelCurrent]="label" [labelEdit]='label' [originCron]='originCron()' (inputvalue)="openConfirm($event)"></cron-selection>
 </div>
 <div class="clr-row pt-1">
     <div class="clr-col-2 pt-2 flex-150"><label class="label-left font-size-54">{{'TAG_RETENTION.RETENTION_RUNS' | translate}}</label></div>

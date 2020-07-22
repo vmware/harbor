@@ -16,6 +16,7 @@ package quota
 
 import (
 	"fmt"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"strings"
 
@@ -26,8 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/quota"
-	"github.com/goharbor/harbor/src/pkg/types"
-	serror "github.com/goharbor/harbor/src/server/error"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
@@ -63,7 +63,7 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 		logger := log.G(r.Context()).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
 
 		if config.ReferenceObject == nil || config.Resources == nil {
-			serror.SendError(w, fmt.Errorf("invald config the for middleware"))
+			lib_http.SendError(w, fmt.Errorf("invald config the for middleware"))
 			return
 		}
 
@@ -71,14 +71,14 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 		if err != nil {
 			logger.Errorf("get reference object failed, error: %v", err)
 
-			serror.SendError(w, err)
+			lib_http.SendError(w, err)
 			return
 		}
 
 		enabled, err := quotaController.IsEnabled(r.Context(), reference, referenceID)
 		if err != nil {
 			logger.Errorf("check whether quota enabled for %s %s failed, error: %v", reference, referenceID, err)
-			serror.SendError(w, err)
+			lib_http.SendError(w, err)
 			return
 		}
 
@@ -93,7 +93,7 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 		if err != nil {
 			logger.Errorf("get resources failed, error: %v", err)
 
-			serror.SendError(w, err)
+			lib_http.SendError(w, err)
 			return
 		}
 
@@ -171,9 +171,9 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 
 			var errs quota.Errors
 			if errors.As(err, &errs) {
-				serror.SendError(res, errors.DeniedError(nil).WithMessage(errs.Error()))
+				lib_http.SendError(res, errors.DeniedError(nil).WithMessage(errs.Error()))
 			} else {
-				serror.SendError(res, err)
+				lib_http.SendError(res, err)
 			}
 		}
 

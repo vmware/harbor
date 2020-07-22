@@ -181,6 +181,13 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
     return this.hasViewInitWithDelay && this.resultBarChartComponent
       && (this.resultBarChartComponent.queued || this.resultBarChartComponent.scanning || this.resultBarChartComponent.error);
   }
+  hasScanned(): boolean {
+    return this.hasViewInitWithDelay && this.resultBarChartComponent
+      && !(this.resultBarChartComponent.completed
+        || this.resultBarChartComponent.error
+        || this.resultBarChartComponent.queued
+        || this.resultBarChartComponent.scanning);
+  }
   handleScanOverview(scanOverview: any): any {
     if (scanOverview) {
       return scanOverview[DEFAULT_SUPPORTED_MIME_TYPE];

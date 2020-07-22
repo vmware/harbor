@@ -1,6 +1,7 @@
-import os, shutil
-
+import os
+from urllib.parse import urlsplit
 from g import templates_dir, config_dir, data_dir, DEFAULT_UID, DEFAULT_GID
+
 from .jinja import render_jinja
 from .misc import prepare_dir
 
@@ -12,12 +13,29 @@ chart_museum_env = os.path.join(config_dir, "chartserver", "env")
 
 chart_museum_data_dir = os.path.join(data_dir, 'chart_storage')
 
-def prepare_chartmuseum(config_dict):
 
-    redis_host = config_dict['redis_host']
-    redis_port = config_dict['redis_port']
-    redis_password = config_dict['redis_password']
-    redis_db_index_chart = config_dict['redis_db_index_chart']
+def parse_redis(redis_url_chart):
+    u = urlsplit(redis_url_chart)
+    if not u.scheme or u.scheme == 'redis':
+        return {
+            'cache_store': 'redis',
+            'cache_redis_addr': u.netloc.split('@')[-1],
+            'cache_redis_password': u.password or '',
+            'cache_redis_db_index': u.path and int(u.path[1:]) or 0,
+        }
+    elif u.scheme == 'redis+sentinel':
+        return {
+            'cache_store': 'redis_sentinel',
+            'cache_redis_mastername': u.path.split('/')[1],
+            'cache_redis_addr': u.netloc.split('@')[-1],
+            'cache_redis_password': u.password or '',
+            'cache_redis_db_index': len(u.path.split('/')) == 3 and int(u.path.split('/')[2]) or 0,
+        }
+    else:
+        raise Exception('bad redis url for chart:' + redis_url_chart)
+
+
+def prepare_chartmuseum(config_dict):
     storage_provider_name = config_dict['storage_provider_name']
     storage_provider_config_map = config_dict['storage_provider_config']
 
@@ -25,10 +43,7 @@ def prepare_chartmuseum(config_dict):
     prepare_dir(chart_museum_config_dir)
 
     # process redis info
-    cache_store = "redis"
-    cache_redis_password = redis_password
-    cache_redis_addr = "{}:{}".format(redis_host, redis_port)
-    cache_redis_db_index = redis_db_index_chart
+    cache_redis_ops = parse_redis(config_dict['redis_url_chart'])
 
 
     # process storage info
@@ -85,8 +100,10 @@ def prepare_chartmuseum(config_dict):
         storage_provider_config_options.append("STORAGE_ALIBABA_BUCKET=%s" % bucket )
         storage_provider_config_options.append("STORAGE_ALIBABA_ENDPOINT=%s" % endpoint )
         storage_provider_config_options.append("STORAGE_ALIBABA_PREFIX=%s" % ( storage_provider_config_map.get("rootdirectory") or '') )
-        storage_provider_config_options.append("ALIBABA_CLOUD_ACCESS_KEY_ID=%s" % ( storage_provider_config_map.get("accesskeyid") or '') )
-        storage_provider_config_options.append("ALIBABA_CLOUD_ACCESS_KEY_SECRET=%s" % ( storage_provider_config_map.get("accesskeysecret") or '') )
+        storage_provider_config_options.append(
+            "ALIBABA_CLOUD_ACCESS_KEY_ID=%s" % (storage_provider_config_map.get("accesskeyid") or ''))
+        storage_provider_config_options.append(
+            "ALIBABA_CLOUD_ACCESS_KEY_SECRET=%s" % (storage_provider_config_map.get("accesskeysecret") or ''))
     else:
         # use local file system
         storage_provider_config_options.append("STORAGE_LOCAL_ROOTDIR=/chart_storage")
@@ -95,15 +112,11 @@ def prepare_chartmuseum(config_dict):
     all_storage_provider_configs = ('\n').join(storage_provider_config_options)
 
     render_jinja(
-    chart_museum_env_temp,
-    chart_museum_env,
-    cache_store=cache_store,
-    cache_redis_addr=cache_redis_addr,
-    cache_redis_password=cache_redis_password,
-    cache_redis_db_index=cache_redis_db_index,
-    core_secret=config_dict['core_secret'],
-    storage_driver=storage_driver,
-    all_storage_driver_configs=all_storage_provider_configs,
-    public_url=config_dict['public_url'],
-    chart_absolute_url=config_dict['chart_absolute_url'],
-    internal_tls=config_dict['internal_tls'])
+        chart_museum_env_temp,
+        chart_museum_env,
+        storage_driver=storage_driver,
+        all_storage_driver_configs=all_storage_provider_configs,
+        public_url=config_dict['public_url'],
+        chart_absolute_url=config_dict['chart_absolute_url'],
+        internal_tls=config_dict['internal_tls'],
+        **cache_redis_ops)

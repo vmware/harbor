@@ -57,7 +57,7 @@ describe('ProjectDetailComponent', () => {
         data: of({
             projectResolver: {
                 ismember: true,
-                role_name: 'master',
+                role_name: 'maintainer',
             }
         })
     };

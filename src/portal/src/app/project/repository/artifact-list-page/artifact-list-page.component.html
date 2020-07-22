@@ -2,7 +2,7 @@
     <div class="breadcrumb" *ngIf="!withAdmiral">
         <a (click)="goProBack()">{{'SIDE_NAV.PROJECTS'| translate}}</a>
         <span class="back-icon"><</span>
-        <a (click)="watchGoBackEvt(projectId)">{{'REPOSITORY.REPOSITORIES'| translate}}</a>
+        <a (click)="watchGoBackEvt(projectId)">{{projectName}}</a>
         <span *ngIf="depth">&lt;<a (click)="backInitRepo()">{{repoName}}</a></span>
         <span *ngIf="referArtifactNameArray?.length>=1" >
             <span *ngFor="let digest of referArtifactNameArray;let i = index">

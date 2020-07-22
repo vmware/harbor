@@ -17,6 +17,8 @@ package secret
 const (
 	// JobserviceUser is the name of jobservice user
 	JobserviceUser = "harbor-jobservice"
+	// ProxyserviceUser is the name of proxyservice user
+	ProxyserviceUser = "harbor-proxyservice"
 	// CoreUser is the name of ui user
 	CoreUser = "harbor-core"
 )

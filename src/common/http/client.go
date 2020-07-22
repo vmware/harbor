@@ -57,6 +57,8 @@ func init() {
 	}
 }
 
+// Use this instead of Default Transport in library because it sets ForceAttemptHTTP2 to true
+// And that options introduced in go 1.13 will cause the https requests hang forever in replication environment
 func newDefaultTransport() *http.Transport {
 	return &http.Transport{
 		Proxy: http.ProxyFromEnvironment,

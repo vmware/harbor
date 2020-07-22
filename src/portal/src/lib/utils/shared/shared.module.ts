@@ -11,11 +11,15 @@ import { TranslateHttpLoader } from "@ngx-translate/http-loader";
 import { MyMissingTranslationHandler } from "../../i18n/missing-trans.handler";
 import { TranslatorJsonLoader } from "../../i18n/local-json.loader";
 import { ClipboardModule } from "../../components/third-party/ngx-clipboard";
+import { environment } from '../../../environments/environment';
 
 export function GeneralTranslatorLoader(http: HttpClient, config: IServiceConfig) {
     if (config && config.langMessageLoader === 'http') {
-        let prefix: string = config.langMessagePathForHttpLoader ? config.langMessagePathForHttpLoader : "i18n/lang/";
+        const prefix: string = config.langMessagePathForHttpLoader ? config.langMessagePathForHttpLoader : "i18n/lang/";
         let suffix: string = config.langMessageFileSuffixForHttpLoader ? config.langMessageFileSuffixForHttpLoader : "-lang.json";
+        if (environment && environment.buildTimestamp) {
+            suffix += `?buildTimeStamp=${environment.buildTimestamp}`;
+        }
         return new TranslateHttpLoader(http, prefix, suffix);
     } else {
         return new TranslatorJsonLoader(config);

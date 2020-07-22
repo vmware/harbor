@@ -18,12 +18,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
-	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
@@ -77,7 +77,7 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 				log.Errorf("reset the response failed: %v", err)
 				return
 			}
-			serror.SendError(res, err)
+			lib_http.SendError(res, err)
 		}
 	}, skippers...)
 }

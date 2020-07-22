@@ -17,6 +17,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -37,8 +38,9 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/replication"
 )
 
 type deletableResp struct {
@@ -55,6 +57,7 @@ type ProjectAPI struct {
 const projectNameMaxLen int = 255
 const projectNameMinLen int = 1
 const restrictedNameChars = `[a-z0-9]+(?:[._-][a-z0-9]+)*`
+const defaultDaysToRetention = 7
 
 // Prepare validates the URL and the user
 func (p *ProjectAPI) Prepare() {
@@ -79,7 +82,7 @@ func (p *ProjectAPI) Prepare() {
 		}
 
 		if project == nil {
-			p.SendNotFoundError(fmt.Errorf("project %d not found", id))
+			p.handleProjectNotFound(id)
 			return
 		}
 
@@ -124,6 +127,35 @@ func (p *ProjectAPI) Post() {
 		log.Errorf("Invalid project request, error: %v", err)
 		p.SendBadRequestError(fmt.Errorf("invalid request: %v", err))
 		return
+	}
+
+	// trying to create a proxy cache project
+	if pro.RegistryID > 0 {
+		// only system admin can create the proxy cache project
+		if !p.SecurityCtx.IsSysAdmin() {
+			p.SendForbiddenError(errors.New("Only system admin can create proxy cache project"))
+			return
+		}
+		registry, err := replication.RegistryMgr.Get(pro.RegistryID)
+		if err != nil {
+			p.SendInternalServerError(fmt.Errorf("failed to get the registry %d: %v", pro.RegistryID, err))
+			return
+		}
+		if registry == nil {
+			p.SendNotFoundError(fmt.Errorf("registry %d not found", pro.RegistryID))
+			return
+		}
+		permitted := false
+		for _, t := range config.GetPermittedRegistryTypesForProxyCache() {
+			if string(registry.Type) == t {
+				permitted = true
+				break
+			}
+		}
+		if !permitted {
+			p.SendBadRequestError(fmt.Errorf("unsupported registry type %s", string(registry.Type)))
+			return
+		}
 	}
 
 	var hardLimits types.ResourceList
@@ -187,9 +219,10 @@ func (p *ProjectAPI) Post() {
 		owner = user.Username
 	}
 	projectID, err := p.ProjectMgr.Create(&models.Project{
-		Name:      pro.Name,
-		OwnerName: owner,
-		Metadata:  pro.Metadata,
+		Name:       pro.Name,
+		OwnerName:  owner,
+		Metadata:   pro.Metadata,
+		RegistryID: pro.RegistryID,
 	})
 	if err != nil {
 		if err == errutil.ErrDupProject {
@@ -210,6 +243,14 @@ func (p *ProjectAPI) Post() {
 		}
 	}
 
+	// create a default retention policy for proxy project
+	if pro.RegistryID > 0 {
+		if err := p.addRetentionPolicyForProxy(projectID); err != nil {
+			p.SendInternalServerError(fmt.Errorf("failed to add tag retention policy for project: %v", err))
+			return
+		}
+	}
+
 	// fire event
 	evt.BuildAndPublish(&metadata.CreateProjectEventMetadata{
 		ProjectID: projectID,
@@ -218,6 +259,18 @@ func (p *ProjectAPI) Post() {
 	})
 
 	p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
+}
+
+func (p *ProjectAPI) addRetentionPolicyForProxy(projID int64) error {
+	plc := policy.WithNDaysSinceLastPull(projID, defaultDaysToRetention)
+	retID, err := retentionController.CreateRetention(plc)
+	if err != nil {
+		return err
+	}
+	if err := p.ProjectMgr.GetMetadataManager().Add(projID, map[string]string{"retention_id": strconv.FormatInt(retID, 10)}); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Head ...
@@ -493,7 +546,7 @@ func (p *ProjectAPI) Put() {
 	if err := p.ProjectMgr.Update(p.project.ProjectID,
 		&models.Project{
 			Metadata:     req.Metadata,
-			CVEWhitelist: req.CVEWhitelist,
+			CVEAllowlist: req.CVEAllowlist,
 		}); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to update project %d",
 			p.project.ProjectID), err)
@@ -606,7 +659,7 @@ func getProjectMemberSummary(ctx context.Context, projectID int64, summary *mode
 		count *int64
 	}{
 		{common.RoleProjectAdmin, &summary.ProjectAdminCount},
-		{common.RoleMaster, &summary.MasterCount},
+		{common.RoleMaintainer, &summary.MaintainerCount},
 		{common.RoleDeveloper, &summary.DeveloperCount},
 		{common.RoleGuest, &summary.GuestCount},
 		{common.RoleLimitedGuest, &summary.LimitedGuestCount},
@@ -637,7 +690,7 @@ func highestRole(roles []int) int {
 	}
 	rolePower := map[int]int{
 		common.RoleProjectAdmin: 50,
-		common.RoleMaster:       40,
+		common.RoleMaintainer:   40,
 		common.RoleDeveloper:    30,
 		common.RoleGuest:        20,
 		common.RoleLimitedGuest: 10,

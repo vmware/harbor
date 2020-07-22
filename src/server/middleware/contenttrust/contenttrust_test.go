@@ -131,6 +131,14 @@ func (suite *MiddlewareTestSuite) TestContentTrustDisabled() {
 	suite.Equal(rr.Code, http.StatusOK)
 }
 
+func (suite *MiddlewareTestSuite) TestNoneArtifact() {
+	req := httptest.NewRequest("GET", "/v1/library/photon/manifests/nonexist", nil)
+	rr := httptest.NewRecorder()
+
+	Middleware()(suite.next).ServeHTTP(rr, req)
+	suite.Equal(rr.Code, http.StatusNotFound)
+}
+
 func (suite *MiddlewareTestSuite) TestAuthenticatedUserPulling() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)

@@ -3,6 +3,8 @@ package dao
 import (
 	"testing"
 
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -93,62 +95,25 @@ func (suite *RegistrySuite) TestGetRegistryByURL() {
 }
 
 func (suite *RegistrySuite) TestListRegistries() {
-	assert := assert.New(suite.T())
+	ctx := orm.Context()
 
-	// Insert on more registry
-	id, err := AddRegistry(testRegistry1)
-	assert.Nil(err)
-	assert.NotEqual(0, id)
-
-	// List all registries, should succeed
-	total, registries, err := ListRegistries()
-	assert.Nil(err)
-	if total < 2 {
-		suite.T().Errorf("At least %d should be found in total, but got %d", 2, total)
+	// nil query
+	count, registries, err := ListRegistries(ctx, nil)
+	suite.Require().Nil(err)
+	if count < 1 {
+		suite.T().Errorf("At least %d should be found in total, but got %d", 1, count)
 	}
 
-	// List default registry by normal query, should succeed
-	total, registries, err = ListRegistries(&ListRegistryQuery{
-		Query:  "Default",
-		Offset: 0,
-		Limit:  10,
+	// query by name
+	count, registries, err = ListRegistries(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"Name": "daoTestDefault",
+		},
 	})
-	assert.Nil(err)
-	assert.Equal(int64(1), total)
-	assert.Equal(defaultRegistry.Name, registries[0].Name)
+	suite.Require().Nil(err)
+	suite.Require().Equal(int64(1), count)
+	suite.Assert().Equal("daoTestDefault", registries[0].Name)
 
-	// List registry and limit to 1, should return one
-	total, registries, err = ListRegistries(&ListRegistryQuery{
-		Query:  "dao",
-		Offset: 0,
-		Limit:  1,
-	})
-	assert.Nil(err)
-	assert.Equal(int64(2), total)
-	assert.Equal(1, len(registries))
-
-	// List registry and limit set to -1, should return all
-	total, registries, err = ListRegistries(&ListRegistryQuery{
-		Limit: -1,
-	})
-	assert.Nil(err)
-	if total < 2 {
-		suite.T().Errorf("At least %d should be found in total, but got %d", 2, total)
-	}
-	if len(registries) < 2 {
-		suite.T().Errorf("At least %d should be returned, but got %d", 2, len(registries))
-	}
-
-	// List registry and large offset, should return empty
-	total, registries, err = ListRegistries(&ListRegistryQuery{
-		Offset: 10,
-		Limit:  1,
-	})
-	assert.Nil(err)
-	if total < 2 {
-		suite.T().Errorf("At least %d should be found in total, but got %d", 2, total)
-	}
-	assert.Equal(0, len(registries))
 }
 
 func (suite *RegistrySuite) TestUpdate() {

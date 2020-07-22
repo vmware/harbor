@@ -1,7 +1,7 @@
 <div class="arrow-block" *ngIf="!withAdmiral">
     <a class="pl-0" (click)="goBackPro()">{{'SIDE_NAV.PROJECTS'| translate}}</a>
     <span class="back-icon"><</span>
-    <a (click)="goBackRep()">{{'REPOSITORY.REPOSITORIES'| translate}}</a>
+    <a (click)="goBackRep()">{{projectName}}</a>
     <span class="back-icon"><</span>
     <a (click)="goBack()">{{repositoryName}}</a>
 
@@ -14,8 +14,23 @@
         <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="onBack()"></clr-icon>
     </div>
     <div class="title-block">
-        <h2 class="custom-h2 center-align-items"><img class="artifact-icon" [title]="artifact.type"
-            [src]="artifact.type | selectArtifactIcon" /> {{artifact?.digest | slice:0:15}} <clr-icon size="25" *ngIf="artifact?.references && artifact?.references?.length" class="icon-folder" shape="folder"></clr-icon></h2>
+        <h2 class="custom-h2 center-align-items">
+            <img *ngIf="artifact?.type !== 'IMAGE';else elseBlock" class="artifact-icon" [title]="artifact.type"
+                 [src]="artifact.type | selectArtifactIcon" />
+            <ng-template #elseBlock>
+                <clr-tooltip>
+                    <div clrTooltipTrigger class="level-border">
+                        <img class="artifact-icon" [title]="artifact.type"
+                             [src]="artifact.type | selectArtifactIcon" />
+                    </div>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        <span>Docker and the Docker logo are trademarks or registered trademarks of Docker, Inc. in the United States and/or other countries.</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </ng-template>
+            <span class="margin-left-10px">{{artifact?.digest | slice:0:15}}</span>
+            <clr-icon size="25" *ngIf="artifact?.references && artifact?.references?.length" class="icon-folder margin-left-10px" shape="folder"></clr-icon>
+        </h2>
     </div>
 </div>
 <ng-container *ngIf="!loading">

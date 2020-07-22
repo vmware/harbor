@@ -16,6 +16,7 @@ package api
 
 import (
 	"errors"
+	"github.com/goharbor/harbor/src/core/config"
 	"net/http"
 	"os"
 	"strconv"
@@ -74,6 +75,7 @@ func (gc *GCAPI) Post() {
 	}
 	ajr.Name = common_job.ImageGC
 	ajr.Parameters["redis_url_reg"] = os.Getenv("_REDIS_URL_REG")
+	ajr.Parameters["time_window"] = config.GetGCTimeWindow()
 	gc.submit(&ajr)
 	gc.Redirect(http.StatusCreated, strconv.FormatInt(ajr.ID, 10))
 }
@@ -101,6 +103,7 @@ func (gc *GCAPI) Put() {
 	}
 	ajr.Name = common_job.ImageGC
 	ajr.Parameters["redis_url_reg"] = os.Getenv("_REDIS_URL_REG")
+	ajr.Parameters["time_window"] = config.GetGCTimeWindow()
 	gc.updateSchedule(ajr)
 }
 

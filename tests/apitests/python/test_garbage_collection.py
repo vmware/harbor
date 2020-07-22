@@ -11,6 +11,8 @@ from library.repository import Repository
 from library.repository import push_image_to_project
 from testutils import harbor_server
 from library.base import _assert_status_code
+from library.repository import push_special_image_to_project
+from library.artifact import Artifact
 
 class TestProjects(unittest.TestCase):
     @classmethod
@@ -19,12 +21,16 @@ class TestProjects(unittest.TestCase):
         self.project = Project()
         self.user = User()
         self.repo = Repository()
+        self.artifact = Artifact()
+        self.repo_name = "test_repo"
+        self.repo_name_untag = "test_untag"
+        self.tag = "v1.0"
 
     @classmethod
     def tearDown(self):
         print "Case completed"
 
-    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
+    @unittest.skipIf(TEARDOWN == True, "Test data won't be erased.")
     def test_ClearData(self):
         #2. Delete project(PA);
         self.project.delete_project(TestProjects.project_gc_id, **TestProjects.USER_GC_CLIENT)
@@ -38,13 +44,17 @@ class TestProjects(unittest.TestCase):
             Garbage Collection
         Test step and expected result:
             1. Create a new user(UA);
-            2. Create a new project(PA) by user(UA);
-            3. Push a new image(IA) in project(PA) by admin;
-            4. Delete repository(RA) by user(UA);
-            5. Get repository by user(UA), it should get nothing;
-            6. Tigger garbage collection operation;
-            7. Check garbage collection job was finished;
-            8. Get garbage collection log, check there is number of files was deleted.
+            2. Create project(PA) and project(PB) by user(UA);
+            3. Push a image in project(PA) and then delete repository by admin;
+            4. Get repository by user(UA), it should get nothing;
+            5. Tigger garbage collection operation;
+            6. Check garbage collection job was finished;
+            7. Get garbage collection log, check there is a number of files was deleted;
+            8. Push a image in project(PB) by admin and delete the only tag;
+            9. Tigger garbage collection operation;
+            10. Check garbage collection job was finished;
+            11. Repository with untag image should be still there;
+            12. But no any artifact in repository anymore.
         Tear down:
             1. Delete project(PA);
             2. Delete user(UA).
@@ -59,27 +69,48 @@ class TestProjects(unittest.TestCase):
 
         TestProjects.USER_GC_CLIENT=dict(endpoint = url, username = user_gc_name, password = user_gc_password)
 
-        #2. Create a new project(PA) by user(UA);
+        #2. Create project(PA) and project(PB) by user(UA);
         TestProjects.project_gc_id, TestProjects.project_gc_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_GC_CLIENT)
+        TestProjects.project_gc_untag_id, TestProjects.project_gc_untag_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_GC_CLIENT)
 
-        #3. Push a new image(IA) in project(PA) by admin;
-        repo_name, _ = push_image_to_project(TestProjects.project_gc_name, harbor_server, admin_name, admin_password, "tomcat", "latest")
+        #3. Push a image in project(PA) and then delete repository by admin;
+        push_special_image_to_project(TestProjects.project_gc_name, harbor_server, admin_name, admin_password, self.repo_name, ["latest", "v1.2.3"])
+        self.repo.delete_repoitory(TestProjects.project_gc_name, self.repo_name, **TestProjects.USER_GC_CLIENT)
 
-        #4. Delete repository(RA) by user(UA);
-        self.repo.delete_repoitory(TestProjects.project_gc_name, repo_name.split('/')[1], **TestProjects.USER_GC_CLIENT)
-
-        #5. Get repository by user(UA), it should get nothing;
+        #4. Get repository by user(UA), it should get nothing;
         repo_data = self.repo.list_repositories(TestProjects.project_gc_name, **TestProjects.USER_GC_CLIENT)
         _assert_status_code(len(repo_data), 0)
 
-        #6. Tigger garbage collection operation;
+        #5. Tigger garbage collection operation;
         gc_id = self.system.gc_now(**ADMIN_CLIENT)
 
-        #7. Check garbage collection job was finished;
+        #6. Check garbage collection job was finished;
         self.system.validate_gc_job_status(gc_id, "finished", **ADMIN_CLIENT)
 
-        #8. Get garbage collection log, check there is number of files was deleted.
+        #7. Get garbage collection log, check there is a number of files was deleted;
         self.system.validate_deletion_success(gc_id, **ADMIN_CLIENT)
+
+        #8. Push a image in project(PB) by admin and delete the only tag;
+        push_special_image_to_project(TestProjects.project_gc_untag_name, harbor_server, admin_name, admin_password, self.repo_name_untag, [self.tag])
+        self.artifact.delete_tag(TestProjects.project_gc_untag_name, self.repo_name_untag, self.tag, self.tag, **ADMIN_CLIENT)
+
+        #9. Tigger garbage collection operation;
+        gc_id = self.system.gc_now(**ADMIN_CLIENT)
+
+        #10. Check garbage collection job was finished;
+        self.system.validate_gc_job_status(gc_id, "finished", **ADMIN_CLIENT)
+
+        #11. Repository with untag image should be still there;
+        repo_data_untag = self.repo.list_repositories(TestProjects.project_gc_untag_name, **TestProjects.USER_GC_CLIENT)
+        print "repo_data_untag:", repo_data_untag
+        _assert_status_code(len(repo_data_untag), 1)
+        self.assertEqual(TestProjects.project_gc_untag_name + "/" + self.repo_name_untag , repo_data_untag[0].name)
+
+        #12. But no any artifact in repository anymore.
+        artifacts = self.artifact.list_artifacts(TestProjects.project_gc_untag_name, self.repo_name_untag, **TestProjects.USER_GC_CLIENT)
+        self.assertEqual(artifacts,[])
+
+
 
 if __name__ == '__main__':
     unittest.main()

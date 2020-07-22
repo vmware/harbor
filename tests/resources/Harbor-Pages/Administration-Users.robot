@@ -46,3 +46,15 @@ User Email Should Exist
 Add User Button Should Be Disabled
     Sleep  1
     Retry Wait Until Page Contains Element  //button[contains(.,'New') and @disabled='']
+
+Add A New User
+    [Arguments]   ${username}  ${email}  ${realname}  ${newPassword}  ${comment}
+    Retry Element Click  xpath=${add_new_user_button}
+    Retry Text Input  xpath=${username_xpath}  ${username}
+    Retry Text Input  xpath=${email_xpath}  ${email}
+    Retry Text Input  xpath=${realname_xpath}  ${realname}
+    Retry Text Input  xpath=${newPassword_xpath}  ${newPassword}
+    Retry Text Input  xpath=${confirmPassword_xpath}  ${newPassword}
+    Retry Text Input  xpath=${comment_xpath}  ${comment}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${save_new_user_button}  Retry Wait Until Page Not Contains Element  xpath=${save_new_user_button}
+    Retry Wait Until Page Contains Element  xpath=//harbor-user//clr-dg-row//clr-dg-cell[contains(., '${username}')]

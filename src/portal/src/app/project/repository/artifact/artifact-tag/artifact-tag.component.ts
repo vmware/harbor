@@ -242,10 +242,10 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
           } else if (deleteErrorList.length === deleteResult.length) {
             // all is error
             this.loading = false;
-            this.errorHandlerService.error(deleteResult[deleteResult.length - 1].error);
+            this.errorHandlerService.error(deleteResult[deleteResult.length - 1]);
           } else {
             // some artifact delete success but it has error delete things
-            this.errorHandlerService.error(deleteErrorList[deleteErrorList.length - 1].error);
+            this.errorHandlerService.error(deleteErrorList[deleteErrorList.length - 1]);
             // if delete one success  refresh list
             this.currentPage = 1;
             let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
@@ -256,7 +256,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     }
   }
 
-  delOperate(tag): Observable<any> | null {
+  delOperate(tag: Tag): Observable<any> | null {
     // init operation info
     let operMessage = new OperateInfo();
     operMessage.name = 'OPERATION.DELETE_TAG';
@@ -264,7 +264,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     operMessage.data.name = tag.name;
     this.operationService.publishInfo(operMessage);
 
-    if (tag.signature) {
+    if (tag.signed) {
       forkJoin(this.translateService.get("BATCH.DELETED_FAILURE"),
         this.translateService.get("REPOSITORY.DELETION_SUMMARY_TAG_DENIED")).subscribe(res => {
           let wrongInfo: string = res[1] + DeleteTagWithNotoryCommand1 + this.registryUrl +

@@ -38,7 +38,7 @@ func (r *RetentionAPI) GetMetadatas() {
     "templates": [
         {
             "rule_template": "latestPushedK",
-            "display_text": "the most recently pushed # images",
+            "display_text": "the most recently pushed # artifacts",
             "action": "retain",
             "params": [
                 {
@@ -50,7 +50,7 @@ func (r *RetentionAPI) GetMetadatas() {
         },
         {
             "rule_template": "latestPulledN",
-            "display_text": "the most recently pulled # images",
+            "display_text": "the most recently pulled # artifacts",
             "action": "retain",
             "params": [
                 {

@@ -45,6 +45,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
 	"github.com/goharbor/harbor/src/pkg/label"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/signature"
@@ -483,8 +484,27 @@ func (c *controller) GetAddition(ctx context.Context, artifactID int64, addition
 	return processor.Get(artifact.MediaType).AbstractAddition(ctx, artifact, addition)
 }
 
-func (c *controller) AddLabel(ctx context.Context, artifactID int64, labelID int64) error {
-	return c.labelMgr.AddTo(ctx, labelID, artifactID)
+func (c *controller) AddLabel(ctx context.Context, artifactID int64, labelID int64) (err error) {
+	defer func() {
+		if err == nil {
+			// trigger label artifact event
+			e := &event.Event{}
+			metaData := &metadata.ArtifactLabeledMetadata{
+				ArtifactID: artifactID,
+				LabelID:    labelID,
+				Ctx:        ctx,
+			}
+			if err := e.Build(metaData); err == nil {
+				if err := e.Publish(); err != nil {
+					log.Error(errors.Wrap(err, "mark label to resource handler: event publish"))
+				}
+			} else {
+				log.Error(errors.Wrap(err, "mark label to resource handler: event build"))
+			}
+		}
+	}()
+	err = c.labelMgr.AddTo(ctx, labelID, artifactID)
+	return
 }
 
 func (c *controller) RemoveLabel(ctx context.Context, artifactID int64, labelID int64) error {

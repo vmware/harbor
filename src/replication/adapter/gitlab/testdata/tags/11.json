@@ -1,0 +1,17 @@
+[
+  {
+    "name": "harbor",
+    "path": "library/dockers:harbor",
+    "location": "registry.gitlab.com/library/dockers:harbor"
+  },
+  {
+    "name": "latest",
+    "path": "library/dockers:latest",
+    "location": "registry.gitlab.com/library/dockers:latest"
+  },
+  {
+    "name": "v2",
+    "path": "library/dockers:v2",
+    "location": "registry.gitlab.com/library/dockers:v2"
+  }
+]

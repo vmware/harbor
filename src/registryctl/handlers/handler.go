@@ -20,13 +20,14 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/registryctl/auth"
+	"github.com/goharbor/harbor/src/registryctl/config"
 	gorilla_handlers "github.com/gorilla/handlers"
 )
 
 // NewHandlerChain returns a gorilla router which is wrapped by  authenticate handler
 // and logging handler
-func NewHandlerChain() http.Handler {
-	h := newRouter()
+func NewHandlerChain(conf config.Configuration) http.Handler {
+	h := newRouter(conf)
 	secrets := map[string]string{
 		"jobSecret": os.Getenv("JOBSERVICE_SECRET"),
 	}

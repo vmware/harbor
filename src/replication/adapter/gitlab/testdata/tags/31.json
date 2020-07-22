@@ -1,0 +1,17 @@
+[
+  {
+    "name": "harbor",
+    "path": "library/dev-docker:harbor",
+    "location": "registry.gitlab.com/library/dev-docker:harbor"
+  },
+  {
+    "name": "latest",
+    "path": "library/dev-docker:latest",
+    "location": "registry.gitlab.com/library/dev-docker:latest"
+  },
+  {
+    "name": "v2",
+    "path": "library/dev-docker:v2",
+    "location": "registry.gitlab.com/library/dev-docker:v2"
+  }
+]

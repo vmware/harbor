@@ -160,7 +160,7 @@
             </clr-tooltip-content>
           </clr-tooltip>
         </label>
-        <input clrInput formControlName="dest_namespace" type="text" id="dest_namespace" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$"
+        <input clrInput formControlName="dest_namespace" type="text" id="dest_namespace" pattern="^[a-z0-9]+(?:[/._-][a-z0-9]+)*$"
           class="inputWidth" maxlength="255">
         <clr-control-error *ngIf='ruleForm.controls.dest_namespace.touched && ruleForm.controls.dest_namespace.invalid'>{{'REPLICATION.DESTINATION_NAME_TOOLTIP' | translate}}</clr-control-error>
       </clr-input-container>

@@ -17,14 +17,17 @@ package chart
 import (
 	"errors"
 	"fmt"
+
+	"github.com/goharbor/harbor/src/lib/orm"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
-	"github.com/goharbor/harbor/src/pkg/project"
 )
 
 // Handler preprocess chart event data
@@ -42,15 +45,12 @@ func (cph *Handler) Handle(value interface{}) error {
 		return fmt.Errorf("data miss in chart event: %v", chartEvent)
 	}
 
-	project, err := project.Mgr.Get(chartEvent.ProjectName)
+	prj, err := project.Ctl.GetByName(orm.Context(), chartEvent.ProjectName, project.Metadata(true))
 	if err != nil {
 		log.Errorf("failed to find project[%s] for chart event: %v", chartEvent.ProjectName, err)
 		return err
 	}
-	if project == nil {
-		return fmt.Errorf("project not found for chart event: %s", chartEvent.ProjectName)
-	}
-	policies, err := notification.PolicyMgr.GetRelatedPolices(project.ProjectID, chartEvent.EventType)
+	policies, err := notification.PolicyMgr.GetRelatedPolices(prj.ProjectID, chartEvent.EventType)
 	if err != nil {
 		log.Errorf("failed to find policy for %s event: %v", chartEvent.EventType, err)
 		return err
@@ -61,7 +61,7 @@ func (cph *Handler) Handle(value interface{}) error {
 		return nil
 	}
 
-	payload, err := constructChartPayload(chartEvent, project)
+	payload, err := constructChartPayload(chartEvent, prj)
 	if err != nil {
 		return err
 	}

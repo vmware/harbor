@@ -11,6 +11,8 @@ const (
 	BadRequestCode = "BAD_REQUEST"
 	// ForbiddenCode ...
 	ForbiddenCode = "FORBIDDEN"
+	// MethodNotAllowedCode ...
+	MethodNotAllowedCode = "METHOD_NOT_ALLOWED"
 	// PreconditionCode ...
 	PreconditionCode = "PRECONDITION"
 	// GeneralCode ...
@@ -23,6 +25,10 @@ const (
 	ViolateForeignKeyConstraintCode = "VIOLATE_FOREIGN_KEY_CONSTRAINT"
 	// DIGESTINVALID ...
 	DIGESTINVALID = "DIGEST_INVALID"
+	// MANIFESTINVALID ...
+	MANIFESTINVALID = "MANIFEST_INVALID"
+	// UNSUPPORTED is for digest UNSUPPORTED error
+	UNSUPPORTED = "UNSUPPORTED"
 )
 
 // NotFoundError is error for the case of object not found
@@ -53,6 +59,11 @@ func BadRequestError(err error) *Error {
 // ForbiddenError is error for the case of forbidden
 func ForbiddenError(err error) *Error {
 	return New("forbidden").WithCode(ForbiddenCode).WithCause(err)
+}
+
+// MethodNotAllowedError is error for the case of forbidden
+func MethodNotAllowedError(err error) *Error {
+	return New("method not allowed").WithCode(MethodNotAllowedCode).WithCause(err)
 }
 
 // PreconditionFailedError is error for the case of precondition failed

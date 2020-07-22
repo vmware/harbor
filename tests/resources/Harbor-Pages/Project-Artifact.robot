@@ -32,16 +32,15 @@ Should Not Contain Tag
 
 Add A New Tag
     [Arguments]  ${tag}
-    Retry Element Click   ${add_tag_button}
+    Retry Double Keywords When Error  Retry Element Click   ${add_tag_button}  Retry Wait Element  ${tag_name_xpath}
     Retry Text Input   ${tag_name_xpath}   ${tag}
-    Retry Element Click   ${add_ok_button}
+    Retry Double Keywords When Error  Retry Element Click   ${add_ok_button}  Should Contain Tag  ${tag}
 
 Delete A Tag
     [Arguments]  ${tag}
     Retry Element Click   xpath=//clr-dg-row[contains(.,'${tag}')]//clr-checkbox-wrapper//label[contains(@class,'clr-control-label')]
-    Retry Element Click    ${delete_tag_button}
-    Retry Wait Until Page Contains Element  ${dialog_delete_button}
-    Retry Element Click  ${dialog_delete_button}
+    Retry Double Keywords When Error  Retry Element Click    ${delete_tag_button}  Retry Wait Until Page Contains Element  ${dialog_delete_button}
+    Retry Double Keywords When Error  Retry Element Click  ${dialog_delete_button}  Should Not Contain Tag  ${tag}
 
 Should Contain Artifact
     Retry Wait Until Page Contains Element   xpath=//artifact-list-tab//clr-dg-row//a[contains(.,'sha256')]

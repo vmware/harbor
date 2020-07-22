@@ -29,12 +29,12 @@ export class GcComponent implements OnInit {
   schedule: GCSchedule = {};
   originCron: OriginCron;
   disableGC: boolean = false;
-  getText = '';
-  getLabelCurrent = '';
+  getLabelCurrent = 'GC.CURRENT_SCHEDULE';
   @Output() loadingGcStatus = new EventEmitter<boolean>();
   @ViewChild(CronScheduleComponent, {static: false})
   CronScheduleComponent: CronScheduleComponent;
   shouldDeleteUntagged: boolean;
+  dryRunOnGoing: boolean = false;
   constructor(
     private gcRepoService: GcRepoService,
     private gcViewModelFactory: GcViewModelFactory,
@@ -91,9 +91,25 @@ export class GcComponent implements OnInit {
       this.enableGc();
     }, ONE_MINITUE);
 
-    this.gcRepoService.manualGc(this.shouldDeleteUntagged).subscribe(
+    this.gcRepoService.manualGc(this.shouldDeleteUntagged, false).subscribe(
       response => {
         this.translate.get("GC.MSG_SUCCESS").subscribe((res: string) => {
+          this.errorHandler.info(res);
+        });
+      },
+      error => {
+        this.errorHandler.error(error);
+      }
+    );
+  }
+
+  dryRun() {
+    this.dryRunOnGoing = true;
+    this.gcRepoService.manualGc(this.shouldDeleteUntagged, true)
+      .pipe(finalize(() => this.dryRunOnGoing = false))
+      .subscribe(
+      response => {
+        this.translate.get("GC.DRY_RUN_SUCCESS").subscribe((res: string) => {
           this.errorHandler.info(res);
         });
       },

@@ -16,13 +16,11 @@ package scheduler
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/goharbor/harbor/src/core/service/notifications"
 
-	"github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/core/service/notifications"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
-	"github.com/goharbor/harbor/src/pkg/scheduler/hook"
 )
 
 // Handler handles the scheduler requests
@@ -34,46 +32,20 @@ type Handler struct {
 func (h *Handler) Handle() {
 	log.Debugf("received scheduler hook event for schedule %s", h.GetStringFromPath(":id"))
 
-	var data models.JobStatusChange
+	var data job.StatusChange
 	if err := json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &data); err != nil {
 		log.Errorf("failed to decode hook event: %v", err)
 		return
 	}
-	// status update
-	if len(data.CheckIn) == 0 {
-		schedulerID, err := h.GetInt64FromPath(":id")
-		if err != nil {
-			log.Errorf("failed to get the schedule ID: %v", err)
-			return
-		}
-		if err := hook.GlobalController.UpdateStatus(schedulerID, data.Status); err != nil {
-			h.SendInternalServerError(fmt.Errorf("failed to update status of job %s: %v", data.JobID, err))
-			return
-		}
-		log.Debugf("handle status update hook event for schedule %s completed", h.GetStringFromPath(":id"))
+
+	schedulerID, err := h.GetInt64FromPath(":id")
+	if err != nil {
+		log.Errorf("failed to get the schedule ID: %v", err)
 		return
 	}
 
-	// run callback function
-	// just log the error message when handling check in request if got any error
-	params := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(data.CheckIn), &params); err != nil {
-		log.Errorf("failed to unmarshal parameters from check in message: %v", err)
+	if err = scheduler.HandleLegacyHook(h.Ctx.Request.Context(), schedulerID, &data); err != nil {
+		log.Errorf("failed to handle the legacy hook: %v", err)
 		return
 	}
-	callbackFuncNameParam, exist := params[scheduler.JobParamCallbackFunc]
-	if !exist {
-		log.Error("cannot get the parameter \"callback_func_name\" from the check in message")
-		return
-	}
-	callbackFuncName, ok := callbackFuncNameParam.(string)
-	if !ok || len(callbackFuncName) == 0 {
-		log.Errorf("invalid \"callback_func_name\": %v", callbackFuncName)
-		return
-	}
-	if err := hook.GlobalController.Run(callbackFuncName, params[scheduler.JobParamCallbackFuncParams]); err != nil {
-		log.Errorf("failed to run the callback function %s: %v", callbackFuncName, err)
-		return
-	}
-	log.Debugf("callback function %s called for schedule %s", callbackFuncName, h.GetStringFromPath(":id"))
 }

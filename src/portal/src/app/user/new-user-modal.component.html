@@ -7,6 +7,6 @@
     <div class="modal-footer">
         <span class="spinner spinner-inline loading-top" [hidden]="inProgress === false"> </span>
         <button type="button" class="btn btn-outline" (click)="close()">{{'BUTTON.CANCEL' | translate}}</button>
-        <button type="button" class="btn btn-primary" [disabled]="!isValid || inProgress" (click)="create()">{{'BUTTON.OK' | translate}}</button>
+        <button type="button" id="save-button" class="btn btn-primary" [disabled]="!isValid || inProgress" (click)="create()">{{'BUTTON.OK' | translate}}</button>
     </div>
 </clr-modal>

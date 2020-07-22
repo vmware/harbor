@@ -3,6 +3,7 @@ package job
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -18,10 +19,12 @@ import (
 
 var (
 	// GlobalClient is an instance of the default client that can be used globally
-	// Notes: the client needs to be initialized before can be used
-	GlobalClient             Client
-	statusBehindErrorPattern = "mismatch job status for stopping job: .*, job status (.*) is behind Running"
-	statusBehindErrorReg     = regexp.MustCompile(statusBehindErrorPattern)
+	GlobalClient             Client = NewDefaultClient(config.InternalJobServiceURL(), config.CoreSecret())
+	statusBehindErrorPattern        = "mismatch job status for stopping job: .*, job status (.*) is behind Running"
+	statusBehindErrorReg            = regexp.MustCompile(statusBehindErrorPattern)
+
+	// ErrJobNotFound indicates the job not found
+	ErrJobNotFound = errors.New("job not found")
 )
 
 // Client wraps interface to access jobservice.
@@ -52,11 +55,6 @@ func (s *StatusBehindError) Status() string {
 type DefaultClient struct {
 	endpoint string
 	client   *commonhttp.Client
-}
-
-// Init the GlobalClient
-func Init() {
-	GlobalClient = NewDefaultClient(config.InternalJobServiceURL(), config.CoreSecret())
 }
 
 // NewDefaultClient creates a default client based on endpoint and secret.
@@ -205,6 +203,9 @@ func (d *DefaultClient) PostAction(uuid, action string) error {
 			return &StatusBehindError{
 				status: status,
 			}
+		}
+		if e, ok := err.(*commonhttp.Error); ok && e.Code == http.StatusNotFound {
+			return ErrJobNotFound
 		}
 		return err
 	}

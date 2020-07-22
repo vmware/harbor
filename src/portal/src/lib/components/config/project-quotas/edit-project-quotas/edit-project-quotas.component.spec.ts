@@ -5,6 +5,7 @@ import { EditQuotaQuotaInterface } from '../../../../services';
 import { HarborLibraryModule } from '../../../../harbor-library.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CURRENT_BASE_HREF } from "../../../../utils/utils";
+import { ErrorHandler } from '../../../../utils/error-handler';
 
 describe('EditProjectQuotasComponent', () => {
   let component: EditProjectQuotasComponent;
@@ -27,6 +28,7 @@ describe('EditProjectQuotasComponent', () => {
       ],
       providers: [
         { provide: SERVICE_CONFIG, useValue: config },
+        ErrorHandler
       ]
     })
     .compileComponents();

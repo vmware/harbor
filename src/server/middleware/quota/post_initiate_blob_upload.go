@@ -21,14 +21,16 @@ import (
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
 // PostInitiateBlobUploadMiddleware middleware to add blob to project after mount blob success
 func PostInitiateBlobUploadMiddleware() func(http.Handler) http.Handler {
 	return RequestMiddleware(RequestConfig{
-		ReferenceObject: projectReferenceObject,
-		Resources:       postInitiateBlobUploadResources,
+		ReferenceObject:   projectReferenceObject,
+		Resources:         postInitiateBlobUploadResources,
+		ResourcesExceeded: projectResourcesEvent(1),
+		ResourcesWarning:  projectResourcesEvent(2),
 	})
 }
 

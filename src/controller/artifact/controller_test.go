@@ -477,7 +477,7 @@ func (c *controllerTestSuite) TestGetAddition() {
 
 func (c *controllerTestSuite) TestAddTo() {
 	c.labelMgr.On("AddTo").Return(nil)
-	err := c.ctl.AddLabel(nil, 1, 1)
+	err := c.ctl.AddLabel(context.Background(), 1, 1)
 	c.Require().Nil(err)
 }
 

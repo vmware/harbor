@@ -18,6 +18,7 @@ import (
 	"context"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/dao"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
+	"time"
 )
 
 var (
@@ -31,10 +32,12 @@ type Manager interface {
 	Create(ctx context.Context, artifactrsh *model.ArtifactTrash) (id int64, err error)
 	// Delete ...
 	Delete(ctx context.Context, id int64) (err error)
-	// Filter ...
-	Filter(ctx context.Context) (arts []model.ArtifactTrash, err error)
-	// Flush clean the trash table
-	Flush(ctx context.Context) (err error)
+	// Filter lists the artifact that needs to be cleaned, which creation_time is not in the time window.
+	// The unit of timeWindow is hour, the represent cut-off is time.now() - timeWindow * time.Hours
+	Filter(ctx context.Context, timeWindow int64) (arts []model.ArtifactTrash, err error)
+	// Flush cleans the trash table record, which creation_time is not in the time window.
+	// The unit of timeWindow is hour, the represent cut-off is time.now() - timeWindow * time.Hours
+	Flush(ctx context.Context, timeWindow int64) (err error)
 }
 
 // NewManager returns an instance of the default manager
@@ -56,10 +59,10 @@ func (m *manager) Create(ctx context.Context, artifactrsh *model.ArtifactTrash) 
 func (m *manager) Delete(ctx context.Context, id int64) error {
 	return m.dao.Delete(ctx, id)
 }
-func (m *manager) Filter(ctx context.Context) (arts []model.ArtifactTrash, err error) {
-	return m.dao.Filter(ctx)
+func (m *manager) Filter(ctx context.Context, timeWindow int64) (arts []model.ArtifactTrash, err error) {
+	return m.dao.Filter(ctx, time.Now().Add(-time.Duration(timeWindow)*time.Hour))
 }
 
-func (m *manager) Flush(ctx context.Context) (err error) {
-	return m.dao.Flush(ctx)
+func (m *manager) Flush(ctx context.Context, timeWindow int64) (err error) {
+	return m.dao.Flush(ctx, time.Now().Add(-time.Duration(timeWindow)*time.Hour))
 }

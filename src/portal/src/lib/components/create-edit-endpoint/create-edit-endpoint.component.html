@@ -14,13 +14,13 @@
       <clr-select-container>
         <label class="required">{{'DESTINATION.PROVIDER' | translate}}</label>
         <select clrSelect name="adapter" id="adapter" (change)="adapterChange($event)" [(ngModel)]="target.type" [disabled]="testOngoing || editDisabled">
-          <option *ngFor="let adapter of adapterList" value="{{adapter}}">{{adapter}}</option>
+          <option *ngFor="let adapter of adapterList" value="{{adapter}}">{{getAdapterText(adapter)}}</option>
         </select>
       </clr-select-container>
       <!-- Endpoint name -->
       <clr-input-container>
         <label class="required">{{ 'DESTINATION.NAME' | translate }}</label>
-        <input clrInput type="text" id="destination_name" [disabled]="testOngoing" [readonly]="!editable" [(ngModel)]="target.name"
+        <input autocomplete="off" clrInput type="text" id="destination_name" [disabled]="testOngoing" [readonly]="!editable" [(ngModel)]="target.name"
           name="targetName" size="30" #targetName="ngModel" required>
         <clr-control-error *ngIf="targetName.errors && targetName.errors.required && (targetName.dirty || targetName.touched)">
           {{ 'DESTINATION.NAME_IS_REQUIRED' | translate }}

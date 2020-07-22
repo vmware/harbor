@@ -16,6 +16,8 @@ package vuln
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseSeverityVersion3(t *testing.T) {
@@ -49,4 +51,13 @@ func TestParseSeverityVersion3(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCode(t *testing.T) {
+	assert.True(t, Critical.Code() > High.Code())
+	assert.True(t, High.Code() > Medium.Code())
+	assert.True(t, Medium.Code() > Low.Code())
+	assert.True(t, Low.Code() > Negligible.Code())
+	assert.True(t, Negligible.Code() > Unknown.Code())
+	assert.True(t, Unknown.Code() == None.Code())
 }

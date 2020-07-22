@@ -20,13 +20,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/goharbor/harbor/src/jobservice/errs"
-
-	"github.com/goharbor/harbor/src/jobservice/common/rds"
-
 	"github.com/goharbor/harbor/src/jobservice/common/list"
-
+	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"

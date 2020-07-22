@@ -16,7 +16,6 @@ package operation
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/job"
@@ -45,10 +44,6 @@ type Controller interface {
 
 const (
 	maxReplicators = 1024
-)
-
-var (
-	jobNotFoundErrorMsg = "object is not found"
 )
 
 // NewController returns a controller implementation
@@ -180,7 +175,7 @@ func (c *controller) StopReplication(executionID int64) error {
 				}
 				continue
 			}
-			if isJobNotFoundError(err) {
+			if err == job.ErrJobNotFound {
 				e := c.executionMgr.UpdateTask(&models.Task{
 					ID:     task.ID,
 					Status: models.ExecutionStatusStopped,
@@ -211,13 +206,6 @@ func isTaskInFinalStatus(task *models.Task) bool {
 		return true
 	}
 	return false
-}
-
-func isJobNotFoundError(err error) bool {
-	if err == nil {
-		return false
-	}
-	return strings.Contains(err.Error(), jobNotFoundErrorMsg)
 }
 
 func (c *controller) ListExecutions(query ...*models.ExecutionQuery) (int64, []*models.Execution, error) {

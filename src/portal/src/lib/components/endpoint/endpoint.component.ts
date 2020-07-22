@@ -184,10 +184,15 @@ export class EndpointComponent implements OnInit, OnDestroy {
                 targetLists.forEach(target => {
                     observableLists.push(this.delOperate(target));
                 });
-                forkJoin(...observableLists).subscribe((item) => {
+                forkJoin(...observableLists)
+                .pipe(finalize(() => {
                     this.selectedRow = [];
                     this.reload(true);
                     this.forceRefreshView(2000);
+                }))
+                .subscribe((item) => {
+                }, error => {
+                    this.errorHandler.error(error);
                 });
             }
         }
@@ -215,7 +220,7 @@ export class EndpointComponent implements OnInit, OnDestroy {
                     this.translateService.get(message).subscribe(res =>
                         operateChanges(operMessage, OperationState.failure, res)
                     );
-                    return observableThrowError(message);
+                    return observableThrowError(error);
                 }
                 ));
     }
@@ -233,5 +238,9 @@ export class EndpointComponent implements OnInit, OnDestroy {
                 this.timerHandler = null;
             }
         }, duration);
+    }
+
+    getAdapterText(adapter: string): string {
+        return this.endpointService.getAdapterText(adapter);
     }
 }

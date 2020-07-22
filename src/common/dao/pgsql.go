@@ -22,13 +22,12 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/golang-migrate/migrate"
-	_ "github.com/golang-migrate/migrate/database/postgres" // import pgsql driver for migrator
-	_ "github.com/golang-migrate/migrate/source/file"       // import local file driver for migrator
-
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
-	_ "github.com/lib/pq" // register pgsql driver
+	migrate "github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres" // import pgsql driver for migrator
+	_ "github.com/golang-migrate/migrate/v4/source/file"       // import local file driver for migrator
+	_ "github.com/lib/pq"                                      // register pgsql driver
 )
 
 const defaultMigrationPath = "migrations/postgresql/"
@@ -89,7 +88,17 @@ func (p *pgsql) Register(alias ...string) error {
 	info := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		p.host, p.port, p.usr, p.pwd, p.database, p.sslmode)
 
-	return orm.RegisterDataBase(an, "postgres", info, p.maxIdleConns, p.maxOpenConns)
+	if err := orm.RegisterDataBase(an, "postgres", info, p.maxIdleConns, p.maxOpenConns); err != nil {
+		return err
+	}
+
+	// Due to the issues of beego v1.12.1 and v1.12.2, we set the max open conns ourselves.
+	// See https://github.com/goharbor/harbor/issues/12403
+	// and https://github.com/astaxie/beego/issues/4059 for more info.
+	db, _ := orm.GetDB(an)
+	db.SetMaxOpenConns(p.maxOpenConns)
+
+	return nil
 }
 
 // UpgradeSchema calls migrate tool to upgrade schema to the latest based on the SQL scripts.

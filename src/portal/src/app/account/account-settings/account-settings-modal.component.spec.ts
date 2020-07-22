@@ -17,6 +17,7 @@ import { clone } from '../../../lib/utils/utils';
 import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
 import { ConfirmationDialogService } from '../../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
+import { ErrorHandler } from '../../../lib/utils/error-handler';
 
 describe('AccountSettingsModalComponent', () => {
     let component: AccountSettingsModalComponent;
@@ -78,6 +79,7 @@ describe('AccountSettingsModalComponent', () => {
             providers: [
                 ChangeDetectorRef,
                 TranslateService,
+                ErrorHandler,
                 { provide: SessionService, useValue: fakeSessionService },
                 { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
                 { provide: SearchTriggerService, useValue: fakeSearchTriggerService },

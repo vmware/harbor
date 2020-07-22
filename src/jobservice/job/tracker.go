@@ -17,7 +17,6 @@ package job
 import (
 	"context"
 	"encoding/json"
-	"math/rand"
 	"strconv"
 	"time"
 
@@ -32,8 +31,8 @@ import (
 )
 
 const (
-	// Try best to keep the job stats data but anyway clear it after a reasonable time
-	statDataExpireTime = 7 * 24 * 3600
+	// Check in data placeholder for saving data space
+	redundantCheckInData = "[REDUNDANT]"
 )
 
 // Tracker is designed to track the life cycle of the job described by the stats
@@ -84,9 +83,6 @@ type Tracker interface {
 
 	// The current status of job
 	Status() (Status, error)
-
-	// Expire the job stats data
-	Expire() error
 
 	// Switch status to running
 	Run() error
@@ -237,17 +233,12 @@ func (bt *basicTracker) CheckIn(message string) error {
 	bt.refresh(current, message)
 	err := bt.fireHookEvent(current, message)
 	err = bt.Update(
-		"check_in", message,
+		// skip checkin data here
 		"check_in_at", now,
 		"update_time", now,
 	)
 
 	return err
-}
-
-// Expire job stats
-func (bt *basicTracker) Expire() error {
-	return bt.expire(statDataExpireTime)
 }
 
 // Run job
@@ -325,7 +316,7 @@ func (bt *basicTracker) Save() (err error) {
 	)
 	if stats.Info.CheckInAt > 0 && !utils.IsEmptyStr(stats.Info.CheckIn) {
 		args = append(args,
-			"check_in", stats.Info.CheckIn,
+			"check_in", redundantCheckInData, // use data placeholder for saving space
 			"check_in_at", stats.Info.CheckInAt,
 		)
 	}
@@ -354,21 +345,6 @@ func (bt *basicTracker) Save() (err error) {
 	err = conn.Send("HMSET", args...)
 	// Set inprogress track lock
 	err = conn.Send("HSET", rds.KeyJobTrackInProgress(bt.namespace), stats.Info.JobID, 2)
-
-	// If job kind is periodic job, expire time should not be set
-	// If job kind is scheduled job, expire time should be runAt+
-	if stats.Info.JobKind != KindPeriodic {
-		var expireTime int64 = statDataExpireTime
-		if stats.Info.JobKind == KindScheduled {
-			nowTime := time.Now().Unix()
-			future := stats.Info.RunAt - nowTime
-			if future > 0 {
-				expireTime += future
-			}
-		}
-		expireTime += rand.Int63n(15) // Avoid lots of keys being expired at the same time
-		err = conn.Send("EXPIRE", key, expireTime)
-	}
 
 	// Link with its upstream job if upstream job ID exists for future querying
 	if !utils.IsEmptyStr(stats.Info.UpstreamJobID) {
@@ -587,7 +563,7 @@ func (bt *basicTracker) retrieve() error {
 			res.Info.CheckInAt = parseInt64(value)
 			break
 		case "check_in":
-			res.Info.CheckIn = value
+			res.Info.CheckIn = "" // never read checkin placeholder data
 			break
 		case "cron_spec":
 			res.Info.CronSpec = value
@@ -627,25 +603,6 @@ func (bt *basicTracker) retrieve() error {
 	}
 
 	bt.jobStats = res
-
-	return nil
-}
-
-func (bt *basicTracker) expire(expireTime int64) error {
-	conn := bt.pool.Get()
-	defer func() {
-		_ = conn.Close()
-	}()
-
-	key := rds.KeyJobStats(bt.namespace, bt.jobID)
-	num, err := conn.Do("EXPIRE", key, expireTime)
-	if err != nil {
-		return err
-	}
-
-	if num == 0 {
-		return errors.Errorf("job stats for expiring %s does not exist", bt.jobID)
-	}
 
 	return nil
 }

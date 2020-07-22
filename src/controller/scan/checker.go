@@ -87,10 +87,10 @@ func (c *checker) IsScannable(ctx context.Context, art *artifact.Artifact) (bool
 // hasCapability returns true when scanner has capability for the artifact
 // See https://github.com/goharbor/pluggable-scanner-spec/issues/2 to get more info
 func hasCapability(r *models.Registration, a *artifact.Artifact) bool {
-	// use whitelist here because currently only docker image is supported by the scanner
+	// use allowlist here because currently only docker image is supported by the scanner
 	// https://github.com/goharbor/pluggable-scanner-spec/issues/2
-	whitelist := []string{image.ArtifactTypeImage}
-	for _, t := range whitelist {
+	allowlist := []string{image.ArtifactTypeImage}
+	for _, t := range allowlist {
 		if a.Type == t {
 			return r.HasCapability(a.ManifestMediaType)
 		}

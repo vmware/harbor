@@ -16,36 +16,70 @@ package client
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/suite"
+	"net/http"
 	"os"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/stretchr/testify/assert"
 )
 
-var c Client
+type clientTestSuite struct {
+	suite.Suite
+	client Client
+}
 
-func TestMain(m *testing.M) {
-
+func (c *clientTestSuite) SetupTest() {
 	server, err := test.NewRegistryCtl(nil)
 	if err != nil {
 		fmt.Printf("failed to create registry: %v", err)
 		os.Exit(1)
 	}
-
-	c = NewClient(server.URL, &Config{})
-
-	os.Exit(m.Run())
+	c.client = NewClient(server.URL, &Config{})
 }
 
-func TesHealth(t *testing.T) {
-	err := c.Health()
-	assert.Nil(t, err)
+func (c *clientTestSuite) TesHealth() {
+	err := c.client.Health()
+	c.Require().Nil(err)
 }
 
-func TesStartGC(t *testing.T) {
-	gcr, err := c.StartGC()
-	assert.NotNil(t, err)
-	assert.Equal(t, gcr.Msg, "hello-world")
-	assert.Equal(t, gcr.Status, true)
+func (c *clientTestSuite) TesStartGC() {
+	gcr, err := c.client.StartGC()
+	c.Require().Nil(err)
+	c.Equal(gcr.Msg, "hello-world")
+	c.Equal(gcr.Status, true)
+}
+
+func (c *clientTestSuite) TestDeleteManifest() {
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "DELETE",
+			Pattern: "/api/registry/library/hello-world/manifests/latest",
+			Handler: test.Handler(&test.Response{
+				StatusCode: http.StatusAccepted,
+			}),
+		})
+	defer server.Close()
+
+	err := NewClient(server.URL, &Config{}).DeleteManifest("library/hello-world", "latest")
+	c.Require().Nil(err)
+}
+
+func (c *clientTestSuite) TestDeleteBlob() {
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "DELETE",
+			Pattern: "/api/registry/blob/sha256:adfasa34r2sfadf234n23n4",
+			Handler: test.Handler(&test.Response{
+				StatusCode: http.StatusAccepted,
+			}),
+		})
+	defer server.Close()
+
+	err := NewClient(server.URL, &Config{}).DeleteBlob("sha256:adfasa34r2sfadf234n23n4")
+	c.Require().Nil(err)
+}
+
+func TestClientTestSuite(t *testing.T) {
+	suite.Run(t, &clientTestSuite{})
 }

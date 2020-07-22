@@ -26,7 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/quota"
 	pquota "github.com/goharbor/harbor/src/pkg/quota"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	blobtesting "github.com/goharbor/harbor/src/testing/controller/blob"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"

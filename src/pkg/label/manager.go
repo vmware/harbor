@@ -37,6 +37,8 @@ type Manager interface {
 	RemoveFrom(ctx context.Context, labelID int64, artifactID int64) (err error)
 	// Remove all labels added to the artifact specified by the ID
 	RemoveAllFrom(ctx context.Context, artifactID int64) (err error)
+	// RemoveFromAllArtifacts removes the label specified by the ID from all artifacts
+	RemoveFromAllArtifacts(ctx context.Context, labelID int64) (err error)
 }
 
 // New creates an instance of the default label manager
@@ -88,6 +90,15 @@ func (m *manager) RemoveAllFrom(ctx context.Context, artifactID int64) error {
 	_, err := m.dao.DeleteReferences(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"ArtifactID": artifactID,
+		},
+	})
+	return err
+}
+
+func (m *manager) RemoveFromAllArtifacts(ctx context.Context, labelID int64) error {
+	_, err := m.dao.DeleteReferences(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"LabelID": labelID,
 		},
 	})
 	return err

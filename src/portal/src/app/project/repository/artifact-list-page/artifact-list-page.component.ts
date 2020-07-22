@@ -28,6 +28,7 @@ import { Project } from "../../project";
 export class ArtifactListPageComponent implements OnInit {
 
   projectId: number;
+  projectName: string;
   projectMemberRoleId: number;
   repoName: string;
   referArtifactNameArray: string[] = [];
@@ -60,6 +61,7 @@ export class ArtifactListPageComponent implements OnInit {
     }
     let resolverData = this.route.snapshot.data;
     if (resolverData) {
+      this.projectName = (<Project>resolverData['projectResolver']).name;
       this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
       this.isGuest = (<Project>resolverData['projectResolver']).current_user_role_id === 3;
       this.projectMemberRoleId = (<Project>resolverData['projectResolver']).current_user_role_id;

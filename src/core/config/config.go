@@ -20,6 +20,7 @@ package config
 import (
 	"errors"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
@@ -29,6 +30,8 @@ import (
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/local"
 	"github.com/goharbor/harbor/src/lib/log"
+
+	"github.com/goharbor/harbor/src/common/utils"
 )
 
 const (
@@ -48,6 +51,8 @@ var (
 	// defined as a var for testing.
 	defaultCACertPath = "/etc/core/ca/ca.crt"
 	cfgMgr            *comcfg.CfgManager
+	// ProxyServiceSecret is the secret used by proxy service
+	ProxyServiceSecret = utils.GenerateRandomStringWithLen(16)
 )
 
 // Init configurations
@@ -88,6 +93,7 @@ func initKeyProvider() {
 func initSecretStore() {
 	m := map[string]string{}
 	m[JobserviceSecret()] = secret.JobserviceUser
+	m[ProxyServiceSecret] = secret.ProxyserviceUser
 	SecretStore = secret.NewStore(m)
 }
 
@@ -226,7 +232,7 @@ func RegistryURL() (string, error) {
 
 // InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers
 func InternalJobServiceURL() string {
-	return strings.TrimSuffix(cfgMgr.Get(common.JobServiceURL).GetString(), "/")
+	return os.Getenv("JOBSERVICE_URL")
 }
 
 // GetCoreURL returns the url of core from env
@@ -328,24 +334,6 @@ func WithNotary() bool {
 // WithClair returns a bool value to indicate if Harbor's deployed with Clair
 func WithClair() bool {
 	return cfgMgr.Get(common.WithClair).GetBool()
-}
-
-// ClairEndpoint returns the end point of clair instance, by default it's the one deployed within Harbor.
-func ClairEndpoint() string {
-	return cfgMgr.Get(common.ClairURL).GetString()
-}
-
-// ClairDB return Clair db info
-func ClairDB() (*models.PostGreSQL, error) {
-	clairDB := &models.PostGreSQL{
-		Host:     cfgMgr.Get(common.ClairDBHost).GetString(),
-		Port:     cfgMgr.Get(common.ClairDBPort).GetInt(),
-		Username: cfgMgr.Get(common.ClairDBUsername).GetString(),
-		Password: cfgMgr.Get(common.ClairDBPassword).GetString(),
-		Database: cfgMgr.Get(common.ClairDB).GetString(),
-		SSLMode:  cfgMgr.Get(common.ClairDBSSLMode).GetString(),
-	}
-	return clairDB, nil
 }
 
 // ClairAdapterEndpoint returns the endpoint of clair adapter instance, by default it's the one deployed within Harbor.
@@ -453,11 +441,13 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 		Name:         cfgMgr.Get(common.OIDCName).GetString(),
 		Endpoint:     cfgMgr.Get(common.OIDCEndpoint).GetString(),
 		VerifyCert:   cfgMgr.Get(common.OIDCVerifyCert).GetBool(),
+		AutoOnboard:  cfgMgr.Get(common.OIDCAutoOnboard).GetBool(),
 		ClientID:     cfgMgr.Get(common.OIDCCLientID).GetString(),
 		ClientSecret: cfgMgr.Get(common.OIDCClientSecret).GetString(),
 		GroupsClaim:  cfgMgr.Get(common.OIDCGroupsClaim).GetString(),
 		RedirectURL:  extEndpoint + common.OIDCCallbackPath,
 		Scope:        scope,
+		UserClaim:    cfgMgr.Get(common.OIDCUserClaim).GetString(),
 	}, nil
 }
 
@@ -479,4 +469,25 @@ func QuotaSetting() (*models.QuotaSetting, error) {
 	return &models.QuotaSetting{
 		StoragePerProject: cfgMgr.Get(common.StoragePerProject).GetInt64(),
 	}, nil
+}
+
+// GetPermittedRegistryTypesForProxyCache returns the permitted registry types for proxy cache
+func GetPermittedRegistryTypesForProxyCache() []string {
+	types := os.Getenv("PERMITTED_REGISTRY_TYPES_FOR_PROXY_CACHE")
+	if len(types) == 0 {
+		return []string{}
+	}
+	return strings.Split(types, ",")
+}
+
+// GetGCTimeWindow returns the reserve time window of blob.
+func GetGCTimeWindow() int64 {
+	// the env is for testing/debugging. For production, Do NOT set it.
+	if env, exist := os.LookupEnv("GC_TIME_WINDOW_HOURS"); exist {
+		timeWindow, err := strconv.ParseInt(env, 10, 64)
+		if err == nil {
+			return timeWindow
+		}
+	}
+	return common.DefaultGCTimeWindowHours
 }

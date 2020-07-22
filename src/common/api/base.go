@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"strconv"
 
@@ -25,7 +26,6 @@ import (
 	"github.com/astaxie/beego/validation"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib/log"
-	serror "github.com/goharbor/harbor/src/server/error"
 )
 
 const (
@@ -64,7 +64,7 @@ func (b *BaseAPI) Render() error {
 
 // RenderError provides shortcut to render http error
 func (b *BaseAPI) RenderError(code int, text string) {
-	serror.SendError(b.Ctx.ResponseWriter, &commonhttp.Error{
+	lib_http.SendError(b.Ctx.ResponseWriter, &commonhttp.Error{
 		Code:    code,
 		Message: text,
 	})
@@ -255,5 +255,5 @@ func (b *BaseAPI) SendStatusServiceUnavailableError(err error) {
 //	]
 // }
 func (b *BaseAPI) SendError(err error) {
-	serror.SendError(b.Ctx.ResponseWriter, err)
+	lib_http.SendError(b.Ctx.ResponseWriter, err)
 }

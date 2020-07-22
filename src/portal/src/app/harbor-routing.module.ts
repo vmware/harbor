@@ -63,6 +63,7 @@ import { ArtifactSummaryComponent } from "./project/repository/artifact/artifact
 import { ReplicationTasksComponent } from "../lib/components/replication/replication-tasks/replication-tasks.component";
 import { ReplicationTasksRoutingResolverService } from "./services/routing-resolvers/replication-tasks-routing-resolver.service";
 import { ArtifactDetailRoutingResolverService } from "./services/routing-resolvers/artifact-detail-routing-resolver.service";
+import { DistributionInstancesComponent } from './distribution/distribution-instances/distribution-instances.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -123,6 +124,11 @@ const harborRoutes: Routes = [
         component: TotalReplicationPageComponent,
         canActivate: [SystemAdminGuard],
         canActivateChild: [SystemAdminGuard]
+      },
+      {
+        path: 'distribution/instances',
+        component: DistributionInstancesComponent,
+        canActivate: [SystemAdminGuard]
       },
       {
         path: 'interrogation-services',
@@ -320,7 +326,12 @@ const harborRoutes: Routes = [
               }
             },
             component: ScannerComponent
-          }
+          },
+          {
+            path: '',
+            redirectTo: 'repositories',
+            pathMatch: 'full'
+          },
         ]
       },
       {

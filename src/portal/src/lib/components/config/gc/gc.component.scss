@@ -1,15 +1,28 @@
 .cron-selection {
-    padding-left: 0.25rem;
+    margin-top: 1rem;
     display: flex;
     align-items: center;
 }
 
 .gc-start-btn {
     width:150px;
-    margin-top: 41px;
+    margin-top: 35px;
 }
-.parameters {
-    font-size: 0.541667rem !important;
-    width: 200px !important;
-    font-weight: 400 !important;
+
+.flex-200 {
+    flex: 0 0 200px;
+    max-width: 200px;
+}
+
+.mt-05 {
+    margin-top: 0.5rem;
+}
+
+.font-weight-400 {
+    font-weight: 400;
+}
+
+.explain {
+    font-weight: 100;
+    font-size: 10px;
 }

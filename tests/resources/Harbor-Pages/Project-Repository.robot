@@ -18,12 +18,11 @@ Resource  ../../resources/Util.robot
 
 *** Keywords ***
 View Repo Scan Details
+    [Arguments]  @{vulnerabilities_level}
     Retry Element Click  xpath=${first_repo_xpath}
-    Capture Page Screenshot  viewcve1.png
-    Retry Wait Until Page Contains  unknown
-    Retry Wait Until Page Contains  high
-    Retry Wait Until Page Contains  medium
-    Retry Wait Until Page Contains  CVE
+    Capture Page Screenshot
+    :FOR  ${item}  IN  @{vulnerabilities_level}
+    \    Retry Wait Until Page Contains Element  //hbr-artifact-vulnerabilities//clr-dg-row[contains(.,'${item}')]
     Retry Element Click  xpath=${build_history_btn}
     Retry Wait Until Page Contains Element  xpath=${build_history_data}
 

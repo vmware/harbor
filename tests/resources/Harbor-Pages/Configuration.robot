@@ -169,6 +169,10 @@ Token Must Be Match
     [Arguments]  ${minutes}
     Textfield Value Should Be  xpath=//*[@id='tokenExpiration']  ${minutes}
 
+Robot Account Token Must Be Match
+    [Arguments]  ${days}
+    Textfield Value Should Be  xpath=//*[@id='robotTokenExpiration']  ${days}
+
 ## Replication
 Check Verify Remote Cert
     Mouse Down  xpath=//*[@id='clr-checkbox-verifyRemoteCert']
@@ -304,12 +308,6 @@ Click GC Now
     Retry Element Click  xpath=${gc_now_xpath}
     Sleep  2
 
-Click GC Now With Param Delete Untagged Artifacts
-    Sleep  1
-    Retry Element Click    xpath=${checkbox_delete_untagged_artifacts}
-    Retry Element Click    xpath=${gc_now_xpath}
-    Sleep  5
-
 View GC Details
     Retry Element Click  xpath=${gc_log_details_xpath}
     Sleep  2
@@ -318,14 +316,14 @@ Switch To GC History
     Retry Element Click  xpath=${gc_log_xpath}
     Retry Wait Until Page Contains  Job
 
-Add Items To System CVE Whitelist
+Add Items To System CVE Allowlist
     [Arguments]    ${cve_id}
     Retry Element Click    ${configuration_system_wl_add_btn}
     Retry Text Input    ${configuration_system_wl_textarea}    ${cve_id}
     Retry Element Click    ${configuration_system_wl_add_confirm_btn}
     Retry Element Click    ${config_system_save_button_xpath}
 
-Delete Top Item In System CVE Whitelist
+Delete Top Item In System CVE Allowlist
     [Arguments]  ${count}=1
     :FOR  ${idx}  IN RANGE  1  ${count}
     \   Retry Element Click    ${configuration_system_wl_delete_a_cve_id_icon}
@@ -339,6 +337,7 @@ Get Project Count Quota Text From Project Quotas List
 
 Get Project Storage Quota Text From Project Quotas List
     [Arguments]    ${project_name}
+    Switch To Configure
     Switch To Project Quotas
     ${storage_quota}=    Get Text    xpath=//project-quotas//clr-datagrid//clr-dg-row[contains(.,'${project_name}')]//clr-dg-cell[3]//label
     [Return]  ${storage_quota}

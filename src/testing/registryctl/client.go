@@ -1,7 +1,7 @@
 package registryctl
 
 import (
-	"github.com/goharbor/harbor/src/registryctl/api"
+	"github.com/goharbor/harbor/src/registryctl/api/registry/gc"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -15,10 +15,20 @@ func (c *Mockclient) Health() error {
 }
 
 // StartGC ...
-func (c *Mockclient) StartGC() (*api.GCResult, error) {
-	result := &api.GCResult{
+func (c *Mockclient) StartGC() (*gc.Result, error) {
+	result := &gc.Result{
 		Status: true,
 		Msg:    "this is a mock client",
 	}
 	return result, nil
+}
+
+// DeleteBlob ...
+func (c *Mockclient) DeleteBlob(reference string) (err error) {
+	return nil
+}
+
+// DeleteManifest ...
+func (c *Mockclient) DeleteManifest(repository, reference string) (err error) {
+	return nil
 }

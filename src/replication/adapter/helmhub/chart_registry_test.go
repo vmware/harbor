@@ -23,7 +23,12 @@ import (
 )
 
 func TestFetchCharts(t *testing.T) {
-	adapter, err := newAdapter(nil)
+	registry := &model.Registry{
+		Type:     model.RegistryTypeHelmHub,
+		URL:      baseURL,
+		Insecure: false,
+	}
+	adapter, err := newAdapter(registry)
 	require.Nil(t, err)
 	// filter 1
 	filters := []*model.Filter{
@@ -55,7 +60,12 @@ func TestFetchCharts(t *testing.T) {
 }
 
 func TestChartExist(t *testing.T) {
-	adapter, err := newAdapter(nil)
+	registry := &model.Registry{
+		Type:     model.RegistryTypeHelmHub,
+		URL:      baseURL,
+		Insecure: false,
+	}
+	adapter, err := newAdapter(registry)
 	require.Nil(t, err)
 	exist, err := adapter.ChartExist("harbor/harbor", "1.0.0")
 	require.Nil(t, err)
@@ -63,7 +73,12 @@ func TestChartExist(t *testing.T) {
 }
 
 func TestChartExist2(t *testing.T) {
-	adapter, err := newAdapter(nil)
+	registry := &model.Registry{
+		Type:     model.RegistryTypeHelmHub,
+		URL:      baseURL,
+		Insecure: false,
+	}
+	adapter, err := newAdapter(registry)
 	require.Nil(t, err)
 	exist, err := adapter.ChartExist("goharbor/harbor", "1.0.0")
 	require.Nil(t, err)
@@ -75,7 +90,12 @@ func TestChartExist2(t *testing.T) {
 }
 
 func TestDownloadChart(t *testing.T) {
-	adapter, err := newAdapter(nil)
+	registry := &model.Registry{
+		Type:     model.RegistryTypeHelmHub,
+		URL:      baseURL,
+		Insecure: false,
+	}
+	adapter, err := newAdapter(registry)
 	require.Nil(t, err)
 	_, err = adapter.DownloadChart("harbor/harbor", "1.0.0")
 	require.Nil(t, err)

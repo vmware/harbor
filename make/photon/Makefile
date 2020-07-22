@@ -19,7 +19,7 @@ CURL=$(shell which curl)
 DOCKERCMD=$(shell which docker)
 DOCKERBUILD=$(DOCKERCMD) build
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
-DOCKERIMASES=$(DOCKERCMD) images
+DOCKERIMAGES=$(DOCKERCMD) images
 BASEIMAGENAMESPACE=goharbor
 
 # binary
@@ -192,7 +192,7 @@ _build_chart_server:
 			rm -rf $(DOCKERFILEPATH_CHART_SERVER)/binary && mkdir -p $(DOCKERFILEPATH_CHART_SERVER)/binary && \
 			$(call _get_binary, $(CHARTURL), $(DOCKERFILEPATH_CHART_SERVER)/binary/chartm); \
 		else \
-			cd $(DOCKERFILEPATH_CHART_SERVER) && $(DOCKERFILEPATH_CHART_SERVER)/builder $(GOBUILDIMAGE) $(CHART_SERVER_CODE_BASE) $(CHARTMUSEUMVERSION) $(CHART_SERVER_MAIN_PATH) $(CHART_SERVER_BIN_NAME) && cd - ; \
+			cd $(DOCKERFILEPATH_CHART_SERVER) && $(DOCKERFILEPATH_CHART_SERVER)/builder $(GOBUILDIMAGE) $(CHART_SERVER_CODE_BASE) $(CHARTMUSEUM_SRC_TAG) $(CHART_SERVER_MAIN_PATH) $(CHART_SERVER_BIN_NAME) && cd - ; \
 		fi ; \
 		echo "building chartmuseum container for photon..." ; \
 		$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_CHART_SERVER)/$(DOCKERFILENAME_CHART_SERVER) -t $(DOCKERIMAGENAME_CHART_SERVER):$(VERSIONTAG) . ; \

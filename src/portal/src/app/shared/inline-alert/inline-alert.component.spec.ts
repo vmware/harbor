@@ -8,6 +8,9 @@ import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { MessageHandlerService } from '../message-handler/message-handler.service';
+import { ErrorHandler } from '../../../lib/utils/error-handler';
+
 describe('InlineAlertComponent', () => {
     let component: InlineAlertComponent;
     let fixture: ComponentFixture<InlineAlertComponent>;
@@ -28,7 +31,8 @@ describe('InlineAlertComponent', () => {
             ],
             declarations: [InlineAlertComponent],
             providers: [
-                TranslateService
+                TranslateService,
+                ErrorHandler
             ]
         })
             .compileComponents();

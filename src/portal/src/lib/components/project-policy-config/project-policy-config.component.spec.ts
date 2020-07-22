@@ -6,7 +6,7 @@ import { ProjectPolicyConfigComponent } from './project-policy-config.component'
 import { SharedModule } from '../../utils/shared/shared.module';
 import { ProjectService } from '../../services/project.service';
 import { SERVICE_CONFIG, IServiceConfig} from '../../entities/service.config';
-import {SystemCVEWhitelist, SystemInfo} from '../../services/interface';
+import {SystemCVEAllowlist, SystemInfo} from '../../services/interface';
 import { Project } from './project';
 import { UserPermissionService } from '../../services/permission.service';
 import { of } from 'rxjs';
@@ -74,7 +74,7 @@ const mockProjectPolicies: Project[] | any[] = [
     }
   }
 ];
-const mockSystemWhitelist: SystemCVEWhitelist = {
+const mockSystemAllowlist: SystemCVEAllowlist = {
   "expires_at": 1561996800,
   "id": 1,
   "items": [],
@@ -94,8 +94,8 @@ const systemInfoService = {
   getSystemInfo() {
     return of(mockSystemInfo[0]);
   },
-  getSystemWhitelist() {
-    return of(mockSystemWhitelist);
+  getSystemAllowlist() {
+    return of(mockSystemAllowlist);
   }
 };
 

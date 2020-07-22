@@ -25,7 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/quota/driver"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/mock"

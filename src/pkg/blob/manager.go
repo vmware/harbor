@@ -16,7 +16,7 @@ package blob
 
 import (
 	"context"
-
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/blob/dao"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 )
@@ -58,8 +58,17 @@ type Manager interface {
 	// Update the blob
 	Update(ctx context.Context, blob *Blob) error
 
+	// Update the blob status
+	UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, error)
+
 	// List returns blobs by params
 	List(ctx context.Context, params ListParams) ([]*Blob, error)
+
+	// DeleteBlob delete blob
+	Delete(ctx context.Context, id int64) (err error)
+
+	// UselessBlobs useless blob is the blob that is not used in any of projects.
+	UselessBlobs(ctx context.Context, timeWindowHours int64) ([]*models.Blob, error)
 }
 
 type manager struct {
@@ -112,8 +121,24 @@ func (m *manager) Update(ctx context.Context, blob *Blob) error {
 	return m.dao.UpdateBlob(ctx, blob)
 }
 
+func (m *manager) UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, error) {
+	_, exist := models.StatusMap[blob.Status]
+	if !exist {
+		return -1, errors.New(nil).WithMessage("cannot update blob status, as the status is unknown. digest: %s, status: %s", blob.Digest, blob.Status)
+	}
+	return m.dao.UpdateBlobStatus(ctx, blob)
+}
+
 func (m *manager) List(ctx context.Context, params ListParams) ([]*Blob, error) {
 	return m.dao.ListBlobs(ctx, params)
+}
+
+func (m *manager) Delete(ctx context.Context, id int64) error {
+	return m.dao.DeleteBlob(ctx, id)
+}
+
+func (m *manager) UselessBlobs(ctx context.Context, timeWindowHours int64) ([]*models.Blob, error) {
+	return m.dao.GetBlobsNotRefedByProjectBlob(ctx, timeWindowHours)
 }
 
 // NewManager returns blob manager

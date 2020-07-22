@@ -20,8 +20,7 @@ export class ScannerMetadataComponent implements  OnInit {
     loading: boolean = false;
     scannerMetadata: ScannerMetadata;
     constructor(private configScannerService: ConfigScannerService,
-                private errorHandler: ErrorHandler,
-                private translate: TranslateService) {
+                private errorHandler: ErrorHandler) {
     }
     ngOnInit(): void {
         this.loading = true;
@@ -35,7 +34,7 @@ export class ScannerMetadataComponent implements  OnInit {
     }
     parseDate(item: any): string {
         if (this.hasValue(item) && this.hasDateValue(item)) {
-            return new DatePipe(this.translate.currentLang).transform(item.value, 'short');
+            return new DatePipe('en-us').transform(item.value, 'short');
         }
         if (this.hasValue(item)) {
             return item.value;

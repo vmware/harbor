@@ -16,6 +16,8 @@ package blob
 
 import (
 	"fmt"
+	pkg_blob "github.com/goharbor/harbor/src/pkg/blob"
+	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -37,11 +39,10 @@ func (suite *PutBlobUploadMiddlewareTestSuite) SetupSuite() {
 
 func (suite *PutBlobUploadMiddlewareTestSuite) TestDataInBody() {
 	suite.WithProject(func(projectID int64, projectName string) {
-		req := suite.NewRequest(http.MethodPut, fmt.Sprintf("/v2/%s/photon/blobs/uploads/%s", projectName, uuid.New().String()), nil)
+		digest := suite.DigestString()
+		req := suite.NewRequest(http.MethodPut, fmt.Sprintf("/v2/%s/photon/blobs/uploads/%s?digest=%s", projectName, uuid.New().String(), digest), nil)
 		req.Header.Set("Content-Length", "512")
 		res := httptest.NewRecorder()
-
-		digest := suite.DigestString()
 
 		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": digest})
 		PutBlobUploadMiddleware()(next).ServeHTTP(res, req)
@@ -60,7 +61,8 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestDataInBody() {
 func (suite *PutBlobUploadMiddlewareTestSuite) TestWithoutBody() {
 	suite.WithProject(func(projectID int64, projectName string) {
 		sessionID := uuid.New().String()
-		path := fmt.Sprintf("/v2/%s/photon/blobs/uploads/%s", projectName, sessionID)
+		digest := suite.DigestString()
+		path := fmt.Sprintf("/v2/%s/photon/blobs/uploads/%s?digest=%s", projectName, sessionID, digest)
 
 		{
 			req := httptest.NewRequest(http.MethodPatch, path, nil)
@@ -73,8 +75,6 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestWithoutBody() {
 
 		req := suite.NewRequest(http.MethodPut, path, nil)
 		res := httptest.NewRecorder()
-
-		digest := suite.DigestString()
 
 		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": digest})
 		PutBlobUploadMiddleware()(next).ServeHTTP(res, req)
@@ -89,6 +89,71 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestWithoutBody() {
 			suite.Equal(digest, blob.Digest)
 			suite.Equal(int64(512), blob.Size)
 		}
+	})
+}
+
+func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobInDeleting() {
+	suite.WithProject(func(projectID int64, projectName string) {
+		digest := suite.DigestString()
+
+		id, err := blob.Ctl.Ensure(suite.Context(), digest, "application/octet-stream", 512)
+		suite.Nil(err)
+
+		// status-none -> status-delete -> status-deleting
+		_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), &blob_models.Blob{ID: id, Status: blob_models.StatusDelete})
+		suite.Nil(err)
+		_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), &blob_models.Blob{ID: id, Status: blob_models.StatusDeleting, Version: 1})
+		suite.Nil(err)
+
+		req := suite.NewRequest(http.MethodPut, fmt.Sprintf("/v2/%s/photon/blobs/uploads/%s?digest=%s", projectName, uuid.New().String(), digest), nil)
+		req.Header.Set("Content-Length", "512")
+		res := httptest.NewRecorder()
+
+		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": digest})
+		PutBlobUploadMiddleware()(next).ServeHTTP(res, req)
+		suite.Equal(http.StatusNotFound, res.Code)
+	})
+}
+
+func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobInDelete() {
+	suite.WithProject(func(projectID int64, projectName string) {
+		digest := suite.DigestString()
+
+		id, err := blob.Ctl.Ensure(suite.Context(), digest, "application/octet-stream", 512)
+		suite.Nil(err)
+
+		_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), &blob_models.Blob{ID: id, Status: blob_models.StatusDelete})
+		suite.Nil(err)
+
+		req := suite.NewRequest(http.MethodPut, fmt.Sprintf("/v2/%s/photon/blobs/uploads/%s?digest=%s", projectName, uuid.New().String(), digest), nil)
+		req.Header.Set("Content-Length", "512")
+		res := httptest.NewRecorder()
+
+		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": digest})
+		PutBlobUploadMiddleware()(next).ServeHTTP(res, req)
+		suite.Equal(http.StatusCreated, res.Code)
+
+		exist, err := blob.Ctl.Exist(suite.Context(), digest, blob.IsAssociatedWithProject(projectID))
+		suite.Nil(err)
+		suite.True(exist)
+
+		blob, err := blob.Ctl.Get(suite.Context(), digest)
+		if suite.Nil(err) {
+			suite.Equal(digest, blob.Digest)
+			suite.Equal(int64(512), blob.Size)
+			suite.Equal(blob_models.StatusNone, blob.Status)
+		}
+	})
+}
+
+func (suite *PutBlobUploadMiddlewareTestSuite) TestRequestWithoutDigest() {
+	suite.WithProject(func(projectID int64, projectName string) {
+		req := suite.NewRequest(http.MethodPut, fmt.Sprintf("/v2/%s/photon/blobs/uploads/%s", projectName, uuid.New().String()), nil)
+		req.Header.Set("Content-Length", "512")
+		next := suite.NextHandler(http.StatusCreated, map[string]string{})
+		res := httptest.NewRecorder()
+		PutBlobUploadMiddleware()(next).ServeHTTP(res, req)
+		suite.Equal(http.StatusBadRequest, res.Code)
 	})
 }
 

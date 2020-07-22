@@ -1,0 +1,137 @@
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <h2 class="custom-h2">
+            {{ 'SIDE_NAV.DISTRIBUTIONS.INSTANCES' | translate }}
+        </h2>
+        <div>
+            <clr-datagrid (clrDgRefresh)="loadData()" [clrDgLoading]="inProgress" [(clrDgSelected)]="selectedRow">
+                <clr-dg-action-bar>
+                    <div class="clr-row">
+                        <div class="clr-col-7">
+                            <button id="new-instance"
+                                    type="button"
+                                    class="btn  btn-secondary"
+                                    (click)="addInstance()"
+                            >
+                                <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{
+                              'DISTRIBUTION.ADD_ACTION' | translate
+                                }}
+                            </button>
+                            <button id="set-default"
+                                    [disabled]="!(selectedRow && selectedRow.length === 1 && !selectedRow[0].default && !selectedRow[0].enabled)"
+                                    class="btn  btn-secondary"
+                                    (click)="setAsDefault()">{{'SCANNER.SET_AS_DEFAULT' | translate}}</button>
+                            <clr-dropdown
+                                    [clrCloseMenuOnItemClick]="false"
+                                    class="btn  btn-link"
+                                    clrDropdownTrigger>
+                                 <span id="member-action">{{ 'BUTTON.ACTIONS' | translate}}<clr-icon shape="caret down"></clr-icon></span>
+                                 <clr-dropdown-menu *clrIfOpen>
+                                    <clr-dropdown>
+                                        <button type="button" class="btn  btn-secondary" (click)="editInstance()"
+                                                [disabled]="!(selectedRow && selectedRow.length === 1)">
+                                            <clr-icon shape="edit" size="16"></clr-icon>&nbsp;{{'DISTRIBUTION.EDIT_ACTION' | translate}}
+                                        </button>
+                                        <button type="button" class="btn  btn-secondary" (click)="operateInstances('enable', selectedRow)"
+                                                [disabled]="!(selectedRow && selectedRow.length === 1 && !selectedRow[0].enabled)">
+                                            <clr-icon shape="connect" size="16"></clr-icon>&nbsp;{{'DISTRIBUTION.ENABLE_ACTION' | translate}}
+                                        </button>
+                                        <button
+                                                type="button"
+                                                class="btn btn-secondary"
+                                                (click)="operateInstances('disable', selectedRow)"
+                                                [disabled]="!(selectedRow && selectedRow.length === 1 && selectedRow[0].enabled)">
+                                            <clr-icon shape="disconnect" size="16"></clr-icon>&nbsp;{{'DISTRIBUTION.DISABLE_ACTION' | translate}}
+                                        </button>
+                                        <div class="dropdown-divider"></div>
+                                        <button
+                                                type="button"
+                                                class="btn btn-secondary"
+                                                (click)="operateInstances('delete', selectedRow)"
+                                                [disabled]="selectedRow.length < 1">
+                                            <clr-icon shape="window-close" size="16"></clr-icon>&nbsp;{{'DISTRIBUTION.DELETE_ACTION' | translate}}
+                                        </button>
+                                    </clr-dropdown>
+                                </clr-dropdown-menu>
+                            </clr-dropdown>
+                        </div>
+                        <div class="clr-col-5">
+                            <div class="action-head-pos">
+                                <hbr-filter [withDivider]="true" filterPlaceholder="{{'DISTRIBUTION.FILTER_INSTANCE_PLACEHOLDER' | translate}}" (filterEvt)="doFilter($event)"></hbr-filter>
+                                <span class="refresh-btn">
+                                  <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress" (click)="refresh()"></clr-icon>
+                                  <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </clr-dg-action-bar>
+                <clr-dg-column>{{ 'DISTRIBUTION.NAME' | translate }}</clr-dg-column>
+                <clr-dg-column>{{ 'DISTRIBUTION.ENDPOINT' | translate }}</clr-dg-column>
+                <clr-dg-column>{{ 'DISTRIBUTION.PROVIDER' | translate }}</clr-dg-column>
+                <clr-dg-column>{{ 'DISTRIBUTION.STATUS' | translate }}</clr-dg-column>
+                <clr-dg-column>{{ 'DISTRIBUTION.ENABLED' | translate }}</clr-dg-column>
+                <clr-dg-column>{{'SCANNER.AUTH' | translate}}</clr-dg-column>
+                <clr-dg-column>{{'DISTRIBUTION.SETUP_TIMESTAMP' | translate}}</clr-dg-column>
+                <clr-dg-column>{{'DISTRIBUTION.DESCRIPTION' | translate}}</clr-dg-column>
+                <clr-dg-placeholder>{{
+                  'DISTRIBUTION.NOT_FOUND' | translate
+                    }}</clr-dg-placeholder>
+                <clr-dg-row *ngFor="let instance of instances" [clrDgItem]="instance">
+                    <clr-dg-cell>
+                        <span>{{ instance.name }}</span>
+                        <span *ngIf="instance.default" class="label label-info ml-1">{{'SCANNER.DEFAULT' | translate}}</span>
+                    </clr-dg-cell>
+                    <clr-dg-cell>{{ instance.endpoint }}</clr-dg-cell>
+                    <clr-dg-cell>
+                      <span>{{ instance.vendor }}</span>
+                      <clr-signpost *ngIf="providerMap[instance.vendor]">
+                        <clr-signpost-content *clrIfOpen>
+                            <div>
+                                <span>
+                                    <img (error)="showDefaultIcon($event, instance.vendor)" class="height-24" [src]="providerMap[instance.vendor].icon">
+                                </span>
+                            </div>
+                            <div class="margin-top-5px">
+                                <span>{{'DISTRIBUTION.NAME' | translate}}:</span>
+                                <span class="ml-1">{{providerMap[instance.vendor].name}}</span>
+                            </div>
+                            <div class="margin-top-5px">
+                                <span class="no-wrapper">
+                                    <span>{{'DISTRIBUTION.MAINTAINER' | translate}}:</span>
+                                    <span class="ml-1">{{providerMap[instance.vendor].maintainers?.join(',')}}</span>
+                                </span>
+                            </div>
+                            <div class="margin-top-5px">
+                                <span>{{'DISTRIBUTION.SOURCE' | translate}}:</span>
+                                <a target="_blank" href="{{providerMap[instance.vendor].source}}" class="ml-1">{{providerMap[instance.vendor].source}}</a>
+                            </div>
+                            <div class="margin-top-5px">
+                                <span>{{'DISTRIBUTION.VERSION' | translate}}:</span>
+                                <span class="ml-1">{{providerMap[instance.vendor].version}}</span>
+                            </div>
+                        </clr-signpost-content>
+                      </clr-signpost>
+                    </clr-dg-cell>
+                    <clr-dg-cell [ngSwitch]="instance.status === 'Healthy'">
+                        <span *ngSwitchCase="true" class="label label-success">{{ instance.status }}</span>
+                        <span  *ngSwitchDefault class="label label-danger">{{ instance.status }}</span>
+                    </clr-dg-cell>
+                    <clr-dg-cell>{{ instance.enabled || false }}</clr-dg-cell>
+                    <clr-dg-cell>{{ instance.auth_mode }}</clr-dg-cell>
+                    <clr-dg-cell>{{fmtTime(instance.setup_timestamp) | date: 'short'}}</clr-dg-cell>
+                    <clr-dg-cell>{{ instance.description }}</clr-dg-cell>
+                </clr-dg-row>
+                <clr-dg-footer>
+                    <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount" [(clrDgPage)]="currentPage">
+                        <span *ngIf="pagination.totalItems">{{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }}{{ 'HELM_CHART.OF' | translate }}</span>
+                        <span>{{ pagination.totalItems }} {{ 'HELM_CHART.ITEMS' | translate }}</span>
+                    </clr-dg-pagination>
+                </clr-dg-footer>
+            </clr-datagrid>
+        </div>
+    </div>
+</div>
+<div>
+    <dist-setup-modal (refresh)="refresh()" [providers]="providers" #setupModal></dist-setup-modal>
+</div>

@@ -13,9 +13,10 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	hlog "github.com/goharbor/harbor/src/lib/log"
-	"k8s.io/helm/pkg/chartutil"
-	"k8s.io/helm/pkg/proto/hapi/chart"
-	helm_repo "k8s.io/helm/pkg/repo"
+	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/chartutil"
+	helm_repo "helm.sh/helm/v3/pkg/repo"
 )
 
 const (
@@ -35,7 +36,7 @@ type ChartVersions []*ChartVersion
 // ChartVersionDetails keeps the detailed data info of the chart version
 type ChartVersionDetails struct {
 	Metadata     *helm_repo.ChartVersion `json:"metadata"`
-	Dependencies []*chartutil.Dependency `json:"dependencies"`
+	Dependencies []*chart.Dependency     `json:"dependencies"`
 	Values       map[string]interface{}  `json:"values"`
 	Files        map[string]string       `json:"files"`
 	Security     *SecurityReport         `json:"security"`
@@ -76,41 +77,37 @@ func (cho *ChartOperator) GetChartDetails(content []byte) (*ChartVersionDetails,
 	if err != nil {
 		return nil, err
 	}
-
-	// Parse the requirements of chart
-	requirements, err := chartutil.LoadRequirements(chartData)
-	if err != nil {
-		// If no requirements.yaml, return empty dependency list
-		if _, ok := err.(chartutil.ErrNoRequirementsFile); ok {
-			requirements = &chartutil.Requirements{
-				Dependencies: make([]*chartutil.Dependency, 0),
-			}
-		} else {
-			return nil, err
-		}
-	}
-
+	dependencies := chartData.Metadata.Dependencies
 	var values map[string]interface{}
+	var buf bytes.Buffer
 	files := make(map[string]string)
 	// Parse values
 	if chartData.Values != nil {
-		values = parseRawValues([]byte(chartData.Values.GetRaw()))
-		if len(values) > 0 {
+		// values = parseRawValues([]byte(chartData.Values.GetRaw()))
+		if len(chartData.Values) > 0 {
+			c := chartutil.Values(chartData.Values)
+			ValYaml, err := c.YAML()
+
+			if err != nil {
+				return nil, err
+			}
+			c.Encode(&buf)
+			values = parseRawValues(buf.Bytes())
 			// Append values.yaml file
-			files[valuesFileName] = chartData.Values.Raw
+			files[valuesFileName] = ValYaml
 		}
 	}
 
 	// Append other files like 'README.md'
-	for _, v := range chartData.GetFiles() {
-		if v.TypeUrl == readmeFileName {
-			files[readmeFileName] = string(v.GetValue())
+	for _, v := range chartData.Files {
+		if v.Name == readmeFileName {
+			files[readmeFileName] = string(v.Data)
 			break
 		}
 	}
 
 	theChart := &ChartVersionDetails{
-		Dependencies: requirements.Dependencies,
+		Dependencies: dependencies,
 		Values:       values,
 		Files:        files,
 	}
@@ -141,7 +138,7 @@ func (cho *ChartOperator) GetChartList(content []byte) ([]*ChartInfo, error) {
 			chartInfo.Home = lVersion.Home
 			chartInfo.Icon = lVersion.Icon
 			chartInfo.Deprecated = lVersion.Deprecated
-			chartInfo.LatestVersion = lVersion.GetVersion()
+			chartInfo.LatestVersion = lVersion.Version
 			chartList = append(chartList, chartInfo)
 		}
 	}
@@ -166,7 +163,7 @@ func (cho *ChartOperator) GetChartData(content []byte) (*chart.Chart, error) {
 	}
 
 	reader := bytes.NewReader(content)
-	chartData, err := chartutil.LoadArchive(reader)
+	chartData, err := loader.LoadArchive(reader)
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +233,6 @@ func parseRawValues(rawValue []byte) map[string]interface{} {
 	if len(rawValue) == 0 {
 		return valueMap
 	}
-
 	values, err := chartutil.ReadValues(rawValue)
 	if err != nil || len(values) == 0 {
 		return valueMap

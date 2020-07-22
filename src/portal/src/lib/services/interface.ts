@@ -439,7 +439,7 @@ export interface ProjectRootInterface {
   VALUE: number;
   LABEL: string;
 }
-export interface SystemCVEWhitelist {
+export interface SystemCVEAllowlist {
   id: number;
   project_id: number;
   expires_at: number;

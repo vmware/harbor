@@ -6,6 +6,7 @@ import { InlineAlertComponent } from '../inline-alert/inline-alert.component';
 
 import { SERVICE_CONFIG, IServiceConfig } from '../../entities/service.config';
 import { SharedModule } from '../../utils/shared/shared.module';
+import { ErrorHandler } from '../../../lib/utils/error-handler';
 
 describe('PushImageButtonComponent (inline template)', () => {
   let component: PushImageButtonComponent;
@@ -19,7 +20,8 @@ describe('PushImageButtonComponent (inline template)', () => {
       ],
       declarations: [InlineAlertComponent, CopyInputComponent, PushImageButtonComponent],
       providers: [
-        { provide: SERVICE_CONFIG, useValue: {} }
+        { provide: SERVICE_CONFIG, useValue: {} },
+        ErrorHandler
       ]
     });
 

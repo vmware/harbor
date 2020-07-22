@@ -74,7 +74,7 @@ type ProjectSummary struct {
 	ChartCount uint64 `json:"chart_count"`
 
 	ProjectAdminCount int64 `json:"project_admin_count"`
-	MasterCount       int64 `json:"master_count"`
+	MaintainerCount   int64 `json:"maintainer_count"`
 	DeveloperCount    int64 `json:"developer_count"`
 	GuestCount        int64 `json:"guest_count"`
 

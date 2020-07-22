@@ -11,14 +11,9 @@ from library.chart import Chart
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
-        chart = Chart()
-        self.chart= chart
-
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
+        self.chart= Chart()
+        self.project= Project()
+        self.user= User()
 
     @classmethod
     def tearDown(self):

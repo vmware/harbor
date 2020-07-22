@@ -18,9 +18,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/log"
 
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (
@@ -85,6 +85,12 @@ type Candidate struct {
 	CreationTime int64 `json:"create_time_second"`
 	// Labels attached with the candidate
 	Labels []string `json:"labels"`
+	// Overall severity of the candidate
+	// Use severity code value here to avoid pkg dependency issue.
+	VulnerabilitySeverity uint `json:"vulnerability_severity"`
+	// Signatures of the above Tags
+	// This is not technical correct, just for keeping compatibilities with the original definition.
+	Signatures map[string]bool `json:"signatures"`
 }
 
 // Hash code based on the candidate info for differentiation

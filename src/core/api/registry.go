@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"strconv"
 
-	common_http "github.com/goharbor/harbor/src/common/http"
+	common_models "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/event"
@@ -109,21 +110,12 @@ func (t *RegistryAPI) Ping() {
 		return
 	}
 
-	status, err := registry.CheckHealthStatus(reg)
-	if err != nil {
-		e, ok := err.(*common_http.Error)
-		if ok && e.Code == http.StatusUnauthorized {
-			t.SendBadRequestError(errors.New("invalid credential"))
-			return
-		}
-		t.SendInternalServerError(fmt.Errorf("failed to check health of registry %s: %v", reg.URL, err))
+	status := t.getHealthStatus(reg)
+	if status != model.Healthy {
+		t.SendBadRequestError(errors.New("the registry is unhealthy"))
 		return
 	}
 
-	if status != model.Healthy {
-		t.SendBadRequestError(errors.New(""))
-		return
-	}
 	return
 }
 
@@ -164,15 +156,24 @@ func hideAccessSecret(credential *model.Credential) {
 	credential.AccessSecret = "*****"
 }
 
-// List lists all registries that match a given registry name.
+// List lists all registries
 func (t *RegistryAPI) List() {
-	name := t.GetString("name")
-
-	_, registries, err := t.manager.List(&model.RegistryQuery{
-		Name: name,
-	})
+	queryStr := t.GetString("q")
+	// keep backward compatibility for the "name" query
+	if len(queryStr) == 0 {
+		name := t.GetString("name")
+		if len(name) > 0 {
+			queryStr = fmt.Sprintf("name=~%s", name)
+		}
+	}
+	query, err := q.Build(queryStr, 0, 0)
 	if err != nil {
-		log.Errorf("failed to list registries %s: %v", name, err)
+		t.SendError(err)
+		return
+	}
+
+	_, registries, err := t.manager.List(query)
+	if err != nil {
 		t.SendInternalServerError(err)
 		return
 	}
@@ -215,13 +216,9 @@ func (t *RegistryAPI) Post() {
 	// Prevent SSRF security issue #3755
 	r.URL = url.Scheme + "://" + url.Host + url.Path
 
-	status, err := registry.CheckHealthStatus(r)
-	if err != nil {
-		t.SendBadRequestError(fmt.Errorf("health check to registry %s failed: %v", r.URL, err))
-		return
-	}
+	status := t.getHealthStatus(r)
 	if status != model.Healthy {
-		t.SendBadRequestError(fmt.Errorf("registry %s is unhealthy: %s", r.URL, status))
+		t.SendBadRequestError(errors.New("the registry is unhealthy"))
 		return
 	}
 
@@ -234,6 +231,15 @@ func (t *RegistryAPI) Post() {
 	}
 
 	t.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
+}
+
+func (t *RegistryAPI) getHealthStatus(r *model.Registry) string {
+	status, err := registry.CheckHealthStatus(r)
+	if err != nil {
+		log.Errorf("failed to check the health status of registry %s: %v", r.URL, err)
+		return model.Unhealthy
+	}
+	return string(status)
 }
 
 // Put updates a registry
@@ -302,13 +308,9 @@ func (t *RegistryAPI) Put() {
 		}
 	}
 
-	status, err := registry.CheckHealthStatus(r)
-	if err != nil {
-		t.SendBadRequestError(fmt.Errorf("health check to registry %s failed: %v", r.URL, err))
-		return
-	}
+	status := t.getHealthStatus(r)
 	if status != model.Healthy {
-		t.SendBadRequestError(fmt.Errorf("registry %s is unhealthy: %s", r.URL, status))
+		t.SendBadRequestError(errors.New("the registry is unhealthy"))
 		return
 	}
 
@@ -372,6 +374,17 @@ func (t *RegistryAPI) Delete() {
 		msg := fmt.Sprintf("Can't delete registry %d,  %d replication policies use it as destination registry", id, total)
 		log.Error(msg)
 		t.SendPreconditionFailedError(errors.New(msg))
+		return
+	}
+
+	// check whether the registry is referenced by any proxy cache projects
+	result, err := t.ProjectMgr.List(&common_models.ProjectQueryParam{RegistryID: id})
+	if err != nil {
+		t.SendInternalServerError(fmt.Errorf("failed to list projects: %v", err))
+		return
+	}
+	if result != nil && result.Total > 0 {
+		t.SendPreconditionFailedError(fmt.Errorf("Can't delete registry %d,  %d proxy cache projects referennce it", id, result.Total))
 		return
 	}
 

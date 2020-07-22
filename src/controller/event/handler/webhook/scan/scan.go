@@ -16,20 +16,20 @@ package scan
 
 import (
 	"context"
+	"time"
+
 	o "github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
-	"github.com/goharbor/harbor/src/lib/orm"
-	"github.com/goharbor/harbor/src/pkg/notifier/model"
-	"time"
-
-	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -60,12 +60,12 @@ func (si *Handler) Handle(value interface{}) error {
 	}
 
 	// Get project
-	project, err := project.Mgr.Get(e.Artifact.NamespaceID)
+	prj, err := project.Ctl.Get(orm.Context(), e.Artifact.NamespaceID, project.Metadata(true))
 	if err != nil {
 		return errors.Wrap(err, "scan preprocess handler")
 	}
 
-	payload, err := constructScanImagePayload(e, project)
+	payload, err := constructScanImagePayload(e, prj)
 	if err != nil {
 		return errors.Wrap(err, "scan preprocess handler")
 	}

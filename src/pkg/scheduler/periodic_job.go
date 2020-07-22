@@ -15,8 +15,6 @@
 package scheduler
 
 import (
-	"encoding/json"
-
 	"github.com/goharbor/harbor/src/jobservice/job"
 )
 
@@ -51,9 +49,5 @@ func (pj *PeriodicJob) Validate(params job.Parameters) error {
 
 // Run the job
 func (pj *PeriodicJob) Run(ctx job.Context, params job.Parameters) error {
-	data, err := json.Marshal(params)
-	if err != nil {
-		return err
-	}
-	return ctx.Checkin(string(data))
+	return ctx.Checkin("checkin")
 }

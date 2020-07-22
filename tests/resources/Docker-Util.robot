@@ -36,17 +36,21 @@ Pull image
     Should Not Contain  ${output}  No such image:
 
 Push image
-    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${sha256}=${null}  ${is_robot}=${false}
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${sha256}=${null}  ${is_robot}=${false}  ${tag_suffix}=${false}
     ${image_with_sha256}=  Set Variable If  '${sha256}'=='${null}'  ${image}  ${image}@sha256:${sha256}
     ${image_with_tag}=  Set Variable If  '${sha256}'=='${null}'  ${image}  ${image}:${sha256}
+    Sleep  3
     Log To Console  \nRunning docker push ${image}...
     Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image_with_sha256}
+    ${d}=    Get Current Date    result_format=%m%s
+    ${image_with_tag}=  Set Variable If  '${tag_suffix}'=='${true}'  ${image_with_tag}_${d}  ${image_with_tag}
     Run Keyword If  ${is_robot}==${false}  Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     ...  ELSE  Wait Unitl Command Success  docker login -u robot\\\$${user} -p ${pwd} ${ip}
     Wait Unitl Command Success  docker tag ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image_with_sha256} ${ip}/${project}/${image_with_tag}
     Wait Unitl Command Success  docker push ${ip}/${project}/${image_with_tag}
     Wait Unitl Command Success  docker logout ${ip}
     Sleep  1
+    [Return]  ${image_with_tag}
 
 Push Image With Tag
 #tag1 is tag of image on docker hub,default latest,use a version existing if you do not want to use latest
@@ -62,26 +66,34 @@ Cannot Docker Login Harbor
     [Arguments]  ${ip}  ${user}  ${pwd}
     Command Should be Failed  docker login -u ${user} -p ${pwd} ${ip}
 
-Cannot Pull image
-    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}=${null}
+Cannot Pull Image
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}=${null}  ${err_msg}=${null}
     ${image_with_tag}=  Set Variable If  '${tag}'=='${null}'  ${image}  ${image}:${tag}
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
-    Command Should be Failed  docker pull ${ip}/${project}/${image_with_tag}
+    :FOR  ${idx}  IN RANGE  0  30
+    \   ${out}  Run Keyword And Ignore Error  Command Should be Failed  docker pull ${ip}/${project}/${image_with_tag}
+    \   Exit For Loop If  '${out[0]}'=='PASS'
+    \   Sleep  3
+    Log To Console  Cannot Pull Image - Pull Log: ${out[1]}
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
+    Run Keyword If  '${err_msg}' != '${null}'  Should Contain  ${out[1]}  ${err_msg}
 
 Cannot Pull Unsigned Image
     [Arguments]  ${ip}  ${user}  ${pass}  ${proj}  ${imagewithtag}
     Wait Unitl Command Success  docker login -u ${user} -p ${pass} ${ip}
     ${output}=  Command Should be Failed  docker pull ${ip}/${proj}/${imagewithtag}
+    Log To Console  ${output}
     Should Contain  ${output}  The image is not signed in Notary
 
 Cannot Push image
-    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${err_msg}=${null}
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${err_msg}=${null}  ${err_msg_2}=${null}
     Log To Console  \nRunning docker push ${image}...
     Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     Wait Unitl Command Success  docker tag ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image} ${ip}/${project}/${image}
     ${output}=  Command Should be Failed  docker push ${ip}/${project}/${image}
     Run Keyword If  '${err_msg}' != '${null}'  Should Contain  ${output}  ${err_msg}
+    Run Keyword If  '${err_msg_2}' != '${null}'  Should Contain  ${output}  ${err_msg_2}
     Wait Unitl Command Success  docker logout ${ip}
 
 Wait Until Container Stops
@@ -147,7 +159,7 @@ Docker Login
 
 Docker Pull
     [Arguments]  ${image}
-    ${output}=  Retry Keyword When Error  Wait Unitl Command Success  docker pull ${image}
+    ${output}=  Retry Keyword N Times When Error  10  Wait Unitl Command Success  docker pull ${image}
     Log  ${output}
     Log To Console  Docker Pull: \n ${output}
     [Return]  ${output}
@@ -165,3 +177,23 @@ Docker Push Index
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/docker_push_manifest_list.sh ${ip} ${user} ${pwd} ${index} ${image1} ${image2}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
+
+Docker Image Can Not Be Pulled
+    [Arguments]  ${image}
+    :FOR  ${idx}  IN RANGE  0  30
+    \   ${out}=  Run Keyword And Ignore Error  Command Should be Failed  docker pull ${image}
+    \   Exit For Loop If  '${out[0]}'=='PASS'
+    \   Sleep  3
+    Log To Console  Cannot Pull Image From Docker - Pull Log: ${out[1]}
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
+
+Docker Image Can Be Pulled
+    [Arguments]  ${image}  ${period}=60  ${times}=10
+    :For  ${n}  IN RANGE  1  ${times}
+    \    Sleep  ${period}
+    \    ${out}=  Run Keyword And Ignore Error  Docker Pull  ${image}
+    \    Log To Console  Return value is ${out[0]}
+    \    Exit For Loop If  '${out[0]}'=='PASS'
+    \    Sleep  5
+    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  '${out[0]}'  'PASS'

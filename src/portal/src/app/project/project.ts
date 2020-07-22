@@ -27,6 +27,7 @@ export class Project {
     has_project_admin_role: boolean;
     is_member: boolean;
     role_name: string;
+    registry_id: number;
     metadata: {
       public: string | boolean;
       enable_content_trust: string | boolean;

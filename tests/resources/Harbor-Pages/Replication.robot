@@ -73,22 +73,22 @@ Create A New Endpoint
 
 Create A Rule With Existing Endpoint
     [Arguments]    ${name}    ${replication_mode}    ${project_name}    ${resource_type}    ${endpoint}    ${dest_namespace}
-    ...    ${mode}=Manual
+    ...    ${mode}=Manual  ${cron}="* */59 * * * *"  ${del_remote}=${false}
     #click new
     Retry Element Click    ${new_name_xpath}
     #input name
     Retry Text Input    ${rule_name}    ${name}
-    Run Keyword If    '${replication_mode}' == 'push'  Run Keywords  Retry Element Click  ${replication_mode_radio_push}
-    ...    AND  Select Dest Registry  ${endpoint}
-    ...    ELSE  Run Keywords  Retry Element Click  ${replication_mode_radio_pull}
-    ...    AND  Select Source Registry  ${endpoint}
+    Run Keyword If    '${replication_mode}' == 'push'  Run Keywords  Retry Element Click  ${replication_mode_radio_push}  AND  Select Dest Registry  ${endpoint}
+    ...    ELSE  Run Keywords  Retry Element Click  ${replication_mode_radio_pull}  AND  Select Source Registry  ${endpoint}
+
     #set filter
     Retry Text Input    ${source_project}    ${project_name}
     Run Keyword And Ignore Error    Select From List By Value    ${rule_resource_selector}    ${resource_type}
     Retry Text Input    ${dest_namespace_xpath}    ${dest_namespace}
     #set trigger
     Select Trigger  ${mode}
-    Run Keyword If    '${mode}' == 'Scheduled'    Log To Console    Scheduled
+    Run Keyword If  '${mode}' == 'Scheduled'  Retry Text Input  ${targetCron_id}  ${cron}
+    Run Keyword If  '${mode}' == 'Event Based' and '${del_remote}' == '${true}'  Retry Element Click  ${del_remote_checkbox}
     #click save
     Retry Double Keywords When Error  Retry Element Click  ${rule_save_button}  Retry Wait Until Page Not Contains Element  ${rule_save_button}
     Sleep  2
@@ -225,7 +225,7 @@ Delete Endpoint
 
 Select Rule And Replicate
     [Arguments]  ${rule_name}
-    Retry Element Click    //hbr-list-replication-rule//clr-dg-cell[contains(.,'${rule_name}')]
+    Select Rule  ${rule_name}
     Retry Element Click    ${replication_exec_id}
     Retry Double Keywords When Error    Retry Element Click    xpath=${dialog_replicate}    Retry Wait Until Page Not Contains Element    xpath=${dialog_replicate}
 
@@ -257,3 +257,12 @@ Image Should Be Replicated To Project
     \    Sleep  5
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
+
+Executions Result Count Should Be
+    [Arguments]  ${expected_status}  ${expected_trigger_type}  ${expected_result_count}
+    Sleep  10
+    ${count}=  Get Element Count  xpath=//clr-dg-row[contains(.,'${expected_status}') and contains(.,'${expected_trigger_type}')]
+    Capture Page Screenshot
+    Should Be Equal As Integers  ${count}  ${expected_result_count}
+    Capture Page Screenshot
+

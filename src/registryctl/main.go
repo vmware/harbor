@@ -23,6 +23,16 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/registryctl/config"
 	"github.com/goharbor/harbor/src/registryctl/handlers"
+
+	_ "github.com/docker/distribution/registry/storage/driver/azure"
+	_ "github.com/docker/distribution/registry/storage/driver/filesystem"
+	_ "github.com/docker/distribution/registry/storage/driver/gcs"
+	_ "github.com/docker/distribution/registry/storage/driver/inmemory"
+	_ "github.com/docker/distribution/registry/storage/driver/middleware/cloudfront"
+	_ "github.com/docker/distribution/registry/storage/driver/middleware/redirect"
+	_ "github.com/docker/distribution/registry/storage/driver/oss"
+	_ "github.com/docker/distribution/registry/storage/driver/s3-aws"
+	_ "github.com/docker/distribution/registry/storage/driver/swift"
 )
 
 // RegistryCtl for registry controller
@@ -57,23 +67,20 @@ func (s *RegistryCtl) Start() {
 }
 
 func main() {
-
-	configPath := flag.String("c", "", "Specify the yaml config file path")
+	configPath := flag.String("c", "", "Specify registryCtl configuration file path")
 	flag.Parse()
 
 	if configPath == nil || len(*configPath) == 0 {
 		flag.Usage()
 		log.Fatal("Config file should be specified")
 	}
-
 	if err := config.DefaultConfig.Load(*configPath, true); err != nil {
 		log.Fatalf("Failed to load configurations with error: %s\n", err)
 	}
 
 	regCtl := &RegistryCtl{
 		ServerConf: *config.DefaultConfig,
-		Handler:    handlers.NewHandlerChain(),
+		Handler:    handlers.NewHandlerChain(*config.DefaultConfig),
 	}
-
 	regCtl.Start()
 }

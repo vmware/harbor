@@ -15,7 +15,7 @@ def pull_harbor_image(registry, username, password, image, tag, expected_login_e
     ret = _docker_api.docker_image_pull(r'{}/{}'.format(registry, image), tag = tag, expected_error_message = expected_error_message)
     print ret
 
-def push_image_to_project(project_name, registry, username, password, image, tag, expected_login_error_message = None, expected_error_message = None):
+def push_image_to_project(project_name, registry, username, password, image, tag, expected_login_error_message = None, expected_error_message = None, profix_for_image = None):
     _docker_api = DockerAPI()
     _docker_api.docker_login(registry, username, password, expected_error_message = expected_login_error_message)
     time.sleep(2)
@@ -24,7 +24,10 @@ def push_image_to_project(project_name, registry, username, password, image, tag
     _docker_api.docker_image_pull(image, tag = tag)
     time.sleep(2)
 
-    new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(image, tag), r'{}/{}/{}'.format(registry, project_name, image))
+    if profix_for_image == None:
+        new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(image, tag), r'{}/{}/{}'.format(registry, project_name, image))
+    else:
+        new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(image, tag), r'{}/{}/{}/{}'.format(registry, project_name, profix_for_image, image))
     time.sleep(2)
 
     _docker_api.docker_image_push(new_harbor_registry, new_tag, expected_error_message = expected_error_message)
@@ -75,10 +78,16 @@ class Repository(base.Base, object):
         if self.image_exists(repository, tag, **kwargs):
             raise Exception("image %s:%s exists" % (repository, tag))
 
-    def delete_repoitory(self, project_name, repo_name, **kwargs):
+    def delete_repoitory(self, project_name, repo_name, expect_status_code = 200, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
-        _, status_code, _ = client.delete_repository_with_http_info(project_name, repo_name)
+        try:
+            _, status_code, _ = client.delete_repository_with_http_info(project_name, repo_name)
+        except Exception as e:
+            base._assert_status_code(expect_status_code, e.status)
+            return e.body
+        base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
+
 
     def list_repositories(self, project_name, **kwargs):
         client = self._get_client(**kwargs)

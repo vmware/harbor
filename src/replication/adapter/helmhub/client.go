@@ -22,7 +22,7 @@ type Client struct {
 func NewClient(registry *model.Registry) *Client {
 	return &Client{
 		client: &http.Client{
-			Transport: util.GetHTTPTransport(false),
+			Transport: util.GetHTTPTransport(registry.Insecure),
 		},
 	}
 }

@@ -100,57 +100,28 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 		return errors.New("bad periodic job ID: nil")
 	}
 
+	// Handle the corresponding job stats of the given periodic job first.
 	tracker, err := bs.ctl.Track(policyID)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "unschedule periodic job error")
 	}
 
-	// If errors occurred when getting the numeric ID of periodic job,
-	// may be because the specified job is not a valid periodic job.
+	// Try to get the numeric ID from the stats of the given periodic job.
 	numericID, err := tracker.NumericID()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "unschedule periodic job error")
+	}
+
+	// Switch the job stats to stopped
+	// Should not block the next clear action
+	if err := tracker.Stop(); err != nil {
+		logger.Errorf("Stop periodic job %s failed with error: %s", policyID, err)
 	}
 
 	conn := bs.pool.Get()
 	defer func() {
 		_ = conn.Close()
 	}()
-
-	// Get the un-scheduling policy object
-	bytes, err := redis.Values(conn.Do("ZRANGEBYSCORE", rds.KeyPeriodicPolicy(bs.namespace), numericID, numericID))
-	if err != nil {
-		return err
-	}
-
-	p := &Policy{}
-	if len(bytes) > 0 {
-		if rawPolicy, ok := bytes[0].([]byte); ok {
-			if err := p.DeSerialize(rawPolicy); err != nil {
-				return err
-			}
-		}
-	}
-
-	if utils.IsEmptyStr(p.ID) {
-		// Deserialize failed
-		return errors.Errorf("no valid periodic job policy found: %s:%d", policyID, numericID)
-	}
-
-	// REM from redis db
-	// Accurately remove the item with the specified score
-	if _, err := conn.Do("ZREMRANGEBYSCORE", rds.KeyPeriodicPolicy(bs.namespace), numericID, numericID); err != nil {
-		return err
-	}
-
-	// Expire periodic job stats
-	if err := tracker.Expire(); err != nil {
-		logger.Error(err)
-	}
-
-	// Switch the job stats to stopped
-	// Should not block the next clear action
-	err = tracker.Stop()
 
 	// Get downstream executions of the periodic job
 	// And clear these executions
@@ -174,7 +145,7 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 			// Only need to care the pending and running ones
 			// Do clear
 			if job.ScheduledStatus == job.Status(e.Info.Status) {
-				// Please pay attention here, the job ID used in the scheduled jon queue is
+				// Please pay attention here, the job ID used in the scheduled job queue is
 				// the ID of the periodic job (policy).
 				if err := bs.client.DeleteScheduledJob(e.Info.RunAt, policyID); err != nil {
 					logger.Errorf("Delete scheduled job %s error: %s", eID, err)
@@ -183,16 +154,29 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 
 			// Mark job status to stopped to block execution.
 			// The executions here should not be in the final states,
-			// double confirmation: only stop the stopped ones.
+			// double confirmation: only stop the can-stop ones.
 			if job.RunningStatus.Compare(job.Status(e.Info.Status)) >= 0 {
 				if err := eTracker.Stop(); err != nil {
 					logger.Errorf("Stop execution %s error: %s", eID, err)
+				} else {
+					logger.Debugf("Stop execution %s of periodic job %s", eID, policyID)
 				}
 			}
 		}
 	}
 
-	return err
+	// REM from redis db
+	// Accurately remove the item with the specified score
+	removed, err := redis.Int64(conn.Do("ZREMRANGEBYSCORE", rds.KeyPeriodicPolicy(bs.namespace), numericID, numericID))
+	if err != nil {
+		return errors.Wrap(err, "unschedule periodic job error")
+	}
+
+	if removed == 0 {
+		logger.Warningf("No periodic job with ID=%s and numeric ID=%d removed from the periodic job policy set", policyID, numericID)
+	}
+
+	return nil
 }
 
 // Clear all the dirty jobs

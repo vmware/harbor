@@ -25,6 +25,7 @@ COPY src/portal /build_dir
 
 ENV NPM_CONFIG_REGISTRY=${npm_registry}
 RUN npm install --unsafe-perm
+RUN npm run generate-build-timestamp
 RUN node --max_old_space_size=2048 'node_modules/@angular/cli/bin/ng' build --prod
 
 FROM ${harbor_base_namespace}/harbor-portal-base:${harbor_base_image_version}

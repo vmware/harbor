@@ -16,6 +16,7 @@ package doublestar
 
 import (
 	"encoding/json"
+
 	"github.com/bmatcuk/doublestar"
 	iselector "github.com/goharbor/harbor/src/lib/selector"
 )
@@ -132,7 +133,7 @@ func (s *selector) tagSelectExclude(artifact *iselector.Candidate) (selected boo
 }
 
 // New is factory method for doublestar selector
-func New(decoration string, pattern string, extras string) iselector.Selector {
+func New(decoration string, pattern interface{}, extras string) iselector.Selector {
 	untagged := true // default behavior for upgrade, active keep the untagged images
 	if decoration == Excludes {
 		untagged = false
@@ -145,9 +146,15 @@ func New(decoration string, pattern string, extras string) iselector.Selector {
 			untagged = extraObj.Untagged
 		}
 	}
+
+	var p string
+	if pattern != nil {
+		p, _ = pattern.(string)
+	}
+
 	return &selector{
 		decoration: decoration,
-		pattern:    pattern,
+		pattern:    p,
 		untagged:   untagged,
 	}
 }

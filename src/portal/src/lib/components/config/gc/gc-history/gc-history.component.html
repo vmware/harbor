@@ -5,6 +5,7 @@
 <clr-datagrid [clrDgLoading]="loading">
   <clr-dg-column>{{'GC.JOB_ID' | translate}}</clr-dg-column>
   <clr-dg-column>{{'GC.TRIGGER_TYPE' | translate}}</clr-dg-column>
+  <clr-dg-column>{{'TAG_RETENTION.DRY_RUN' | translate}}</clr-dg-column>
   <clr-dg-column>{{'STATUS' | translate}}</clr-dg-column>
   <clr-dg-column>{{'CREATION_TIME' | translate}}</clr-dg-column>
   <clr-dg-column>{{'UPDATE_TIME' | translate}}</clr-dg-column>
@@ -12,6 +13,7 @@
   <clr-dg-row *ngFor="let job of jobs" [clrDgItem]='job'>
     <clr-dg-cell>{{job.id }}</clr-dg-cell>
     <clr-dg-cell>{{(job.type ? 'SCHEDULE.'+ job.type.toUpperCase() : '') | translate }}</clr-dg-cell>
+    <clr-dg-cell>{{isDryRun(job?.parameters)}}</clr-dg-cell>
     <clr-dg-cell>{{job.status.toUpperCase() | translate}}</clr-dg-cell>
     <clr-dg-cell>{{job.createTime | date:'medium'}}</clr-dg-cell>
     <clr-dg-cell>{{job.updateTime | date:'medium'}}</clr-dg-cell>

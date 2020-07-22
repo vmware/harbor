@@ -118,6 +118,7 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
   previousWindowWidth: number;
   private _subject = new Subject<string>();
   private _subscription: Subscription;
+  isProxyCacheProject: boolean = false;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -129,6 +130,9 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
     this.hasSignedIn = this.sessionService.getCurrentUser() !== null;
     this.route.data.subscribe(data => {
       this.currentProject = <Project>data['projectResolver'];
+      if (this.currentProject.registry_id) {
+        this.isProxyCacheProject = true;
+      }
       this.isMember = this.currentProject.is_member;
       this.roleName = this.currentProject.role_name;
     });

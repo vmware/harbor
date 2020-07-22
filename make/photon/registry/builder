@@ -27,6 +27,7 @@ echo 'add patch https://github.com/docker/distribution/pull/2879 ...'
 cd $TEMP
 wget https://github.com/docker/distribution/pull/2879.patch
 git apply 2879.patch
+git apply $cur/redis.patch
 cd $cur
 
 echo 'build the registry binary ...'

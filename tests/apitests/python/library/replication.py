@@ -13,8 +13,7 @@ class Replication(base.Base):
             name = base._random_name("rule")
         if filters is None:
             filters = []
-        for policy_filter in filters:
-            policy_filter["value"] = int(policy_filter["value"])
+
         client = self._get_client(**kwargs)
         policy = swagger_client.ReplicationPolicy(name=name, description=description,dest_namespace=dest_namespace,
             dest_registry=dest_registry, src_registry=src_registry,filters=filters,
@@ -56,20 +55,31 @@ class Replication(base.Base):
         return client.jobs_replication_get(int(rule_id))
 
     def wait_until_jobs_finish(self, rule_id, retry=10, interval=5, **kwargs):
-        finished = True
+        Succeed = False
         for i in range(retry):
-            finished = True
-            jobs = self.list_replication_jobs(rule_id, **kwargs)
+            Succeed = False
+            jobs = self.get_replication_executions(rule_id, **kwargs)
             for job in jobs:
-                if job.status != "finished":
-                    finished = False
-                    break
-            if not finished:
+                if job.status == "Succeed":
+                    return
+            if not Succeed:
                 time.sleep(interval)
-        if not finished:
-            raise Exception("The jobs not finished")
+        if not Succeed:
+            raise Exception("The jobs not Succeed")
 
     def delete_replication_rule(self, rule_id, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
         _, status_code, _ = client.replication_policies_id_delete_with_http_info(rule_id)
         base._assert_status_code(expect_status_code, status_code)
+
+    def trigger_replication_executions(self, rule_id, expect_status_code = 201, **kwargs):
+        client = self._get_client(**kwargs)
+        _, status_code, _ = client.replication_executions_post_with_http_info({"policy_id":rule_id})
+        base._assert_status_code(expect_status_code, status_code)
+
+
+    def get_replication_executions(self, rule_id, expect_status_code = 200, **kwargs):
+        client = self._get_client(**kwargs)
+        data, status_code, _ = client.replication_executions_get_with_http_info(policy_id=rule_id)
+        base._assert_status_code(expect_status_code, status_code)
+        return data

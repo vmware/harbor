@@ -1,0 +1,17 @@
+[
+  {
+    "name": "harbor",
+    "path": "library/test-docker:harbor",
+    "location": "registry.gitlab.com/library/test-docker:harbor"
+  },
+  {
+    "name": "latest",
+    "path": "library/test-docker:latest",
+    "location": "registry.gitlab.com/library/test-docker:latest"
+  },
+  {
+    "name": "v2",
+    "path": "library/test-docker:v2",
+    "location": "registry.gitlab.com/library/test-docker:v2"
+  }
+]

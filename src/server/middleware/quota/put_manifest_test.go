@@ -16,8 +16,10 @@ package quota
 
 import (
 	"context"
+	std_err "errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/docker/distribution/manifest/schema2"
@@ -27,7 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/quota"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/testing/mock"
 	distributiontesting "github.com/goharbor/harbor/src/testing/pkg/distribution"
 	"github.com/stretchr/testify/suite"
@@ -270,6 +272,25 @@ func (suite *PutManifestMiddlewareTestSuite) TestResourcesWarning() {
 		suite.Equal(http.StatusOK, rr.Code)
 		suite.Equal(1, eveCtx.Events.Len())
 	}
+}
+
+func (suite *PutManifestMiddlewareTestSuite) TestPutInvalid() {
+	unmarshalManifest = func(r *http.Request) (distribution.Manifest, distribution.Descriptor, error) {
+		return nil, distribution.Descriptor{}, std_err.New("json: cannot unmarshal string into Go value of type map")
+	}
+
+	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)
+
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/sha256:totallywrong", strings.NewReader("YmxhYmxhYmxh"))
+	rr := httptest.NewRecorder()
+
+	PutManifestMiddleware()(next).ServeHTTP(rr, req)
+	suite.Equal(http.StatusBadRequest, rr.Code)
+
 }
 
 func TestPutManifestMiddlewareTestSuite(t *testing.T) {

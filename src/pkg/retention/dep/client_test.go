@@ -15,21 +15,22 @@
 package dep
 
 import (
-	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
-	"github.com/goharbor/harbor/src/controller/tag"
-	"github.com/goharbor/harbor/src/lib/selector"
-	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"testing"
 
-	"github.com/goharbor/harbor/src/chartserver"
-	jmodels "github.com/goharbor/harbor/src/common/job/models"
-	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/testing/clients"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"k8s.io/helm/pkg/proto/hapi/chart"
-	"k8s.io/helm/pkg/repo"
+	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/repo"
+
+	"github.com/goharbor/harbor/src/chartserver"
+	jmodels "github.com/goharbor/harbor/src/common/job/models"
+	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/tag"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/selector"
+	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
+	"github.com/goharbor/harbor/src/testing/clients"
 )
 
 type fakeCoreClient struct {

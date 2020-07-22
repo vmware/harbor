@@ -133,9 +133,9 @@ export const PROJECT_ROOTS = [
     LABEL: "GROUP.PROJECT_ADMIN"
   },
   {
-    NAME: "master",
+    NAME: "maintainer",
     VALUE: 4,
-    LABEL: "GROUP.PROJECT_MASTER"
+    LABEL: "GROUP.PROJECT_MAINTAINER"
   },
   {
     NAME: "developer",

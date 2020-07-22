@@ -1,0 +1,76 @@
+name: CONFORMANCE_TEST
+env:
+  DOCKER_COMPOSE_VERSION: 1.23.0
+
+on:
+  repository_dispatch:
+    types:
+      - manual-trigger-conformance
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+  CONFORMANCE_TEST:
+    env:
+      CONFORMANCE_TEST: true
+    runs-on:
+      #- self-hosted
+      - ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '285.0.0'
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+      - run: gcloud info
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.14.5
+        id: go
+      - name: setup Docker
+        uses: docker-practice/actions-setup-docker@0.0.1
+        with:
+          docker_version: 18.09
+          docker_channel: stable
+      - uses: actions/checkout@v2
+        with:
+          path: src/github.com/goharbor/harbor
+      - name: before_install
+        run: |
+          set -x
+          cd src/github.com/goharbor/harbor
+          pwd
+          env
+          df -h
+          curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+          chmod +x docker-compose
+          sudo mv docker-compose /usr/local/bin
+          IP=`hostname -I | awk '{print $1}'`
+          echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
+          echo "::set-env name=IP::$IP"
+          sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
+          sudo update-ca-certificates
+          sudo service docker restart
+      - name: install
+        run: |
+          cd src/github.com/goharbor/harbor
+          env
+          df -h
+          bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
+      - name: script
+        run: |
+          echo IP: $IP
+          df -h
+          cd src/github.com/goharbor/harbor
+          bash ./tests/showtime.sh ./tests/ci/conformance_test.sh $IP
+          df -h
+      - name: upload test result to gs
+        run: |
+          cd src/github.com/goharbor/harbor
+          gsutil cp ./distribution-spec/conformance/report.html gs://harbor-conformance-test/report.html
+          gsutil acl ch -u AllUsers:R gs://harbor-conformance-test/report.html
+        if: always()

@@ -17,6 +17,7 @@ package runner
 import (
 	"fmt"
 	"runtime"
+	"time"
 
 	"github.com/gocraft/work"
 	"github.com/goharbor/harbor/src/jobservice/env"
@@ -26,6 +27,10 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/period"
 	"github.com/goharbor/harbor/src/lib/errors"
+)
+
+const (
+	maxTrackRetries = 6
 )
 
 // RedisJob is a job wrapper to wrap the job.Interface to the style which can be recognized by the redis worker.
@@ -60,15 +65,32 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 		jID = eID
 	}
 
-	if tracker, err = rj.ctl.Track(jID); err != nil {
-		// log error
+	// As the job stats may not be ready when job executing sometimes (corner case),
+	// the track call here may get NOT_FOUND error. For that case, let's do retry to recovery.
+	for retried := 0; retried <= maxTrackRetries; retried++ {
+		tracker, err = rj.ctl.Track(jID)
+		if err == nil {
+			break
+		}
+
+		if errs.IsObjectNotFoundError(err) {
+			if retried < maxTrackRetries {
+				// Still have chance to re-track the given job.
+				// Hold for a while and retry
+				b := backoff(retried)
+				logger.Errorf("Track job %s: stats may not have been ready yet, hold for %d ms and retry again", jID, b)
+				<-time.After(time.Duration(b) * time.Millisecond)
+				continue
+			} else {
+				// Exit and never try.
+				// Directly return without retry again as we have no way to restore the stats again.
+				j.Fails = 10000000000 // never retry
+			}
+		}
+
+		// Log error and exit
 		logger.Errorf("Job '%s:%s' exit with error: failed to get job tracker: %s", j.Name, j.ID, err)
 
-		// Pay attentions here, if the job stats is lost (NOTFOUND error returned),
-		// directly return without retry again as we have no way to restore the stats again.
-		if errs.IsObjectNotFoundError(err) {
-			j.Fails = 10000000000 // never retry
-		}
 		// ELSE:
 		// As tracker creation failed, there is no way to mark the job status change.
 		// Also a non nil error return consumes a fail. If all retries are failed here,
@@ -214,4 +236,16 @@ func isPeriodicJobExecution(j *work.Job) (string, bool) {
 
 func bp(b bool) *bool {
 	return &b
+}
+
+func backoff(x int) int {
+	// y=ax^2+bx+c
+	var a, b, c = -111, 666, 500
+
+	y := a*x*x + b*x + c
+	if y < 0 {
+		y = 0 - y
+	}
+
+	return y
 }

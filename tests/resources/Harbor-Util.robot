@@ -55,8 +55,8 @@ Package Harbor Offline
     [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true  ${with_trivy}=true
     Log To Console  \nStart Docker Daemon
     Start Docker Daemon Locally
-    Log To Console  \n\nmake package_offline BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
-    ${rc}  ${output}=  Run And Return Rc And Output  make package_offline BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
+    Log To Console  \n\nmake package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
+    ${rc}  ${output}=  Run And Return Rc And Output  make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
     Log To Console  ${rc}
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
@@ -65,8 +65,8 @@ Package Harbor Online
     [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true  ${with_trivy}=true
     Log To Console  \nStart Docker Daemon
     Start Docker Daemon Locally
-    Log To Console  \nmake package_online VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
-    ${rc}  ${output}=  Run And Return Rc And Output  make package_online VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
+    Log To Console  \nmake package_online GOBUILDTAGS="include_oss include_gcs"  VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
+    ${rc}  ${output}=  Run And Return Rc And Output  make package_online GOBUILDTAGS="include_oss include_gcs" VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} TRIVYFLAG=${with_trivy} HTTPPROXY=
     Log  ${rc}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0

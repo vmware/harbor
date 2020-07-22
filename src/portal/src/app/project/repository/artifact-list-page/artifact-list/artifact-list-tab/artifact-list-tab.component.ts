@@ -34,7 +34,7 @@ import {
   clone,
   CustomComparator,
   DEFAULT_PAGE_SIZE, DEFAULT_SUPPORTED_MIME_TYPE,
-  formatSize, VULNERABILITY_SCAN_STATUS, dbEncodeURIComponent
+  formatSize, VULNERABILITY_SCAN_STATUS, dbEncodeURIComponent, doSorting
 } from "../../../../../../lib/utils/utils";
 import {
   ConfirmationAcknowledgement,
@@ -400,6 +400,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
               }
             }
             this.artifactList = res.body;
+            this.artifactList = doSorting<Artifact>(this.artifactList, state);
+
             this.getPullCommand(this.artifactList);
           }, error => {
             // error
@@ -444,20 +446,19 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
 
   labelSelectedChange(artifact?: Artifact[]): void {
-    if (artifact && artifact[0].labels) {
-      this.imageStickLabels.forEach(data => {
-        data.iconsShow = false;
-        data.show = true;
-      });
-      if (artifact[0].labels.length) {
-        artifact[0].labels.forEach((labelInfo: Label) => {
-          let findedLabel = this.imageStickLabels.find(data => labelInfo.id === data['label'].id);
+    this.imageStickLabels.forEach(data => {
+      data.iconsShow = false;
+      data.show = true;
+    });
+    if (artifact && artifact[0].labels && artifact[0].labels.length) {
+      artifact[0].labels.forEach((labelInfo: Label) => {
+        let findedLabel = this.imageStickLabels.find(data => labelInfo.id === data['label'].id);
+        if (findedLabel) {
           this.imageStickLabels.splice(this.imageStickLabels.indexOf(findedLabel), 1);
           this.imageStickLabels.unshift(findedLabel);
-
           findedLabel.iconsShow = true;
-        });
-      }
+        }
+      });
     }
   }
 
@@ -489,7 +490,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       };
       this.newArtifactService.addLabel(params).subscribe(res => {
         this.refresh();
-
         // set the selected label in front
         this.imageStickLabels.splice(this.imageStickLabels.indexOf(labelInfo), 1);
         this.imageStickLabels.some((data, i) => {
@@ -748,10 +748,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
           } else if (deleteErrorList.length === deleteResult.length) {
             // all is error
             this.loading = false;
-            this.errorHandlerService.error(deleteResult[deleteResult.length - 1].error);
+            this.errorHandlerService.error(deleteResult[deleteResult.length - 1]);
           } else {
             // some artifact delete success but it has error delete things
-            this.errorHandlerService.error(deleteErrorList[deleteErrorList.length - 1].error);
+            this.errorHandlerService.error(deleteErrorList[deleteErrorList.length - 1]);
             // if delete one success  refresh list
             let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
             this.clrLoad(st);
@@ -980,5 +980,16 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
   get isFilterReadonly() {
     return this.filterByType === 'labels' ? 'readonly' : null;
+  }
+  // when finished, remove it from selectedRow
+  scanFinished(artifact: Artifact) {
+    if (this.selectedRow && this.selectedRow.length) {
+      for ( let i = 0; i < this.selectedRow.length; i++) {
+        if (artifact.digest === this.selectedRow[i].digest) {
+          this.selectedRow.splice(i, 1);
+          break;
+        }
+      }
+    }
   }
 }

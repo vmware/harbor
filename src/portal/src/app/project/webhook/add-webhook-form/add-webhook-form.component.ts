@@ -12,6 +12,7 @@ import { ClrLoadingState } from "@clr/angular";
 import { finalize } from "rxjs/operators";
 import { WebhookService } from "../webhook.service";
 import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
+import { compareValue } from '../../../../lib/utils/utils';
 
 @Component({
   selector: 'add-webhook-form',
@@ -20,13 +21,13 @@ import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.
 })
 export class AddWebhookFormComponent implements OnInit {
   closable: boolean = true;
-  staticBackdrop: boolean = true;
   checking: boolean = false;
   checkBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
   webhookForm: NgForm;
   submitting: boolean = false;
   @Input() projectId: number;
   webhook: Webhook = new Webhook();
+  originValue: Webhook;
   isModify: boolean;
   @Input() isOpen: boolean;
   @Output() close = new EventEmitter<boolean>();
@@ -41,27 +42,6 @@ export class AddWebhookFormComponent implements OnInit {
 
   ngOnInit() {
   }
-  onTestEndpoint() {
-    this.checkBtnState = ClrLoadingState.LOADING;
-    this.checking = true;
-
-    this.webhookService
-      .testEndpoint(this.projectId, {
-        targets: this.webhook.targets
-      })
-      .pipe(finalize(() => (this.checking = false)))
-      .subscribe(
-        response => {
-          this.inlineAlert.showInlineSuccess({message: "WEBHOOK.TEST_ENDPOINT_SUCCESS"});
-          this.checkBtnState = ClrLoadingState.SUCCESS;
-        },
-        error => {
-          this.inlineAlert.showInlineError("WEBHOOK.TEST_ENDPOINT_FAILURE");
-          this.checkBtnState = ClrLoadingState.DEFAULT;
-        }
-      );
-  }
-
   onCancel() {
     this.close.emit(false);
     this.currentForm.reset();
@@ -110,6 +90,9 @@ export class AddWebhookFormComponent implements OnInit {
       !this.checking &&
         this.hasEventType()
     );
+  }
+  hasChange(): boolean {
+    return !compareValue(this.originValue, this.webhook);
   }
 
   setEventType(eventType) {

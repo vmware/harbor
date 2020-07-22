@@ -1,0 +1,22 @@
+[
+  {
+    "name": "harbor",
+    "path": "library/dev-docker-test:harbor",
+    "location": "registry.gitlab.com/library/dev-docker-test:harbor"
+  },
+  {
+    "name": "latest",
+    "path": "library/dev-docker-test:latest",
+    "location": "registry.gitlab.com/library/dev-docker-test:latest"
+  },
+  {
+    "name": "v2",
+    "path": "library/dev-docker-test:v2",
+    "location": "registry.gitlab.com/library/dev-docker-test:v2"
+  },
+  {
+    "name": "v3",
+    "path": "library/dev-docker-test:v3",
+    "location": "registry.gitlab.com/library/dev-docker-test:v3"
+  }
+]

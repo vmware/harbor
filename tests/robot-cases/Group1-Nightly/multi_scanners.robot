@@ -37,21 +37,22 @@ Test Case - Switch Scanner
 
     Should Display The Default Trivy Scanner
 
-    Create An New Project  project${d}
-    Go Into Project  project${d}  has_image=${false}
+    Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  admin  Harbor12345  project${d}  hello-world:latest
     Go Into Project  project${d}
     Go Into Repo  project${d}/hello-world
-    Scan Repo  latest  Fail
-    View Scan Error Log
+    Scan Repo  latest  Succeed
+    Move To Summary Chart
+    Wait Until Page Contains  No vulnerability
 
     Switch To Scanners Page
 
     Set Default Scanner  Clair
     Should Display The Default Clair Scanner
 
-    Go Into Project  project${d} 
+    Go Into Project  project${d}
     Go Into Repo  project${d}/hello-world
+    Retry Wait Until Page Contains Element  ${not_scanned_icon}
     Scan Repo  latest  Succeed
     Move To Summary Chart
     Wait Until Page Contains  No vulnerability

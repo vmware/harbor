@@ -17,6 +17,9 @@ import { AddWebhookFormComponent } from "./add-webhook-form/add-webhook-form.com
 import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
 import { AddWebhookComponent } from "./add-webhook/add-webhook.component";
 import { ConfirmationDialogComponent } from "../../../lib/components/confirmation-dialog";
+import { UserPermissionService } from '../../../lib/services';
+import { ErrorHandler } from '../../../lib/utils/error-handler';
+
 describe('WebhookComponent', () => {
     let component: WebhookComponent;
     let fixture: ComponentFixture<WebhookComponent>;
@@ -92,6 +95,11 @@ describe('WebhookComponent', () => {
             }
         }
     };
+    const mockUserPermissionService = {
+        getPermission() {
+            return of(true).pipe(delay(0));
+        }
+    };
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
@@ -115,9 +123,11 @@ describe('WebhookComponent', () => {
             ],
             providers: [
                 TranslateService,
+                ErrorHandler,
                 { provide: WebhookService, useValue: mockWebhookService },
                 { provide: MessageHandlerService, useValue: mockMessageHandlerService },
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
+                { provide: UserPermissionService, useValue: mockUserPermissionService },
             ]
         })
             .compileComponents();

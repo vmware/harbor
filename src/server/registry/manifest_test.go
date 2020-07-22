@@ -121,7 +121,7 @@ func (m *manifestTestSuite) TestDeleteManifest() {
 	})
 	req = httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
 	input := &beegocontext.BeegoInput{}
-	input.SetParam(":reference", "sha527:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180")
+	input.SetParam(":reference", "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180")
 	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
 	w = &httptest.ResponseRecorder{}
 	mock.OnAnything(m.artCtl, "GetByReference").Return(&artifact.Artifact{}, nil)

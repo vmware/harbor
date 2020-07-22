@@ -17,7 +17,7 @@ package models
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/stretchr/testify/assert"
 )
 

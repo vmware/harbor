@@ -74,61 +74,62 @@
 
 
         <div class="clr-form-control d-f">
-            <label for="systemWhitelist"
-                class="clr-control-label">{{'CVE_WHITELIST.DEPLOYMENT_SECURITY'|translate}}</label>
+            <label for="systemAllowlist"
+                class="clr-control-label">{{'CVE_ALLOWLIST.DEPLOYMENT_SECURITY'|translate}}</label>
             <div class="form-content">
                 <div class="font-size-13">
                     <div class="mt-05">
-                        <span class="title font-size-13">{{'CVE_WHITELIST.CVE_WHITELIST'|translate}}</span>
+                        <span class="title font-size-13">{{'CVE_ALLOWLIST.CVE_ALLOWLIST'|translate}}</span>
                     </div>
                     <div class="mt-05">
-                        <span>{{'CVE_WHITELIST.SYS_WHITELIST_EXPLAIN'|translate}}</span>
+                        <span>{{'CVE_ALLOWLIST.SYS_ALLOWLIST_EXPLAIN'|translate}}</span>
                     </div>
                     <div class="mt-05">
-                        <span>{{'CVE_WHITELIST.ADD_SYS'|translate}}</span>
+                        <span>{{'CVE_ALLOWLIST.ADD_SYS'|translate}}</span>
                     </div>
                     <div class="mt-05" *ngIf="hasExpired">
-                        <span class="label label-warning">{{'CVE_WHITELIST.WARNING_SYS'|translate}}</span>
+                        <span class="label label-warning">{{'CVE_ALLOWLIST.WARNING_SYS'|translate}}</span>
                     </div>
                 </div>
                 <div class="clr-row width-90per">
                     <div class="position-relative pl-05">
                         <div>
                             <button id="show-add-modal-button" (click)="showAddModal=!showAddModal"
-                                class="btn btn-link">{{'CVE_WHITELIST.ADD'|translate}}</button>
+                                class="btn btn-link">{{'CVE_ALLOWLIST.ADD'|translate}}</button>
                         </div>
                         <div class="add-modal add-modal-dark" *ngIf="showAddModal">
                             <clr-icon (click)="showAddModal=false" class="float-lg-right margin-top-4"
                                 shape="window-close"></clr-icon>
                             <div>
                                 <clr-textarea-container class="flex-direction-column">
-                                    <label>{{'CVE_WHITELIST.ENTER'|translate}}</label>
-                                    <textarea id="whitelist-textarea" class="w-100 font-italic" clrTextarea [(ngModel)]="cveIds"
+                                    <label>{{'CVE_ALLOWLIST.ENTER'|translate}}</label>
+                                    <textarea id="allowlist-textarea" class="w-100 font-italic" clrTextarea [(ngModel)]="cveIds"
                                         name="cveIds"></textarea>
-                                    <clr-control-helper>{{'CVE_WHITELIST.HELP'|translate}}</clr-control-helper>
+                                    <clr-control-helper>{{'CVE_ALLOWLIST.HELP'|translate}}</clr-control-helper>
                                 </clr-textarea-container>
                             </div>
                             <div>
-                                <button id="add-to-system" [disabled]="isDisabled()" (click)="addToSystemWhitelist()"
-                                    class="btn btn-link">{{'CVE_WHITELIST.ADD'|translate}}</button>
+                                <button id="add-to-system" [disabled]="isDisabled()" (click)="addToSystemAllowlist()"
+                                    class="btn btn-link">{{'CVE_ALLOWLIST.ADD'|translate}}</button>
                             </div>
                         </div>
-                        <ul class="whitelist-window">
-                            <li *ngIf="systemWhitelist?.items?.length<1" class="none">{{'CVE_WHITELIST.NONE'|translate}}
+                        <ul class="allowlist-window">
+                            <li *ngIf="systemAllowlist?.items?.length<1" class="none">{{'CVE_ALLOWLIST.NONE'|translate}}
                             </li>
-                            <li *ngFor="let item of systemWhitelist?.items;let i = index;">
-                                <span class="hand" (click)="goToDetail(item.cve_id)">{{item.cve_id}}</span>
-                                <clr-icon (click)="deleteItem(i)" class="float-lg-right margin-top-4"
-                                    shape="times-circle"></clr-icon>
+                            <li *ngFor="let item of systemAllowlist?.items;let i = index;">
+                                <a href="javascript:void(0)" (click)="goToDetail(item.cve_id)">{{item.cve_id}}</a>
+                                <a  class="float-lg-right" href="javascript:void(0)" (click)="deleteItem(i)">
+                                    <clr-icon shape="times-circle"></clr-icon>
+                                </a>
                             </li>
                         </ul>
                     </div>
                     <div class="clr-col padding-top-8">
                         <div class="clr-row expire-data">
                             <label class="bottom-line clr-col-4"
-                                for="expires">{{'CVE_WHITELIST.EXPIRES_AT'|translate}}</label>
+                                for="expires">{{'CVE_ALLOWLIST.EXPIRES_AT'|translate}}</label>
                             <div>
-                                <input #dateInput placeholder="{{'CVE_WHITELIST.NEVER_EXPIRES'|translate}}" readonly
+                                <input #dateInput placeholder="{{'CVE_ALLOWLIST.NEVER_EXPIRES'|translate}}" readonly
                                     type="date" [(clrDate)]="expiresDate" newFormLayout="true">
                             </div>
                         </div>
@@ -138,7 +139,7 @@
                                 <input [checked]="neverExpires" [(ngModel)]="neverExpires" type="checkbox" clrCheckbox
                                     name="neverExpires" id="neverExpires" />
                                 <label>
-                                    {{'CVE_WHITELIST.NEVER_EXPIRES'|translate}}
+                                    {{'CVE_ALLOWLIST.NEVER_EXPIRES'|translate}}
                                 </label>
                             </clr-checkbox-wrapper>
                         </div>
@@ -166,10 +167,10 @@
 </form>
 <div>
     <button type="button" id="config_system_save" class="btn btn-primary" (click)="save()"
-        [disabled]="(!isValid() || !hasChanges()) && (!hasWhitelistChanged) || inProgress">{{'BUTTON.SAVE'
+        [disabled]="(!isValid() || !hasChanges()) && (!hasAllowlistChanged) || inProgress">{{'BUTTON.SAVE'
         | translate}}</button>
     <button type="button" id="config_system_cancel" class="btn btn-outline" (click)="cancel()"
-        [disabled]="(!isValid() || !hasChanges()) && (!hasWhitelistChanged) || inProgress">{{'BUTTON.CANCEL'
+        [disabled]="(!isValid() || !hasChanges()) && (!hasAllowlistChanged) || inProgress">{{'BUTTON.CANCEL'
         | translate}}</button>
 </div>
 <confirmation-dialog #cfgConfirmationDialog (confirmAction)="confirmCancel($event)"></confirmation-dialog>

@@ -17,13 +17,11 @@ package dep
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/selector"
-	"net/http"
-	"time"
-
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/jobservice/config"
+	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/clients/core"
+	"net/http"
 )
 
 // DefaultClient for the retention
@@ -109,8 +107,8 @@ func (bc *basicClient) GetCandidates(repository *selector.Repository) ([]*select
 				labels = append(labels, label.Name)
 			}
 			tags := make([]string, 0)
-			var lastPulledTime time.Time
-			var lastPushedTime time.Time
+			lastPulledTime := art.PullTime
+			lastPushedTime := art.PushTime
 			for _, t := range art.Tags {
 				tags = append(tags, t.Name)
 				if t.PullTime.After(lastPulledTime) {

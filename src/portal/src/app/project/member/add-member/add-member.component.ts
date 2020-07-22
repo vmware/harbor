@@ -37,8 +37,7 @@ import {User} from "../../../user/user";
 import {Project} from "../../project";
 import { Member } from '../member';
 import { MemberService } from '../member.service';
-import { HttpResponseBase } from '@angular/common/http';
-import { errorHandler } from "../../../../lib/utils/shared/shared.utils";
+import { ErrorHandler } from '../../../../lib/utils/error-handler';
 
 
 @Component({
@@ -80,6 +79,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
 
   constructor(private memberService: MemberService,
     private userService: UserService,
+    private errorHandle: ErrorHandler,
     private messageHandlerService: MessageHandlerService,
     private translateService: TranslateService,
     private route: ActivatedRoute,
@@ -158,22 +158,10 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
       () => {
         this.messageHandlerService.showSuccess('MEMBER.ADDED_SUCCESS');
         this.added.emit(true);
-        // this.addMemberOpened = false;
       },
       error => {
-        if (error instanceof HttpResponseBase) {
-          if (this.messageHandlerService.isAppLevel(error)) {
-            this.messageHandlerService.handleError(error);
-            // this.addMemberOpened = false;
-          } else {
-          let errorMessageKey: string = errorHandler(error);
-            this.translateService
-              .get(errorMessageKey)
-              .subscribe(errorMessage => this.messageHandlerService.handleError(errorMessage));
-          }
-        }
+        this.errorHandle.error(error);
       });
-      // this.addMemberOpened = false;
   }
 
   selectedName(username: string) {

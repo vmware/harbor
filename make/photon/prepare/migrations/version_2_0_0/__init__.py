@@ -3,7 +3,7 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined
 from utils.migration import read_conf
 
 revision = '2.0.0'
-down_revision = '1.10.0'
+down_revisions = ['1.10.0']
 
 def migrate(input_cfg, output_cfg):
     config_dict = read_conf(input_cfg)

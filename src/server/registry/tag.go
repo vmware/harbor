@@ -20,8 +20,8 @@ import (
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/q"
-	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/registry/util"
 	"github.com/goharbor/harbor/src/server/router"
 	"net/http"
@@ -65,7 +65,7 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		maxEntries, err = strconv.Atoi(reqQ.Get("n"))
 		if err != nil || maxEntries < 0 {
 			err := errors.New(err).WithCode(errors.BadRequestCode).WithMessage("the N must be a positive int type")
-			serror.SendError(w, err)
+			lib_http.SendError(w, err)
 			return
 		}
 	}
@@ -75,7 +75,7 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	t.repositoryName = router.Param(req.Context(), ":splat")
 	repository, err := t.repoCtl.GetByName(req.Context(), t.repositoryName)
 	if err != nil {
-		serror.SendError(w, err)
+		lib_http.SendError(w, err)
 		return
 	}
 
@@ -85,7 +85,7 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			"RepositoryID": repository.RepositoryID,
 		}}, nil)
 	if err != nil {
-		serror.SendError(w, err)
+		lib_http.SendError(w, err)
 		return
 	}
 	if len(tags) == 0 {
@@ -111,7 +111,7 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		lastEntryIndex := util.IndexString(tagNames, lastEntry)
 		if lastEntryIndex == -1 {
 			err := errors.New(nil).WithCode(errors.BadRequestCode).WithMessage(fmt.Sprintf("the last: %s should be a valid tag name.", lastEntry))
-			serror.SendError(w, err)
+			lib_http.SendError(w, err)
 			return
 		}
 		if lastEntryIndex+1+maxEntries > tagNamesLen {
@@ -136,7 +136,7 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if tagNames[len(tagNames)-1] != resTags[len(resTags)-1] {
 		urlStr, err := util.SetLinkHeader(req.URL.String(), maxEntries, resTags[len(resTags)-1])
 		if err != nil {
-			serror.SendError(w, err)
+			lib_http.SendError(w, err)
 			return
 		}
 		w.Header().Set("Link", urlStr)
@@ -153,7 +153,7 @@ func (t *tagHandler) sendResponse(w http.ResponseWriter, req *http.Request, tagN
 		Name: t.repositoryName,
 		Tags: tagNames,
 	}); err != nil {
-		serror.SendError(w, err)
+		lib_http.SendError(w, err)
 		return
 	}
 }

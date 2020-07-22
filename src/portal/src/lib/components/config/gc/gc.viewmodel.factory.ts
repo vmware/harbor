@@ -13,6 +13,7 @@ export class GcViewModelFactory {
                 id: job.id,
                 type: job.schedule ? job.schedule.type : null,
                 status: job.job_status,
+                parameters: job.job_parameters,
                 createTime: createTime,
                 updateTime: updateTime,
                 details: null

@@ -11,6 +11,9 @@ import { RequestQueryParams } from "../../../services/RequestQueryParams";
 import { REFRESH_TIME_DIFFERENCE } from '../../../entities/shared.const';
 
 const executionStatus = 'InProgress';
+const STATUS_MAP = {
+  "Succeed": "Succeeded"
+};
 @Component({
   selector: 'replication-tasks',
   templateUrl: './replication-tasks.component.html',
@@ -203,11 +206,14 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   }
 
   openFilter(isOpen: boolean): void {
-    if (isOpen) {
-        this.isOpenFilterTag = true;
-    } else {
-        this.isOpenFilterTag = false;
+    this.isOpenFilterTag = isOpen;
+  }
+
+  getStatusStr(status: string): string {
+    if (STATUS_MAP && STATUS_MAP[status]) {
+      return STATUS_MAP[status];
     }
+    return status;
   }
 
 }

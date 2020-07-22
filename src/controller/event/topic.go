@@ -39,12 +39,13 @@ const (
 	TopicScanningFailed    = "SCANNING_FAILED"
 	TopicScanningCompleted = "SCANNING_COMPLETED"
 	// QuotaExceedTopic is topic for quota warning event, the usage reaches the warning bar of limitation, like 85%
-	TopicQuotaWarning  = "QUOTA_WARNING"
-	TopicQuotaExceed   = "QUOTA_EXCEED"
-	TopicUploadChart   = "UPLOAD_CHART"
-	TopicDownloadChart = "DOWNLOAD_CHART"
-	TopicDeleteChart   = "DELETE_CHART"
-	TopicReplication   = "REPLICATION"
+	TopicQuotaWarning    = "QUOTA_WARNING"
+	TopicQuotaExceed     = "QUOTA_EXCEED"
+	TopicUploadChart     = "UPLOAD_CHART"
+	TopicDownloadChart   = "DOWNLOAD_CHART"
+	TopicDeleteChart     = "DELETE_CHART"
+	TopicReplication     = "REPLICATION"
+	TopicArtifactLabeled = "ARTIFACT_LABELED"
 )
 
 // CreateProjectEvent is the creating project event
@@ -279,4 +280,12 @@ type ReplicationEvent struct {
 	ReplicationTaskID int64
 	OccurAt           time.Time
 	Status            string
+}
+
+// ArtifactLabeledEvent is event data of artifact labeled
+type ArtifactLabeledEvent struct {
+	ArtifactID int64
+	LabelID    int64
+	OccurAt    time.Time
+	Operator   string
 }

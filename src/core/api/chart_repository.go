@@ -377,8 +377,8 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 
 	versions := []string{}
 	for _, chartVersion := range chartVersions {
-		versions = append(versions, chartVersion.GetVersion())
-		if err := cra.removeLabelsFromChart(chartName, chartVersion.GetVersion()); err != nil {
+		versions = append(versions, chartVersion.Version)
+		if err := cra.removeLabelsFromChart(chartName, chartVersion.Version); err != nil {
 			cra.SendInternalServerError(err)
 			return
 		}
@@ -442,7 +442,7 @@ func (cra *ChartRepositoryAPI) requireNamespace(namespace string) bool {
 
 	// Not existing
 	if !existing {
-		cra.SendBadRequestError(fmt.Errorf("namespace %s is not existing", namespace))
+		cra.handleProjectNotFound(namespace)
 		return false
 	}
 

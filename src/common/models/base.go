@@ -34,9 +34,8 @@ func init() {
 		new(OIDCUser),
 		new(NotificationPolicy),
 		new(NotificationJob),
-		new(Blob),
 		new(ProjectBlob),
 		new(ArtifactAndBlob),
-		new(CVEWhitelist),
+		new(CVEAllowlist),
 	)
 }

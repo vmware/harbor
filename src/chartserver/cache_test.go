@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"k8s.io/helm/pkg/chartutil"
-	"k8s.io/helm/pkg/proto/hapi/chart"
-	helm_repo "k8s.io/helm/pkg/repo"
+	"helm.sh/helm/v3/pkg/chart"
+	helm_repo "helm.sh/helm/v3/pkg/repo"
 )
 
 var (
@@ -18,7 +17,7 @@ var (
 			},
 			Digest: "mock_digest",
 		},
-		Dependencies: make([]*chartutil.Dependency, 0),
+		Dependencies: make([]*chart.Dependency, 0),
 	}
 )
 

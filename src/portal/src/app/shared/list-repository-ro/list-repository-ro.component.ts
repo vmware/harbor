@@ -69,7 +69,7 @@ export class ListRepositoryROComponent implements OnInit, OnDestroy {
   public gotoLink(projectId: number, repoName: string): void {
     this.searchTrigger.closeSearch(true);
     let projectName = repoName.split('/')[0];
-    let repositorieName = projectName ? repoName.split(`${projectName}/`)[1] : repoName;
+    let repositorieName = projectName ? repoName.substr(projectName.length + 1) : repoName;
     let linkUrl = ['harbor', 'projects', projectId, 'repositories', repositorieName ];
     this.router.navigate(linkUrl);
   }

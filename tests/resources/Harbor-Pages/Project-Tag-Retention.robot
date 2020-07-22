@@ -79,13 +79,21 @@ Set Daily Schedule
     Retry Element Click   xpath=${project_tag_retention_schedule_ok_xpath}
     Retry Wait Until Page Contains Element  xpath=${project_tag_retention_span_daily_xpath}
 
+Execute Result Should Be
+    [Arguments]  ${result}
+    :FOR  ${idx}  IN RANGE  0  20
+    \   ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(., '${result}')]
+    \   Exit For Loop If  '${out[0]}'=='PASS'
+    \   Sleep  6
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
+
 Execute Dry Run
     Retry Element Click  xpath=${project_tag_retention_dry_run_xpath}
     Retry Wait Until Page Contains Element  xpath=${project_tag_retention_record_yes_xpath}
     Sleep    5
     Retry Element Click  xpath=${project_tag_retention_record_yes_xpath}
-       # memcached:123 should be deleted and hello-world:latest should be retained
-    Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(., '0/1')]
+    # memcached:123 should be deleted and hello-world:latest should be retained
+    Execute Result Should Be  0/1
 
 
 Execute Run
@@ -94,5 +102,6 @@ Execute Run
     Retry Wait Until Page Contains Element  xpath=${project_tag_retention_record_no_xpath}
     Sleep    5
     Retry Element Click  xpath=${project_tag_retention_record_no_xpath}
-     # memcached:123 should be deleted and hello-world:latest should be retained
-    Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(., '0/1')]
+    # memcached:123 should be deleted and hello-world:latest should be retained
+    Execute Result Should Be  0/1
+

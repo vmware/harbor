@@ -126,7 +126,7 @@ export class MessageComponent implements OnInit, OnDestroy {
   }
 
   signIn(): void {
-    this.router.navigateByUrl(CommonRoutes.EMBEDDED_SIGN_IN);
+    this.router.navigate([ CommonRoutes.EMBEDDED_SIGN_IN ], {queryParams: {redirect_url: this.router.url}});
   }
 
   onClose() {

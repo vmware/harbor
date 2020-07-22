@@ -42,7 +42,7 @@ func WrapConflictError(err error, format string, args ...interface{}) error {
 // as a src/internal/error.Error with not found error code, else return nil
 func AsNotFoundError(err error, messageFormat string, args ...interface{}) *errors.Error {
 	if errors.Is(err, orm.ErrNoRows) {
-		e := errors.NotFoundError(err)
+		e := errors.NotFoundError(nil)
 		if len(messageFormat) > 0 {
 			e.WithMessage(messageFormat, args...)
 		}

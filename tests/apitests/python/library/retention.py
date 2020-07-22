@@ -110,7 +110,7 @@ class Retention(base.Base):
         _, status_code, _ = client.retentions_id_put_with_http_info(retention_id, policy)
         base._assert_status_code(expect_status_code, status_code)
 
-    def update_retention_add_rule(self, retention_id, selector_repository="**", selector_tag="**", expect_status_code = 200, **kwargs):
+    def update_retention_add_rule(self, retention_id, selector_repository="**", selector_tag="**", with_untag="True", expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
         policy, status_code, _ = client.retentions_id_get_with_http_info(retention_id)
         base._assert_status_code(200, status_code)
@@ -134,6 +134,7 @@ class Retention(base.Base):
                                                     {
                                                         "kind": "doublestar",
                                                         "decoration": "matches",
+                                                        "extras":'["untagged":'+with_untag+']',
                                                         "pattern": selector_tag
                                                     }
                                                 ]

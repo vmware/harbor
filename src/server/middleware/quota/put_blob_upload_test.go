@@ -21,7 +21,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/types"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/quota"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -92,6 +96,7 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobNotExist() {
 		f := args.Get(4).(func() error)
 		f()
 	})
+	mock.OnAnything(suite.quotaController, "GetByRef").Return(&quota.Quota{}, nil).Once()
 
 	req := suite.makeRequest(100)
 	rr := httptest.NewRecorder()
@@ -108,6 +113,44 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobExistFailed() {
 
 	suite.handler.ServeHTTP(rr, req)
 	suite.Equal(http.StatusInternalServerError, rr.Code)
+}
+
+func (suite *PutBlobUploadMiddlewareTestSuite) TestResourcesExceeded() {
+	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)
+	mock.OnAnything(suite.blobController, "Exist").Return(false, nil)
+	mock.OnAnything(suite.projectController, "Get").Return(&commonmodels.Project{}, nil)
+
+	{
+		var errs quota.Errors
+		errs = errs.Add(quota.NewResourceOverflowError(types.ResourceStorage, 100, 100, 110))
+		mock.OnAnything(suite.quotaController, "Request").Return(errs).Once()
+
+		req := suite.makeRequest(100)
+		eveCtx := notification.NewEventCtx()
+		req = req.WithContext(notification.NewContext(req.Context(), eveCtx))
+		rr := httptest.NewRecorder()
+
+		suite.handler.ServeHTTP(rr, req)
+		suite.NotEqual(http.StatusOK, rr.Code)
+		suite.Equal(1, eveCtx.Events.Len())
+	}
+
+	{
+		var errs quota.Errors
+		errs = errs.Add(quota.NewResourceOverflowError(types.ResourceStorage, 100, 100, 110))
+
+		err := errors.DeniedError(errs).WithMessage("Quota exceeded when processing the request of %v", errs)
+		mock.OnAnything(suite.quotaController, "Request").Return(err).Once()
+
+		req := suite.makeRequest(100)
+		eveCtx := notification.NewEventCtx()
+		req = req.WithContext(notification.NewContext(req.Context(), eveCtx))
+		rr := httptest.NewRecorder()
+
+		suite.handler.ServeHTTP(rr, req)
+		suite.NotEqual(http.StatusOK, rr.Code)
+		suite.Equal(1, eveCtx.Events.Len())
+	}
 }
 
 func TestPutBlobUploadMiddlewareTestSuite(t *testing.T) {

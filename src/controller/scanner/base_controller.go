@@ -250,7 +250,7 @@ func (bc *basicController) GetRegistrationByProject(projectID int64, options ...
 		}
 	}
 
-	return registration, err
+	return registration, nil
 }
 
 // Ping ...

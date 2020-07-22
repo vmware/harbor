@@ -42,7 +42,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
 // CopyArtifactMiddleware middleware to request count and storage resources for copy artifact API

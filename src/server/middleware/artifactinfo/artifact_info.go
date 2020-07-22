@@ -16,6 +16,7 @@ package artifactinfo
 
 import (
 	"fmt"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -24,7 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/opencontainers/go-digest"
 )
@@ -59,7 +59,7 @@ func Middleware() func(http.Handler) http.Handler {
 			repo := m[middleware.RepositorySubexp]
 			pn, err := projectNameFromRepo(repo)
 			if err != nil {
-				serror.SendError(rw, errors.BadRequestError(err))
+				lib_http.SendError(rw, errors.BadRequestError(err))
 				return
 			}
 			art := lib.ArtifactInfo{
@@ -80,7 +80,7 @@ func Middleware() func(http.Handler) http.Handler {
 				// it's not clear in OCI spec how to handle invalid from parm
 				bmp, err := projectNameFromRepo(bmr)
 				if err != nil {
-					serror.SendError(rw, errors.BadRequestError(err))
+					lib_http.SendError(rw, errors.BadRequestError(err))
 					return
 				}
 				art.BlobMountDigest = m[blobMountDigest]

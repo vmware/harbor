@@ -138,7 +138,7 @@ function publishImage {
     # rename the images with tag "dev" and push to Docker Hub
     docker images
     docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
-    docker images | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$Harbor_Assets_Version\).*|docker tag \1:\2 \1:$image_tag;docker push \1:$image_tag|p" | bash
+    docker images | grep goharbor | grep -v "\-base" | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$Harbor_Assets_Version\).*|docker tag \1:\2 \1:$image_tag;docker push \1:$image_tag|p" | bash
     echo "Images are published successfully"
     docker images
 }

@@ -2,8 +2,9 @@
 import os, subprocess, shutil
 from pathlib import Path
 from subprocess import DEVNULL
+import logging
 
-from g import DEFAULT_GID, DEFAULT_UID, trust_ca_dir, storage_ca_bundle_filename
+from g import DEFAULT_GID, DEFAULT_UID, shared_cert_dir, storage_ca_bundle_filename, internal_tls_dir, internal_ca_filename
 from .misc import (
     mark_file,
     generate_random_string,
@@ -99,33 +100,32 @@ def prepare_registry_ca(
         os.chown(private_key_pem_path, DEFAULT_UID, DEFAULT_GID)
 
 
-def prepare_trust_ca(**kwargs):
-    def f(path: str, file_name: str):
+def prepare_trust_ca(config_dict):
+    if shared_cert_dir.exists():
+        shutil.rmtree(shared_cert_dir)
+    shared_cert_dir.mkdir(parents=True, exist_ok=True)
 
+    internal_ca_src = internal_tls_dir.joinpath(internal_ca_filename)
+    ca_bundle_src = config_dict.get('registry_custom_ca_bundle_path')
+    for src_path, dst_filename in (
+        (internal_ca_src, internal_ca_filename),
+        (ca_bundle_src, storage_ca_bundle_filename)):
+        logging.info('copy {} to shared trust ca dir as name {} ...'.format(src_path, dst_filename))
         # check if source file valied
-        src_path = kwargs.get(path)
         if not src_path:
-            return
-        real_path = get_realpath(src_path)
-        if not real_path.exists():
-            raise Exception('ca file {} is not exist'.format(real_path))
-        if not real_path.is_file():
-            raise Exception('{} is not file'.format(real_path))
+            continue
+        real_src_path = get_realpath(str(src_path))
+        if not real_src_path.exists():
+            logging.info('ca file {} is not exist'.format(real_src_path))
+            continue
+        if not real_src_path.is_file():
+            logging.info('{} is not file'.format(real_src_path))
+            continue
 
-        dst_path = trust_ca_dir.joinpath(file_name)
-        # check destination dir exist
-        if not trust_ca_dir.exists():
-            trust_ca_dir.mkdir(parents=True)
-        else:
-            os.remove(dst_path)
+        dst_path = shared_cert_dir.joinpath(dst_filename)
 
         # copy src to dst
-        shutil.copy(src_path, dst_path)
+        shutil.copy2(real_src_path, dst_path)
 
         # change ownership and permission
-        mark_file(dst_path)
-
-    for p in (
-        ('internal_https_ca_path', 'harbor_internal_ca.crt'),
-        ('registry_custom_ca_bundle_path', storage_ca_bundle_filename)):
-        f(*p)
+        mark_file(dst_path, mode=0o644)

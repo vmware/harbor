@@ -2,7 +2,7 @@
   <div class="breadcrumb">
     <a href="javascript:void(0)" (click)="gotoProjectList()"> {{ 'SIDE_NAV.PROJECTS'| translate}} </a>
     &lt;
-    <a href="javascript:void(0)" (click)="gotoChartList()">{{ 'HELM_CHART.HELMCHARTS'| translate}}</a>
+    <a href="javascript:void(0)" (click)="gotoChartList()">{{ projectName }}</a>
   </div>
   <hbr-helm-chart-version
     [projectId]='projectId'

@@ -30,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils"
 	email_util "github.com/goharbor/harbor/src/common/utils/email"
 	"github.com/goharbor/harbor/src/core/api"
@@ -122,6 +123,16 @@ func (cc *CommonController) LogOut() {
 
 // UserExists checks if user exists when user input value in sign in form.
 func (cc *CommonController) UserExists() {
+	flag, err := config.SelfRegistration()
+	if err != nil {
+		log.Errorf("Failed to get the status of self registration flag, error: %v, disabling user existence check", err)
+	}
+	securityCtx, ok := security.FromContext(cc.Ctx.Request.Context())
+	isAdmin := ok && securityCtx.IsSysAdmin()
+	if !flag && !isAdmin {
+		cc.CustomAbort(http.StatusPreconditionFailed, "self registration disabled, only sysadmin can check user existence")
+	}
+
 	target := cc.GetString("target")
 	value := cc.GetString("value")
 

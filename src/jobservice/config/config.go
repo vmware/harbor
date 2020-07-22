@@ -150,13 +150,10 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 		redisAddress := c.PoolConfig.RedisPoolCfg.RedisURL
 		if !utils.IsEmptyStr(redisAddress) {
 			if _, err := url.Parse(redisAddress); err != nil {
-				if redisURL, ok := utils.TranslateRedisAddress(redisAddress); ok {
-					c.PoolConfig.RedisPoolCfg.RedisURL = redisURL
-				}
-			} else {
-				if !strings.HasPrefix(redisAddress, redisSchema) {
-					c.PoolConfig.RedisPoolCfg.RedisURL = fmt.Sprintf("%s%s", redisSchema, redisAddress)
-				}
+				return fmt.Errorf("bad redis url for jobservice, %s", redisAddress)
+			}
+			if !strings.Contains(redisAddress, "://") {
+				c.PoolConfig.RedisPoolCfg.RedisURL = fmt.Sprintf("%s%s", redisSchema, redisAddress)
 			}
 		}
 	}
@@ -313,8 +310,7 @@ func (c *Configuration) validate() error {
 		if utils.IsEmptyStr(c.PoolConfig.RedisPoolCfg.RedisURL) {
 			return errors.New("URL of redis worker is empty")
 		}
-
-		if !strings.HasPrefix(c.PoolConfig.RedisPoolCfg.RedisURL, redisSchema) {
+		if !strings.Contains(c.PoolConfig.RedisPoolCfg.RedisURL, "://") {
 			return errors.New("invalid redis URL")
 		}
 

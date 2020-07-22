@@ -21,13 +21,10 @@
 .center-align-items {
     display: flex;
     align-items: center;
-    clr-icon {
-        margin-left: 10px;
-    }
-    img {
-        margin-right: 10px;
-    }
 }
 .artifact-icon {
     width: 25px;
+}
+.margin-left-10px {
+    margin-left: 10px;
 }

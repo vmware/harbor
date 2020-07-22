@@ -122,7 +122,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
   }
 
   goIntoRepo(repoEvt: NewRepository): void {
-    let linkUrl = ['harbor', 'projects', repoEvt.project_id, 'repositories', repoEvt.name.split(`${this.projectName}/`)[1]];
+    let linkUrl = ['harbor', 'projects', repoEvt.project_id, 'repositories', repoEvt.name.substr(this.projectName.length + 1)];
     this.router.navigate(linkUrl);
   }
 
@@ -223,7 +223,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     operMessage.name = 'OPERATION.DELETE_REPO';
     operMessage.data.id = repo.id;
     operMessage.state = OperationState.progressing;
-    repo.name = repo.name.split(`${this.projectName}/`)[1];
+    repo.name = repo.name.substr(this.projectName.length + 1);
     operMessage.data.name = repo.name;
 
     this.operationService.publishInfo(operMessage);
@@ -242,7 +242,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         this.translateService.get(message).subscribe(res =>
           operateChanges(operMessage, OperationState.failure, res)
         );
-        return observableThrowError(message);
+        return observableThrowError(error);
       }));
   }
 

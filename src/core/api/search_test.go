@@ -18,17 +18,16 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/goharbor/harbor/src/core/config"
-
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
-	"k8s.io/helm/cmd/helm/search"
+	"github.com/goharbor/harbor/src/core/config"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	member "github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	helm_repo "k8s.io/helm/pkg/repo"
+	"helm.sh/helm/v3/cmd/helm/search"
+	helm_repo "helm.sh/helm/v3/pkg/repo"
 )
 
 func TestSearch(t *testing.T) {

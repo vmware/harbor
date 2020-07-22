@@ -15,6 +15,8 @@ import { Component, Output, EventEmitter } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from "rxjs";
 import { errorHandler } from "../../../lib/utils/shared/shared.utils";
+import { MessageHandlerService } from '../message-handler/message-handler.service';
+import { ErrorHandler } from '../../../lib/utils/error-handler';
 
 @Component({
     selector: 'inline-alert',
@@ -35,7 +37,9 @@ export class InlineAlertComponent {
     @Output() confirmEvt = new EventEmitter<boolean>();
     @Output() closeEvt = new EventEmitter<boolean>();
 
-    constructor(private translate: TranslateService) { }
+    constructor(private translate: TranslateService,
+        private errHandler: ErrorHandler,
+        ) { }
 
     public get errorMessage(): string {
         return this.displayedText;
@@ -47,7 +51,7 @@ export class InlineAlertComponent {
         if (this.displayedText) {
             this.translate.get(this.displayedText).subscribe((res: string) => this.displayedText = res);
         }
-
+        this.errHandler.handleErrorPopupUnauthorized(error);
         this.inlineAlertType = 'danger';
         this.showCancelAction = false;
         this.inlineAlertClosable = true;

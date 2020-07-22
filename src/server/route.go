@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/core/service/notifications/jobs"
 	"github.com/goharbor/harbor/src/core/service/notifications/scheduler"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/server/handler"
 	"github.com/goharbor/harbor/src/server/router"
 	"net/http"
 )
@@ -52,6 +53,7 @@ func registerRoutes() {
 	beego.Router("/service/notifications/jobs/retention/task/:id([0-9]+)", &jobs.Handler{}, "post:HandleRetentionTask")
 	beego.Router("/service/notifications/schedules/:id([0-9]+)", &scheduler.Handler{}, "post:Handle")
 	beego.Router("/service/notifications/jobs/scan/:uuid", &jobs.Handler{}, "post:HandleScan")
+	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/tasks/:id").Handler(handler.NewJobStatusHandler())
 
 	beego.Router("/service/token", &token.Handler{})
 

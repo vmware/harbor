@@ -19,15 +19,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
-	util "github.com/goharbor/harbor/src/common/utils/redis"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/quota/driver"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
+	"github.com/gomodule/redigo/redis"
 
 	// quota driver
 	_ "github.com/goharbor/harbor/src/controller/quota/driver"
@@ -55,16 +55,16 @@ type Controller interface {
 	Delete(ctx context.Context, id int64) error
 
 	// Get returns quota by id
-	Get(ctx context.Context, id int64) (*quota.Quota, error)
+	Get(ctx context.Context, id int64, options ...Option) (*quota.Quota, error)
 
 	// GetByRef returns quota by reference object
-	GetByRef(ctx context.Context, reference, referenceID string) (*quota.Quota, error)
+	GetByRef(ctx context.Context, reference, referenceID string, options ...Option) (*quota.Quota, error)
 
 	// IsEnabled returns true when quota enabled for reference object
 	IsEnabled(ctx context.Context, reference, referenceID string) (bool, error)
 
 	// List list quotas
-	List(ctx context.Context, query *q.Query) ([]*quota.Quota, error)
+	List(ctx context.Context, query *q.Query, options ...Option) ([]*quota.Quota, error)
 
 	// Refresh refresh quota for the reference object
 	Refresh(ctx context.Context, reference, referenceID string, options ...Option) error
@@ -105,12 +105,40 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 	return c.quotaMgr.Delete(ctx, id)
 }
 
-func (c *controller) Get(ctx context.Context, id int64) (*quota.Quota, error) {
-	return c.quotaMgr.Get(ctx, id)
+func (c *controller) Get(ctx context.Context, id int64, options ...Option) (*quota.Quota, error) {
+	q, err := c.quotaMgr.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.assembleQuota(ctx, q, newOptions(options...))
 }
 
-func (c *controller) GetByRef(ctx context.Context, reference, referenceID string) (*quota.Quota, error) {
-	return c.quotaMgr.GetByRef(ctx, reference, referenceID)
+func (c *controller) GetByRef(ctx context.Context, reference, referenceID string, options ...Option) (*quota.Quota, error) {
+	q, err := c.quotaMgr.GetByRef(ctx, reference, referenceID)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.assembleQuota(ctx, q, newOptions(options...))
+}
+
+func (c *controller) assembleQuota(ctx context.Context, q *quota.Quota, opts *Options) (*quota.Quota, error) {
+	if opts.WithReferenceObject {
+		driver, err := Driver(ctx, q.Reference)
+		if err != nil {
+			return nil, err
+		}
+
+		ref, err := driver.Load(ctx, q.ReferenceID)
+		if err != nil {
+			return nil, err
+		}
+
+		q.Ref = ref
+	}
+
+	return q, nil
 }
 
 func (c *controller) IsEnabled(ctx context.Context, reference, referenceID string) (bool, error) {
@@ -122,12 +150,24 @@ func (c *controller) IsEnabled(ctx context.Context, reference, referenceID strin
 	return d.Enabled(ctx, referenceID)
 }
 
-func (c *controller) List(ctx context.Context, query *q.Query) ([]*quota.Quota, error) {
-	return c.quotaMgr.List(ctx, query)
+func (c *controller) List(ctx context.Context, query *q.Query, options ...Option) ([]*quota.Quota, error) {
+	quotas, err := c.quotaMgr.List(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := newOptions(options...)
+	for _, q := range quotas {
+		if _, err := c.assembleQuota(ctx, q, opts); err != nil {
+			return nil, err
+		}
+	}
+
+	return quotas, nil
 }
 
 func (c *controller) getReservedResources(ctx context.Context, reference, referenceID string) (types.ResourceList, error) {
-	conn := util.DefaultPool().Get()
+	conn := redislib.DefaultPool().Get()
 	defer conn.Close()
 
 	key := reservedResourcesKey(reference, referenceID)
@@ -143,7 +183,7 @@ func (c *controller) getReservedResources(ctx context.Context, reference, refere
 }
 
 func (c *controller) setReservedResources(ctx context.Context, reference, referenceID string, resources types.ResourceList) error {
-	conn := util.DefaultPool().Get()
+	conn := redislib.DefaultPool().Get()
 	defer conn.Close()
 
 	key := reservedResourcesKey(reference, referenceID)

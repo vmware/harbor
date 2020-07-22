@@ -25,7 +25,6 @@ import (
 	"net"
 	"net/url"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -104,40 +103,6 @@ func IsValidURL(address string) bool {
 	}
 
 	return true
-}
-
-// TranslateRedisAddress translates the comma format to redis URL
-func TranslateRedisAddress(commaFormat string) (string, bool) {
-	if IsEmptyStr(commaFormat) {
-		return "", false
-	}
-
-	sections := strings.Split(commaFormat, ",")
-	totalSections := len(sections)
-	if totalSections == 0 {
-		return "", false
-	}
-
-	urlParts := make([]string, 0)
-	// section[0] should be host:port
-	redisURL := fmt.Sprintf("redis://%s", sections[0])
-	if _, err := url.Parse(redisURL); err != nil {
-		return "", false
-	}
-	urlParts = append(urlParts, "redis://", sections[0])
-	// Ignore weight
-	// Check password
-	if totalSections >= 3 && !IsEmptyStr(sections[2]) {
-		urlParts = []string{urlParts[0], fmt.Sprintf("%s:%s@", "arbitrary_username", sections[2]), urlParts[1]}
-	}
-
-	if totalSections >= 4 && !IsEmptyStr(sections[3]) {
-		if _, err := strconv.Atoi(sections[3]); err == nil {
-			urlParts = append(urlParts, "/", sections[3])
-		}
-	}
-
-	return strings.Join(urlParts, ""), true
 }
 
 // SerializeJob encodes work.Job to json data.

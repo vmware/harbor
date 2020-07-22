@@ -17,6 +17,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -25,7 +26,12 @@ import (
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/registryctl/api"
+	"github.com/goharbor/harbor/src/registryctl/api/registry/gc"
+)
+
+// const definition
+const (
+	UserAgent = "harbor-registryctl-client"
 )
 
 // Client defines methods that an Registry client should implement
@@ -33,7 +39,11 @@ type Client interface {
 	// Health tests the connection with registry server
 	Health() error
 	// StartGC enable the gc of registry server
-	StartGC() (*api.GCResult, error)
+	StartGC() (*gc.Result, error)
+	// DeleteBlob deletes the specified blob. The "reference" should be "digest"
+	DeleteBlob(reference string) (err error)
+	// DeleteManifest deletes the specified manifest. The "reference" can be "tag" or "digest"
+	DeleteManifest(repository, reference string) (err error)
 }
 
 type client struct {
@@ -74,16 +84,16 @@ func (c *client) Health() error {
 }
 
 // StartGC ...
-func (c *client) StartGC() (*api.GCResult, error) {
+func (c *client) StartGC() (*gc.Result, error) {
 	url := c.baseURL + "/api/registry/gc"
-	gcr := &api.GCResult{}
+	gcr := &gc.Result{}
 
 	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	resp, err := c.client.Do(req)
+	resp, err := c.do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -101,4 +111,68 @@ func (c *client) StartGC() (*api.GCResult, error) {
 	}
 
 	return gcr, nil
+}
+
+// DeleteBlob ...
+func (c *client) DeleteBlob(reference string) (err error) {
+	req, err := http.NewRequest(http.MethodDelete, buildBlobURL(c.baseURL, reference), nil)
+	if err != nil {
+		return err
+	}
+	resp, err := c.do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}
+
+// DeleteManifest ...
+func (c *client) DeleteManifest(repository, reference string) (err error) {
+	req, err := http.NewRequest(http.MethodDelete, buildManifestURL(c.baseURL, repository, reference), nil)
+	if err != nil {
+		return err
+	}
+	resp, err := c.do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}
+
+func (c *client) do(req *http.Request) (*http.Response, error) {
+	req.Header.Set(http.CanonicalHeaderKey("User-Agent"), UserAgent)
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		message := fmt.Sprintf("http status code: %d, body: %s", resp.StatusCode, string(body))
+		code := errors.GeneralCode
+		switch resp.StatusCode {
+		case http.StatusUnauthorized:
+			code = errors.UnAuthorizedCode
+		case http.StatusForbidden:
+			code = errors.ForbiddenCode
+		case http.StatusNotFound:
+			code = errors.NotFoundCode
+		}
+		return nil, errors.New(nil).WithCode(code).
+			WithMessage(message)
+	}
+	return resp, nil
+}
+
+func buildManifestURL(endpoint, repository, reference string) string {
+	return fmt.Sprintf("%s/api/registry/%s/manifests/%s", endpoint, repository, reference)
+}
+
+func buildBlobURL(endpoint, reference string) string {
+	return fmt.Sprintf("%s/api/registry/blob/%s", endpoint, reference)
 }

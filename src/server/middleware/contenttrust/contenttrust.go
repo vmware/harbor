@@ -1,7 +1,6 @@
 package contenttrust
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
@@ -36,7 +35,7 @@ func Middleware() func(http.Handler) http.Handler {
 		none := lib.ArtifactInfo{}
 		af := lib.GetArtifactInfo(ctx)
 		if af == none {
-			return fmt.Errorf("artifactinfo middleware required before this middleware")
+			return errors.New("artifactinfo middleware required before this middleware").WithCode(errors.NotFoundCode)
 		}
 		if len(af.Digest) == 0 {
 			art, err := artifact.Ctl.GetByReference(ctx, af.Repository, af.Reference, nil)

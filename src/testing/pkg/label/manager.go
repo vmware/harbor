@@ -62,3 +62,9 @@ func (f *FakeManager) RemoveAllFrom(ctx context.Context, artifactID int64) error
 	args := f.Called()
 	return args.Error(0)
 }
+
+// RemoveFromAllArtifacts ...
+func (f *FakeManager) RemoveFromAllArtifacts(ctx context.Context, labelID int64) error {
+	args := f.Called()
+	return args.Error(0)
+}

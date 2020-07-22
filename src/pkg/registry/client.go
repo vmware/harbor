@@ -351,16 +351,24 @@ func (c *client) PullBlob(repository, digest string) (int64, io.ReadCloser, erro
 	if err != nil {
 		return 0, nil, err
 	}
+
+	req.Header.Add(http.CanonicalHeaderKey("Accept-Encoding"), "identity")
 	resp, err := c.do(req)
 	if err != nil {
 		return 0, nil, err
 	}
+
+	var size int64
 	n := resp.Header.Get(http.CanonicalHeaderKey("Content-Length"))
-	size, err := strconv.ParseInt(n, 10, 64)
-	if err != nil {
-		defer resp.Body.Close()
-		return 0, nil, err
+	// no content-length is acceptable, which can taken from manifests
+	if len(n) > 0 {
+		size, err = strconv.ParseInt(n, 10, 64)
+		if err != nil {
+			defer resp.Body.Close()
+			return 0, nil, err
+		}
 	}
+
 	return size, resp.Body, nil
 }
 

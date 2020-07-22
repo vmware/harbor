@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"net/http"
 	"strings"
@@ -48,6 +49,7 @@ const (
 func newArtifactAPI() *artifactAPI {
 	return &artifactAPI{
 		artCtl:  artifact.Ctl,
+		proCtl:  project.Ctl,
 		repoCtl: repository.Ctl,
 		scanCtl: scan.DefaultController,
 		tagCtl:  tag.Ctl,
@@ -57,6 +59,7 @@ func newArtifactAPI() *artifactAPI {
 type artifactAPI struct {
 	BaseAPI
 	artCtl  artifact.Controller
+	proCtl  project.Controller
 	repoCtl repository.Controller
 	scanCtl scan.Controller
 	tagCtl  tag.Controller
@@ -150,6 +153,15 @@ func (a *artifactAPI) DeleteArtifact(ctx context.Context, params operation.Delet
 func (a *artifactAPI) CopyArtifact(ctx context.Context, params operation.CopyArtifactParams) middleware.Responder {
 	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceArtifact); err != nil {
 		return a.SendError(ctx, err)
+	}
+
+	pro, err := a.proCtl.GetByName(ctx, params.ProjectName)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if pro.RegistryID > 0 {
+		return a.SendError(ctx, errors.New(nil).WithCode(errors.MethodNotAllowedCode).
+			WithMessage("cannot copy the artifact to a proxy cache project"))
 	}
 
 	srcRepo, ref, err := parse(params.From)

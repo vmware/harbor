@@ -3,7 +3,6 @@ package chartserver
 import (
 	"encoding/json"
 	"os"
-	"strings"
 	"testing"
 )
 
@@ -17,28 +16,55 @@ func TestParseRedisConfig(t *testing.T) {
 
 	// Case 2: short pattern, addr:port
 	redisAddr = "redis:6379"
-	if parsedConnStr, err := parseRedisConfig(redisAddr); err != nil {
-		t.Fatalf("expect nil error but got non nil one if addr is short pattern: %s\n", parsedConnStr)
+	if parsedConn, err := parseRedisConfig(redisAddr); err != nil {
+		t.Fatalf("expect nil error but got non nil one if addr is short pattern: %s\n", parsedConn)
 	}
 
 	// Case 3: long pattern but miss some parts
-	redisAddr = "redis:6379,100"
-	if parsedConnStr, err := parseRedisConfig(redisAddr); err != nil {
-		t.Fatalf("expect nil error but got non nil one if addr is long pattern with some parts missing: %s\n", parsedConnStr)
+	redisAddr = "redis:6379?idle_timeout_seconds=100"
+	if parsedConn, err := parseRedisConfig(redisAddr); err != nil {
+		t.Fatalf("expect nil error but got non nil one if addr is long pattern with some parts missing: %v\n", parsedConn)
 	} else {
-		if strings.Index(parsedConnStr, `"dbNum":"0"`) == -1 {
-			t.Fatalf("expect 'dbNum:0' in the parsed conn str but got nothing: %s\n", parsedConnStr)
+		if num, ok := parsedConn["dbNum"]; !ok || num != "0" {
+			t.Fatalf("expect 'dbNum:0' in the parsed conn str: %v\n", parsedConn)
 		}
 	}
 
 	// Case 4: long pattern
-	redisAddr = "redis:6379,100,Passw0rd,1"
-	if parsedConnStr, err := parseRedisConfig(redisAddr); err != nil {
+	redisAddr = ":Passw0rd@redis:6379/1?idle_timeout_seconds=100"
+	if parsedConn, err := parseRedisConfig(redisAddr); err != nil {
 		t.Fatal("expect nil error but got non nil one if addr is long pattern")
 	} else {
-		if strings.Index(parsedConnStr, `"dbNum":"1"`) == -1 ||
-			strings.Index(parsedConnStr, `"password":"Passw0rd"`) == -1 {
-			t.Fatalf("expect 'dbNum:0' and 'password:Passw0rd' in the parsed conn str but got nothing: %s", parsedConnStr)
+		if num, ok := parsedConn["dbNum"]; !ok || num != "1" {
+			t.Fatalf("expect 'dbNum:1' in the parsed conn str: %v", parsedConn)
+		}
+		if p, ok := parsedConn["password"]; !ok || p != "Passw0rd" {
+			t.Fatalf("expect 'password:Passw0rd' in the parsed conn str: %v", parsedConn)
+		}
+	}
+
+	// Case 5: sentinel but miss master name
+	redisAddr = "redis+sentinel://:Passw0rd@redis1:26379,redis2:26379/1?idle_timeout_seconds=100"
+	if _, err := parseRedisConfig(redisAddr); err == nil {
+		t.Fatal("expect no master name error but got nil")
+	}
+
+	// Case 6: sentinel
+	redisAddr = "redis+sentinel://:Passw0rd@redis1:26379,redis2:26379/mymaster/1?idle_timeout_seconds=100"
+	if parsedConn, err := parseRedisConfig(redisAddr); err != nil {
+		t.Fatal("expect nil error but got non nil one if addr is long pattern")
+	} else {
+		if num, ok := parsedConn["dbNum"]; !ok || num != "1" {
+			t.Fatalf("expect 'dbNum:0' in the parsed conn str: %v", parsedConn)
+		}
+		if p, ok := parsedConn["password"]; !ok || p != "Passw0rd" {
+			t.Fatalf("expect 'password:Passw0rd' in the parsed conn str: %v", parsedConn)
+		}
+		if v, ok := parsedConn["masterName"]; !ok || v != "mymaster" {
+			t.Fatalf("expect 'masterName:mymaster' in the parsed conn str: %v", parsedConn)
+		}
+		if v, ok := parsedConn["conn"]; !ok || v != "redis1:26379,redis2:26379" {
+			t.Fatalf("expect 'conn:redis1:26379,redis2:26379' in the parsed conn str: %v", parsedConn)
 		}
 	}
 }
@@ -73,7 +99,7 @@ func TestGetCacheConfig(t *testing.T) {
 	}
 
 	// case 5: redis cache conf
-	os.Setenv(redisENVKey, "redis:6379,100,Passw0rd,1")
+	os.Setenv(redisENVKey, ":Passw0rd@redis:6379/1?idle_timeout_seconds=100")
 	redisConf, err := getCacheConfig()
 	if err != nil {
 		t.Fatalf("expect nil error but got non-nil one when parsing valid redis conf")

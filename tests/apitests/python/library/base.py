@@ -23,7 +23,12 @@ class Credential:
         self.password = password
 
 def _create_client(server, credential, debug, api_type="products"):
-    cfg = swagger_client.Configuration()
+    cfg = None
+    if api_type in ('projectv2', 'artifact', 'repository', 'scan'):
+        cfg = v2_swagger_client.Configuration()
+    else:
+        cfg = swagger_client.Configuration()
+
     cfg.host = server.endpoint
     cfg.verify_ssl = server.verify_ssl
     # support basic auth only for now

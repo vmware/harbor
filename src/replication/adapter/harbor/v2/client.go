@@ -16,11 +16,10 @@ package v2
 
 import (
 	"fmt"
-	"net/url"
-
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/lib/encode/repository"
 	"github.com/goharbor/harbor/src/replication/adapter/harbor/base"
 	"github.com/goharbor/harbor/src/replication/model"
 )
@@ -45,11 +44,11 @@ func (c *client) listRepositories(project *base.Project) ([]*model.Repository, e
 	return repos, nil
 }
 
-func (c *client) listArtifacts(repository string) ([]*model.Artifact, error) {
-	project, repository := utils.ParseRepository(repository)
-	repository = url.PathEscape(url.PathEscape(repository))
+func (c *client) listArtifacts(repo string) ([]*model.Artifact, error) {
+	project, repo := utils.ParseRepository(repo)
+	repo = repository.Encode(repo)
 	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts?with_label=true",
-		c.BasePath(), project, repository)
+		c.BasePath(), project, repo)
 	artifacts := []*artifact.Artifact{}
 	if err := c.C.GetAndIteratePagination(url, &artifacts); err != nil {
 		return nil, err
@@ -71,10 +70,10 @@ func (c *client) listArtifacts(repository string) ([]*model.Artifact, error) {
 	return arts, nil
 }
 
-func (c *client) deleteTag(repository, tag string) error {
-	project, repository := utils.ParseRepository(repository)
-	repository = url.PathEscape(url.PathEscape(repository))
+func (c *client) deleteTag(repo, tag string) error {
+	project, repo := utils.ParseRepository(repo)
+	repo = repository.Encode(repo)
 	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts/%s/tags/%s",
-		c.BasePath(), project, repository, tag, tag)
+		c.BasePath(), project, repo, tag, tag)
 	return c.C.Delete(url)
 }

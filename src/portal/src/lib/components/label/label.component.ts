@@ -141,6 +141,8 @@ export class LabelComponent implements OnInit {
                 forkJoin(...observableLists).subscribe((item) => {
                     this.selectedRow = [];
                     this.retrieve(this.scope);
+                }, error => {
+                    this.errorHandler.error(error);
                 });
             }
         }
@@ -168,7 +170,7 @@ export class LabelComponent implements OnInit {
                     this.translateService.get(message).subscribe(res =>
                         operateChanges(operMessage, OperationState.failure, res)
                       );
-                    return observableThrowError(message);
+                    return observableThrowError(error);
                 }));
     }
 

@@ -7,7 +7,7 @@ import click
 
 from utils.misc import delfile
 from utils.configs import validate, parse_yaml_config
-from utils.cert import prepare_registry_ca, SSL_CERT_KEY_PATH, SSL_CERT_PATH, get_secret_key
+from utils.cert import prepare_registry_ca, SSL_CERT_KEY_PATH, SSL_CERT_PATH, get_secret_key, prepare_trust_ca
 from utils.db import prepare_db
 from utils.jobservice import prepare_job_service
 from utils.registry import prepare_registry
@@ -52,6 +52,7 @@ def prepare(conf, with_notary, with_clair, with_trivy, with_chartmuseum):
     prepare_job_service(config_dict)
     prepare_redis(config_dict)
     prepare_tls(config_dict)
+    prepare_trust_ca(config_dict)
 
     get_secret_key(secret_key_dir)
 

@@ -59,11 +59,23 @@ type adapter struct {
 // Info gets info about Huawei SWR
 func (a *adapter) Info() (*model.RegistryInfo, error) {
 	registryInfo := model.RegistryInfo{
-		Type:                     model.RegistryTypeHuawei,
-		Description:              "Adapter for SWR -- The image registry of Huawei Cloud",
-		SupportedResourceTypes:   []model.ResourceType{model.ResourceTypeImage},
-		SupportedResourceFilters: []*model.FilterStyle{},
-		SupportedTriggers:        []model.TriggerType{},
+		Type:                   model.RegistryTypeHuawei,
+		Description:            "Adapter for SWR -- The image registry of Huawei Cloud",
+		SupportedResourceTypes: []model.ResourceType{model.ResourceTypeImage},
+		SupportedResourceFilters: []*model.FilterStyle{
+			{
+				Type:  model.FilterTypeName,
+				Style: model.FilterStyleTypeText,
+			},
+			{
+				Type:  model.FilterTypeTag,
+				Style: model.FilterStyleTypeText,
+			},
+		},
+		SupportedTriggers: []model.TriggerType{
+			model.TriggerTypeManual,
+			model.TriggerTypeScheduled,
+		},
 	}
 	return &registryInfo, nil
 }

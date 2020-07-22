@@ -1,0 +1,79 @@
+diff --git a/cmd/chartmuseum/main.go b/cmd/chartmuseum/main.go
+index e2d8ec0..116b1d4 100644
+--- a/cmd/chartmuseum/main.go
++++ b/cmd/chartmuseum/main.go
+@@ -264,6 +264,8 @@ func storeFromConfig(conf *config.Config) cache.Store {
+ 	switch cacheFlag {
+ 	case "redis":
+ 		store = redisCacheFromConfig(conf)
++	case "redis_sentinel":
++		store = redisSentinelCacheFromConfig(conf)
+ 	default:
+ 		crash("Unsupported cache store: ", cacheFlag)
+ 	}
+@@ -280,6 +282,16 @@ func redisCacheFromConfig(conf *config.Config) cache.Store {
+ 	))
+ }
+ 
++func redisSentinelCacheFromConfig(conf *config.Config) cache.Store {
++	crashIfConfigMissingVars(conf, []string{"cache.redis.addr", "cache.redis.mastername"})
++	return cache.Store(cache.NewRedisSentinelStore(
++		conf.GetString("cache.redis.mastername"),
++		strings.Split(conf.GetString("cache.redis.addr"), ","),
++		conf.GetString("cache.redis.password"),
++		conf.GetInt("cache.redis.db"),
++	))
++}
++
+ func crashIfConfigMissingVars(conf *config.Config, vars []string) {
+ 	missing := []string{}
+ 	for _, v := range vars {
+diff --git a/pkg/cache/redis_sentinel.go b/pkg/cache/redis_sentinel.go
+new file mode 100644
+index 0000000..0c73427
+--- /dev/null
++++ b/pkg/cache/redis_sentinel.go
+@@ -0,0 +1,18 @@
++package cache
++
++import (
++	"github.com/go-redis/redis"
++)
++
++// NewRedisStore creates a new RedisStore
++func NewRedisSentinelStore(masterName string, sentinelAddrs []string, password string, db int) *RedisStore {
++	store := &RedisStore{}
++	redisClientOptions := &redis.FailoverOptions{
++		MasterName:    masterName,
++		SentinelAddrs: sentinelAddrs,
++		Password:      password,
++		DB:            db,
++	}
++	store.Client = redis.NewFailoverClient(redisClientOptions)
++	return store
++}
+diff --git a/pkg/config/vars.go b/pkg/config/vars.go
+index 2b30ec4..603eebc 100644
+--- a/pkg/config/vars.go
++++ b/pkg/config/vars.go
+@@ -237,10 +237,19 @@ var configVars = map[string]configVar{
+ 		Default: "",
+ 		CLIFlag: cli.StringFlag{
+ 			Name:   "cache-redis-addr",
+-			Usage:  "address of Redis service (host:port)",
++			Usage:  "address of Redis service (host:port), addresses of Redis+Sentinel service (host1:port1,host2:port2)",
+ 			EnvVar: "CACHE_REDIS_ADDR",
+ 		},
+ 	},
++	"cache.redis.mastername": {
++		Type:    stringType,
++		Default: "",
++		CLIFlag: cli.StringFlag{
++			Name:   "cache-redis-mastername",
++			Usage:  "address of Redis+Sentinel mastername",
++			EnvVar: "CACHE_REDIS_MASTERNAME",
++		},
++	},
+ 	"cache.redis.password": {
+ 		Type:    stringType,
+ 		Default: "",

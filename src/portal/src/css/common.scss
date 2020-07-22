@@ -17,7 +17,8 @@
 }
 
 .harbor-icon {
-  filter: drop-shadow($fill-color1 58px 2px) !important;
+  transform: translateX($harbor-icon-translate-x) !important;
+  filter: drop-shadow($fill-color1 $harbor-icon-drop-shadow-x 2px) !important;
 }
 
 .color-white-dark {
@@ -122,6 +123,32 @@ hbr-tag {
   }
 }
 
+.filter-divider {
+  background-color: $filter-divider-bg-color ;
+}
+
+.selectBox {
+  background: $select-back-color !important;
+  color: $select-option-color !important;
+}
+
+.selectBox ul li:hover{
+  background-image: linear-gradient(180deg,$selectBox-option-hover-bg-color-start 0,$selectBox-option-hover-bg-color-end) !important;
+}
+
+.btn-tag-integration {
+  .active {
+    background: $btn-tag-integration-active-bg-color;
+    color: $btn-tag-integration-active-color;
+  }
+}
+
+hbr-result-tip-histogram {
+  .inner {
+    background-color: $hbr-result-tip-histogram-inner-bg-color;
+  }
+}
+
 // style of hbr-artifact-summary component
 @mixin align-text-mixin($values...) {
   @each $var in $values {
@@ -134,6 +161,10 @@ hbr-tag {
   background: $color-ddd;
   border-radius: 2px;
   padding: 2px 4px;
+}
+
+:not(pre) > code[class*="language-"], pre[class*="language-"] {
+  background-color: $color-yaml;
 }
 
 .md-div {

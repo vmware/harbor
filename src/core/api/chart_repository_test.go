@@ -154,12 +154,12 @@ func TestGetChartVersion(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if chartV.Metadata.GetName() != "harbor" {
-		t.Fatalf("expect get chart 'harbor' but got %s", chartV.Metadata.GetName())
+	if chartV.Metadata.Name != "harbor" {
+		t.Fatalf("expect get chart 'harbor' but got %s", chartV.Metadata.Name)
 	}
 
-	if chartV.Metadata.GetVersion() != "0.2.0" {
-		t.Fatalf("expect get chart version '0.2.0' but got %s", chartV.Metadata.GetVersion())
+	if chartV.Metadata.Version != "0.2.0" {
+		t.Fatalf("expect get chart version '0.2.0' but got %s", chartV.Metadata.Version)
 	}
 }
 

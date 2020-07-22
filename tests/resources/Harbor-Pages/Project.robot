@@ -19,7 +19,7 @@ Resource  ../../resources/Util.robot
 *** Variables ***
 
 *** Keywords ***
-Create An New Project
+Create An New Project And Go Into Project
     [Arguments]  ${projectname}  ${public}=false  ${count_quota}=${null}  ${storage_quota}=${null}  ${storage_quota_unit}=${null}
     Navigate To Projects
     Retry Button Click  xpath=${create_project_button_xpath}
@@ -33,6 +33,7 @@ Create An New Project
     Capture Page Screenshot
     Retry Double Keywords When Error  Retry Element Click  ${create_project_OK_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_project_OK_button_xpath}
     Capture Page Screenshot
+    Sleep  2
     Go Into Project  ${projectname}  has_image=${false}
 
 Create An New Project With New User
@@ -40,9 +41,12 @@ Create An New Project With New User
     Create An New User  url=${url}  username=${username}  email=${email}  realname=${realname}  newPassword=${newPassword}  comment=${comment}
     Logout Harbor
     Sign In Harbor  ${url}  ${username}  ${newPassword}
-    Create An New Project  ${projectname}  ${public}
+    Create An New Project And Go Into Project  ${projectname}  ${public}
     Sleep  1
 
+Artifact Exist
+    [Arguments]  ${tag_name}
+    Retry Wait Until Page Contains Element  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256') and contains(.,'${tag_name}')]
 #It's the log of project.
 Go To Project Log
     #Switch To Project Tab Overflow
@@ -192,6 +196,18 @@ Do Log Advanced Search
     ${rc} =  Get Element Count  //audit-log//clr-dg-row
     Should Be Equal As Integers  ${rc}  0
 
+Retry Click Repo Name
+    [Arguments]  ${repo_name_element}
+    :For  ${n}  IN RANGE  1  10
+    \    ${out}  Run Keyword And Ignore Error  Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}   Retry Wait Element  ${tag_table_column_vulnerabilities}
+    \    Exit For Loop If  '${out[0]}'=='PASS'
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
+
+    :For  ${n}  IN RANGE  1  10
+    \    ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Not Contains Element  ${repo_list_spinner}
+    \    Exit For Loop If  '${out[0]}'=='PASS'
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
+
 Go Into Repo
     [Arguments]  ${repoName}
     Sleep  2
@@ -202,17 +218,27 @@ Go Into Repo
     \    Retry Clear Element Text  ${repo_search_input}
     \    Retry Text Input  ${repo_search_input}  ${repoName}
     \    ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  ${repo_name_element}
-    \    Exit For Loop If  '${out[0]}'=='PASS'
-    \    Capture Page Screenshot  gointo_${repoName}.png
     \    Sleep  2
-    Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}  Retry Wait Until Page Not Contains Element  ${repo_name_element}
-    Retry Wait Element  ${tag_table_column_vulnerabilities}
-    Retry Wait Element  ${tag_table_column_size}
-    Capture Page Screenshot  gointo_${repoName}.png
+    \    Continue For Loop If  '${out[0]}'=='FAIL'
+    \    ${out}  Retry Click Repo Name  ${repo_name_element}
+    \    Sleep  2
+    \    Exit For Loop
 
-Go Into Index
-    [Arguments]  ${index_name}=${null}
-    Retry Element Click  ${artifact_achieve_icon}
+
+Click Index Achieve
+    [Arguments]  ${tag_name}
+    Retry Element Click  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256') and contains(.,'${tag_name}')]//clr-dg-cell[1]//clr-tooltip//a
+
+Go Into Index And Contain Artifacts
+    [Arguments]  ${tag_name}  ${limit}=3
+    Retry Double Keywords When Error  Click Index Achieve  ${tag_name}  Page Should Contain Element  ${tag_table_column_os_arch}
+    :For  ${n}  IN RANGE  1  10
+    \    ${out}  Run Keyword And Ignore Error  Page Should Contain Element  ${artifact_rows}  limit=${limit}
+    \    Exit For Loop If  '${out[0]}'=='PASS'
+    \    Capture Page Screenshot  gointo_${tag_name}.png
+    \    Sleep  3
+    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
 
 Switch To CardView
     Retry Element Click  xpath=//hbr-repository-gridview//span[@class='card-btn']/clr-icon

@@ -23,15 +23,16 @@ import {
     OnChanges,
     SimpleChanges, AfterViewInit, ElementRef
 } from "@angular/core";
-import { NgForm, Validators, AbstractControl } from "@angular/forms";
-import { fromEvent, Subject, Subscription } from "rxjs";
+import { NgForm, Validators } from "@angular/forms";
+import { fromEvent, Subscription } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
 import { Project } from "../project";
 import { QuotaUnits, QuotaUnlimited } from "../../../lib/entities/shared.const";
-import { ProjectService, QuotaHardInterface } from "../../../lib/services";
+import { Endpoint, EndpointService, ProjectService, QuotaHardInterface } from '../../../lib/services';
 import { clone, getByte, GetIntegerAndUnit, validateLimit } from "../../../lib/utils/utils";
+import { HttpParams } from '@angular/common/http';
 
 
 @Component({
@@ -39,7 +40,7 @@ import { clone, getByte, GetIntegerAndUnit, validateLimit } from "../../../lib/u
   templateUrl: "create-project.component.html",
   styleUrls: ["create-project.scss"]
 })
-export class CreateProjectComponent implements  AfterViewInit, OnChanges, OnDestroy {
+export class CreateProjectComponent implements  OnInit, AfterViewInit, OnChanges, OnDestroy {
 
   projectForm: NgForm;
 
@@ -63,6 +64,8 @@ export class CreateProjectComponent implements  AfterViewInit, OnChanges, OnDest
   isNameExisted: boolean = false;
   nameTooltipText = "PROJECT.NAME_TOOLTIP";
   checkOnGoing = false;
+  enableProxyCache: boolean = false;
+  endpoint: string = "";
   @Output() create = new EventEmitter<boolean>();
   @Input() quotaObj: QuotaHardInterface;
   @Input() isSystemAdmin: boolean;
@@ -70,11 +73,32 @@ export class CreateProjectComponent implements  AfterViewInit, OnChanges, OnDest
   inlineAlert: InlineAlertComponent;
   @ViewChild('projectName', {static: false}) projectNameInput: ElementRef;
   checkNameSubscribe: Subscription;
-  constructor(private projectService: ProjectService,
-    private translateService: TranslateService,
-    private messageHandlerService: MessageHandlerService) { }
 
-    ngAfterViewInit(): void {
+  registries: Endpoint[] = [];
+  supportedRegistryTypeQueryString: string = "type={docker-hub harbor}";
+
+  constructor(private projectService: ProjectService,
+              private translateService: TranslateService,
+              private messageHandlerService: MessageHandlerService,
+              private endpointService: EndpointService) {
+  }
+
+    ngOnInit(): void {
+       this.getRegistries();
+    }
+
+    getRegistries() {
+      this.endpointService.getEndpoints(null, new HttpParams().set('q', this.supportedRegistryTypeQueryString))
+        .subscribe(targets => {
+          if (targets && targets.length) {
+            this.registries = targets;
+          }
+        }, error => {
+          this.messageHandlerService.handleError(error);
+        });
+    }
+
+  ngAfterViewInit(): void {
         if (!this.checkNameSubscribe) {
             this.checkNameSubscribe = fromEvent(this.projectNameInput.nativeElement, 'input').pipe(
                 map((e: any) => e.target.value),
@@ -161,7 +185,7 @@ export class CreateProjectComponent implements  AfterViewInit, OnChanges, OnDest
     this.isSubmitOnGoing = true;
     const storageByte = +this.storageLimit === QuotaUnlimited ? this.storageLimit : getByte(+this.storageLimit, this.storageLimitUnit);
     this.projectService
-      .createProject(this.project.name, this.project.metadata, +storageByte)
+      .createProject(this.project.name, this.project.metadata, +storageByte, this.project.registry_id)
       .subscribe(
       status => {
         this.isSubmitOnGoing = false;
@@ -184,6 +208,8 @@ export class CreateProjectComponent implements  AfterViewInit, OnChanges, OnDest
     this.project = new Project();
     this.hasChanged = false;
     this.createProjectOpened = true;
+    this.enableProxyCache = false;
+    this.endpoint = "";
     if (this.currentForm && this.currentForm.controls && this.currentForm.controls["create_project_name"]) {
         this.currentForm.controls["create_project_name"].reset();
     }
@@ -198,6 +224,17 @@ export class CreateProjectComponent implements  AfterViewInit, OnChanges, OnDest
     !this.isSubmitOnGoing &&
     this.isNameValid &&
     !this.checkOnGoing;
+  }
+
+  getEndpoint(): string {
+    if (this.registries && this.registries.length && this.project.registry_id) {
+      for (let i = 0; i < this.registries.length; i++) {
+        if (+this.registries[i].id === +this.project.registry_id) {
+          return this.registries[i].url;
+        }
+      }
+    }
+    return '';
   }
 }
 

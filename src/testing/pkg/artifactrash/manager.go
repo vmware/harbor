@@ -41,13 +41,13 @@ func (f *FakeManager) Delete(ctx context.Context, id int64) error {
 }
 
 // Filter ...
-func (f *FakeManager) Filter(ctx context.Context) (arts []model.ArtifactTrash, err error) {
+func (f *FakeManager) Filter(ctx context.Context, timeWindow int64) (arts []model.ArtifactTrash, err error) {
 	args := f.Called()
 	return args.Get(0).([]model.ArtifactTrash), args.Error(1)
 }
 
 // Flush ...
-func (f *FakeManager) Flush(ctx context.Context) (err error) {
+func (f *FakeManager) Flush(ctx context.Context, timeWindow int64) (err error) {
 	args := f.Called()
 	return args.Error(0)
 }

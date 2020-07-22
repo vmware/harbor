@@ -26,6 +26,11 @@ set -e
 cd $SRC_PATH
 git checkout tags/$VERSION -b $VERSION
 
+#Patch
+for p in $(ls /go/bin/*.patch); do
+  git apply $p || exit /b 1
+done
+
 #Compile
 cd $SRC_PATH/$MAIN_GO_PATH && go build -a -o $BIN_NAME
 mv $BIN_NAME /go/bin/

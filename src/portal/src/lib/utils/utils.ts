@@ -53,7 +53,7 @@ export const DEFAULT_LANG_COOKIE_KEY = 'harbor-lang';
 /**
  * Declare what languages are supported now.
  */
-export const DEFAULT_SUPPORTING_LANGS = ['en-us', 'zh-cn', 'es-es', 'fr-fr', 'pt-br', 'tr-tr'];
+export const DEFAULT_SUPPORTING_LANGS = ['en-us', 'zh-cn', 'zh-tw', 'es-es', 'fr-fr', 'pt-br', 'tr-tr'];
 
 /**
  * The default language.

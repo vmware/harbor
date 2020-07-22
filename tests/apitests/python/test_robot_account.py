@@ -71,7 +71,7 @@ class TestProjects(unittest.TestCase):
         image_project_a = "haproxy"
         image_project_b = "hello-world"
         image_project_c = "httpd"
-        image_robot_account = "mariadb"
+        image_robot_account = "alpine"
         tag = "latest"
 
         print "#1. Create user(UA);"

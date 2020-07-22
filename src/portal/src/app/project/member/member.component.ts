@@ -202,7 +202,7 @@ export class MemberComponent implements OnInit, OnDestroy {
         .changeMemberRole(projectId, member.id, roleId)
         .pipe(map(() => this.batchChangeRoleInfos[member.id] = 'done')
           , catchError(error => {
-            this.messageHandlerService.handleError(error + ": " + member.entity_name);
+            this.messageHandlerService.handleError(error);
             return observableThrowError(error);
           }));
     };
@@ -278,7 +278,7 @@ export class MemberComponent implements OnInit, OnDestroy {
           this.translate.get(message).subscribe(res =>
             operateChanges(operMessage, OperationState.failure, res)
           );
-          return observableThrowError(message);
+          return observableThrowError(error);
         }));
     };
 
@@ -289,6 +289,8 @@ export class MemberComponent implements OnInit, OnDestroy {
       this.selectedRow = [];
       this.batchOps = 'idle';
       this.retrieve(this.projectId, "");
+    }, error => {
+      this.errorHandler.error(error);
     });
   }
   getMemberPermissionRule(projectId: number): void {

@@ -25,6 +25,7 @@ describe('GcComponent', () => {
     id: 22222,
     schedule: null,
     job_status: 'string',
+    job_parameters: '{"dry_run":true}',
     creation_time: new Date().toDateString(),
     update_time: new Date().toDateString(),
     job_name: 'string',

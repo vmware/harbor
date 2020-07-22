@@ -18,7 +18,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
 // IsSafe check new used is safe under the hard limits

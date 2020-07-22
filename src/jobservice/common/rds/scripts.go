@@ -88,8 +88,14 @@ if res then
       end
 
       if ARGV[1] == 'Success' or ARGV[1] == 'Stopped' then
-        -- expire the job stats with shorter interval
+        -- expire the job stats with shorter interval (1 day)
         redis.call('expire', KEYS[1], 86400)
+      elseif ARGV[1] == 'Error' then
+        -- expire the job stats with normal interval (7 days) incase it may be retried again
+        redis.call('expire', KEYS[1], 604800)
+      else
+        -- remove the expire time if existing
+        redis.call('persist', KEYS[1])
       end
     end
     

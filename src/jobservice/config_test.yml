@@ -18,7 +18,7 @@ worker_pool:
   #Additional config if use 'redis' backend
   redis_pool:
     #redis://[arbitrary_username:password@]ipaddress:port/database_index
-    #or ipaddress:port[,weight,password,database_index]
+    #or ipaddress:port[|weight|password|database_index]
     redis_url: "localhost:6379"
     namespace: "testing_job_service_v2"
 

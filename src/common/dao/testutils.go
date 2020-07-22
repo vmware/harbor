@@ -61,11 +61,13 @@ func PrepareTestForPostgresSQL() {
 	database := &models.Database{
 		Type: "postgresql",
 		PostGreSQL: &models.PostGreSQL{
-			Host:     dbHost,
-			Port:     dbPort,
-			Username: dbUser,
-			Password: dbPassword,
-			Database: dbDatabase,
+			Host:         dbHost,
+			Port:         dbPort,
+			Username:     dbUser,
+			Password:     dbPassword,
+			Database:     dbDatabase,
+			MaxIdleConns: 50,
+			MaxOpenConns: 100,
 		},
 	}
 

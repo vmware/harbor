@@ -6,3 +6,5 @@ log_level: "ERROR"
 https_config:
   cert: "server.crt"
   key: "server.key"
+
+registry_config: "../reg_conf_test.yml"

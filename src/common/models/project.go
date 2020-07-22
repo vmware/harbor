@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
 const (
@@ -44,7 +44,8 @@ type Project struct {
 	RepoCount    int64             `orm:"-" json:"repo_count"`
 	ChartCount   uint64            `orm:"-" json:"chart_count"`
 	Metadata     map[string]string `orm:"-" json:"metadata"`
-	CVEWhitelist CVEWhitelist      `orm:"-" json:"cve_whitelist"`
+	CVEAllowlist CVEAllowlist      `orm:"-" json:"cve_allowlist"`
+	RegistryID   int64             `orm:"column(registry_id)" json:"registry_id"`
 }
 
 // GetMetadata ...
@@ -92,9 +93,9 @@ func (p *Project) VulPrevented() bool {
 	return isTrue(prevent)
 }
 
-// ReuseSysCVEWhitelist ...
-func (p *Project) ReuseSysCVEWhitelist() bool {
-	r, ok := p.GetMetadata(ProMetaReuseSysCVEWhitelist)
+// ReuseSysCVEAllowlist ...
+func (p *Project) ReuseSysCVEAllowlist() bool {
+	r, ok := p.GetMetadata(ProMetaReuseSysCVEAllowlist)
 	if !ok {
 		return true
 	}
@@ -136,9 +137,10 @@ func isTrue(value string) bool {
 // List projects which user1 is member of: query := &QueryParam{Member:&Member{Name:"user1"}}
 // List projects which user1 is the project admin : query := &QueryParam{Member:&Member{Name:"user1",Role:1}}
 type ProjectQueryParam struct {
-	Name       string       // the name of project
-	Owner      string       // the username of project owner
-	Public     *bool        // the project is public or not, can be ture, false and nil
+	Name       string // the name of project
+	Owner      string // the username of project owner
+	Public     *bool  // the project is public or not, can be ture, false and nil
+	RegistryID int64
 	Member     *MemberQuery // the member of project
 	Pagination *Pagination  // pagination information
 	ProjectIDs []int64      // project ID list
@@ -175,9 +177,10 @@ type ProjectRequest struct {
 	Name         string            `json:"project_name"`
 	Public       *int              `json:"public"` // deprecated, reserved for project creation in replication
 	Metadata     map[string]string `json:"metadata"`
-	CVEWhitelist CVEWhitelist      `json:"cve_whitelist"`
+	CVEAllowlist CVEAllowlist      `json:"cve_allowlist"`
 
 	StorageLimit *int64 `json:"storage_limit,omitempty"`
+	RegistryID   int64  `json:"registry_id"`
 }
 
 // ProjectQueryResult ...
@@ -203,7 +206,7 @@ type ProjectSummary struct {
 	ChartCount uint64 `json:"chart_count"`
 
 	ProjectAdminCount int64 `json:"project_admin_count"`
-	MasterCount       int64 `json:"master_count"`
+	MaintainerCount   int64 `json:"maintainer_count"`
 	DeveloperCount    int64 `json:"developer_count"`
 	GuestCount        int64 `json:"guest_count"`
 	LimitedGuestCount int64 `json:"limited_guest_count"`

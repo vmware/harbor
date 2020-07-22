@@ -20,13 +20,13 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/pkg/quota/driver"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
 // Quota quota model for manager
 type Quota struct {
 	ID           int64            `orm:"pk;auto;column(id)" json:"id"`
-	Ref          driver.RefObject `json:"ref"`
+	Ref          driver.RefObject `orm:"-" json:"ref"`
 	Reference    string           `orm:"column(reference)" json:"-"`
 	ReferenceID  string           `orm:"column(reference_id)" json:"-"`
 	Hard         string           `orm:"column(hard);type(jsonb)" json:"-"`

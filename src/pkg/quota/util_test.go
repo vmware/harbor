@@ -17,7 +17,7 @@ package quota
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
 func TestIsSafe(t *testing.T) {

@@ -24,7 +24,7 @@ export class ArtifactCommonPropertiesComponent implements OnInit, OnChanges {
   @Input() artifactDetails: Artifact;
   commonProperties: { [key: string]: any } = {};
 
-  constructor(private translate: TranslateService) {
+  constructor() {
   }
 
   ngOnInit() {
@@ -44,7 +44,7 @@ export class ArtifactCommonPropertiesComponent implements OnInit, OnChanges {
               }
             }
             if (name === Types.CREATED) {
-              this.commonProperties[name] = new DatePipe(this.translate.currentLang)
+              this.commonProperties[name] = new DatePipe('en-us')
                 .transform(this.commonProperties[name], 'short');
             }
           }

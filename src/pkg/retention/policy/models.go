@@ -16,6 +16,7 @@ package policy
 
 import (
 	"github.com/astaxie/beego/validation"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 )
@@ -111,4 +112,48 @@ type Scope struct {
 	// The reference identity for the specified level
 	// 0 for 'system', project ID for 'project' and repo ID for 'repository'
 	Reference int64 `json:"ref" valid:"Required"`
+}
+
+// WithNDaysSinceLastPull build a retention rule to keep images n days to since last pull
+func WithNDaysSinceLastPull(projID int64, n int) *Metadata {
+	return &Metadata{
+		Algorithm: "or",
+		Rules: []rule.Metadata{
+			{
+				ID:       1,
+				Priority: 1,
+				Action:   "retain",
+				Template: "nDaysSinceLastPull",
+				TagSelectors: []*rule.Selector{
+					{
+						Kind:       doublestar.Kind,
+						Decoration: doublestar.Matches,
+						Pattern:    "**",
+					},
+				},
+				ScopeSelectors: map[string][]*rule.Selector{
+					"repository": {
+						{
+							Kind:       doublestar.Kind,
+							Decoration: doublestar.RepoMatches,
+							Pattern:    "**",
+						},
+					},
+				},
+				Parameters: rule.Parameters{
+					"nDaysSinceLastPull": n,
+				},
+			},
+		},
+		Trigger: &Trigger{
+			Kind: "Schedule",
+			Settings: map[string]interface{}{
+				"cron": "0 0 0 * * *",
+			},
+		},
+		Scope: &Scope{
+			Level:     "project",
+			Reference: projID,
+		},
+	}
 }

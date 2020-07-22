@@ -10,10 +10,10 @@
         <clr-datagrid [clrDgLoading]="loading">
             <clr-dg-action-bar>
                 <div class="clr-row center">
-                    <div class="clr-col-1">
+                    <div class="ml-05">
                         <button (click)="scanNow()" type="button"  class="btn  btn-secondary" [clrLoading]="scanBtnState" [disabled]="!(hasEnabledScanner && hasScanningPermission && !onSendingScanCommand)"><clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
                     </div>
-                    <div class="clr-col">
+                    <div class="ml-1">
                         <div [hidden]="!shouldShowBar()">
                             <hbr-vulnerability-bar [summary]="handleScanOverview(artifact?.scan_overview)" [scanner]="scanner"
                                                    (submitFinish)="submitFinish($event)" [projectName]="projectName" [repoName]="repoName"
@@ -29,7 +29,12 @@
             <clr-dg-column [clrDgField]="'version'">{{'VULNERABILITY.GRID.COLUMN_VERSION' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgField]="'fix_version'">{{'VULNERABILITY.GRID.COLUMN_FIXED' | translate}}</clr-dg-column>
 
-            <clr-dg-placeholder>{{'VULNERABILITY.CHART.TOOLTIPS_TITLE_ZERO' | translate}}</clr-dg-placeholder>
+            <clr-dg-placeholder>
+                <span *ngIf="hasScanned();else elseBlock">{{'VULNERABILITY.STATE.OTHER_STATUS' | translate}}</span>
+                <ng-template #elseBlock>
+                    {{'VULNERABILITY.CHART.TOOLTIPS_TITLE_ZERO' | translate}}
+                </ng-template>
+            </clr-dg-placeholder>
             <clr-dg-row *clrDgItems="let res of scanningResults">
                 <clr-dg-cell>
                     <span *ngIf="!res.links || res.links.length === 0">{{res.id}}</span>

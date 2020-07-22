@@ -134,7 +134,7 @@ func init() {
 	beego.Router("/api/system/gc/:id([0-9]+)/log", &GCAPI{}, "get:GetLog")
 	beego.Router("/api/system/gc/schedule", &GCAPI{}, "get:Get;put:Put;post:Post")
 	beego.Router("/api/system/scanAll/schedule", &ScanAllAPI{}, "get:Get;put:Put;post:Post")
-	beego.Router("/api/system/CVEWhitelist", &SysCVEWhitelistAPI{}, "get:Get;put:Put")
+	beego.Router("/api/system/CVEAllowlist", &SysCVEAllowlistAPI{}, "get:Get;put:Put")
 	beego.Router("/api/system/oidc/ping", &OIDCAPI{}, "post:Ping")
 
 	beego.Router("/api/projects/:pid([0-9]+)/robots/", &RobotAPI{}, "post:Post;get:List")

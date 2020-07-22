@@ -81,31 +81,19 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 	var resources []*model.Resource
 	var projects []*Project
 	var err error
-	pattern := ""
+	nameFilter := ""
+	tagFilter := ""
 	for _, filter := range filters {
 		if filter.Type == model.FilterTypeName {
-			pattern = filter.Value.(string)
+			nameFilter = filter.Value.(string)
+			break
+		} else if filter.Type == model.FilterTypeTag {
+			tagFilter = filter.Value.(string)
 			break
 		}
 	}
 
-	if len(pattern) > 0 {
-		substrings := strings.Split(pattern, "/")
-		projectPattern := substrings[1]
-		names, ok := util.IsSpecificPathComponent(projectPattern)
-		if ok {
-			for _, name := range names {
-				var projectsByName, err = a.clientGitlabAPI.getProjectsByName(name)
-				if err != nil {
-					return nil, err
-				}
-				if projectsByName == nil {
-					continue
-				}
-				projects = append(projects, projectsByName...)
-			}
-		}
-	}
+	projects = a.searchByPattern(nameFilter)
 	if len(projects) == 0 {
 		projects, err = a.clientGitlabAPI.getProjects()
 		if err != nil {
@@ -114,8 +102,10 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 	}
 	var pathPatterns []string
 
-	if paths, ok := util.IsSpecificPath(pattern); ok {
+	if paths, ok := util.IsSpecificPath(nameFilter); ok {
 		pathPatterns = paths
+	} else {
+		pathPatterns = append(pathPatterns, nameFilter)
 	}
 
 	for _, project := range projects {
@@ -142,8 +132,10 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 			}
 			tags := []string{}
 			for _, vTag := range vTags {
-				if !existPatterns(vTag.Path, pathPatterns) {
-					continue
+				if len(tagFilter) > 0 {
+					if ok, _ := util.Match(strings.ToLower(vTag.Name), strings.ToLower(tagFilter)); !ok {
+						continue
+					}
 				}
 				tags = append(tags, vTag.Name)
 			}
@@ -167,11 +159,54 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 	return resources, nil
 }
 
+func (a *adapter) searchByPattern(pattern string) []*Project {
+	var projects []*Project
+	var err error
+	if len(pattern) > 0 {
+
+		names, ok := util.IsSpecificPath(pattern)
+		if ok {
+			for _, name := range names {
+				substrings := strings.Split(name, "/")
+				if len(substrings) != 2 {
+					continue
+				}
+				var projectsByName, err = a.clientGitlabAPI.getProjectsByName(substrings[1])
+				if err != nil {
+					return nil
+				}
+				if projectsByName == nil {
+					continue
+				}
+				projects = append(projects, projectsByName...)
+			}
+		} else {
+			substrings := strings.Split(pattern, "/")
+			if len(substrings) != 2 {
+				return projects
+			}
+			projectName := substrings[1]
+			if projectName == "*" {
+				return projects
+			}
+			projectName = strings.Trim(projectName, "*")
+
+			if strings.Contains(projectName, "*") {
+				return projects
+			}
+			projects, err = a.clientGitlabAPI.getProjectsByName(projectName)
+			if err != nil {
+				return projects
+			}
+		}
+	}
+	return projects
+}
 func existPatterns(path string, patterns []string) bool {
 	correct := false
 	if len(patterns) > 0 {
 		for _, pathPattern := range patterns {
-			if strings.HasPrefix(strings.ToLower(path), strings.ToLower(pathPattern)) {
+			if ok, _ := util.Match(strings.ToLower(pathPattern), strings.ToLower(path)); ok {
 				correct = true
 				break
 			}

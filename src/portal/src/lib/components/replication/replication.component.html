@@ -65,7 +65,7 @@
               <a href="javascript:void(0)" (click)="goToLink(j.id)">{{j.id}}</a>
           </clr-dg-cell>
           <clr-dg-cell>
-            {{j.status}}
+            {{getStatusStr(j.status)}}
             <clr-tooltip>
                 <clr-icon *ngIf="j.status_text" clrTooltipTrigger shape="info-circle" size="20"></clr-icon>
                 <clr-tooltip-content [clrPosition]="'left'" clrSize="md" *clrIfOpen>
@@ -77,7 +77,7 @@
           <clr-dg-cell>{{j.start_time | date: 'short'}}</clr-dg-cell>
           <clr-dg-cell>{{getDuration(j)}}</clr-dg-cell>
           <clr-dg-cell>
-            {{(j.succeed > 0 ? j.succeed / j.total : 0) | percent }}
+            {{(j.status === 'InProgress'? (j.total > 0 ? j.succeed / j.total : 0): j.total > 0 ? j.succeed / j.total : 1)| percent }}
           </clr-dg-cell>
           <clr-dg-cell>{{j.total}}</clr-dg-cell>
         </clr-dg-row>

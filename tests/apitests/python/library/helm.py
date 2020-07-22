@@ -34,3 +34,14 @@ def helm_chart_push_to_harbor(chart_file, archive, harbor_server, project, repo_
     helm_login(harbor_server, user, password)
     helm_save(archive, harbor_server, project, repo_name)
     return helm_push(harbor_server, project, repo_name, version)
+
+def helm2_add_repo(helm_repo_name, harbor_url, project, username, password):
+    command = ["helm2", "repo", "add", "--username=" + username, "--password=" + password, helm_repo_name, harbor_url + "/chartrepo/" + project]
+    print "Command: ", command
+    base.run_command(command)
+
+def helm2_push(helm_repo_name, chart_file, project, username, password):
+    get_chart_file(chart_file)
+    command = ["helm2", "push", "--username=" + username, "--password=" + password, chart_file.split('/')[-1], helm_repo_name]
+    print "Command: ", command
+    base.run_command(command)

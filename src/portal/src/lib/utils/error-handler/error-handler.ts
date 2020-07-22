@@ -47,6 +47,8 @@ export abstract class ErrorHandler {
    * @memberOf ErrorHandler
    */
   abstract log(log: any): void;
+
+  abstract handleErrorPopupUnauthorized(error: any): void;
 }
 
 @Injectable()
@@ -66,5 +68,8 @@ export class DefaultErrorHandler extends ErrorHandler {
 
   public log(log: any): void {
     console.log("[Default log handler]: ", log);
+  }
+  public handleErrorPopupUnauthorized(error: any): void {
+    console.log("[Default log handler]: ", error);
   }
 }

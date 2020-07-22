@@ -15,13 +15,15 @@
 package replication
 
 import (
+	"strconv"
+
 	"github.com/goharbor/harbor/src/controller/event"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/replication"
 	repevent "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
-	"strconv"
 )
 
 // Handler ...
@@ -57,13 +59,13 @@ func (r *Handler) IsStateful() bool {
 func (r *Handler) handlePushArtifact(event *event.PushArtifactEvent) error {
 	art := event.Artifact
 	public := false
-	project, err := project.Mgr.Get(art.ProjectID)
-	if err == nil && project != nil {
-		public = project.IsPublic()
-	} else {
-		log.Error(err)
+	prj, err := project.Ctl.Get(orm.Context(), art.ProjectID, project.Metadata(true))
+	if err != nil {
+		log.Errorf("failed to get project: %d, error: %v", art.ProjectID, err)
+		return err
 	}
-	project.IsPublic()
+	public = prj.IsPublic()
+
 	e := &repevent.Event{
 		Type: repevent.EventTypeArtifactPush,
 		Resource: &model.Resource{
@@ -113,13 +115,13 @@ func (r *Handler) handleDeleteArtifact(event *event.DeleteArtifactEvent) error {
 func (r *Handler) handleCreateTag(event *event.CreateTagEvent) error {
 	art := event.AttachedArtifact
 	public := false
-	project, err := project.Mgr.Get(art.ProjectID)
-	if err == nil && project != nil {
-		public = project.IsPublic()
-	} else {
-		log.Error(err)
+	prj, err := project.Ctl.Get(orm.Context(), art.ProjectID, project.Metadata(true))
+	if err != nil {
+		log.Errorf("failed to get project: %d, error: %v", art.ProjectID, err)
+		return err
 	}
-	project.IsPublic()
+	public = prj.IsPublic()
+
 	e := &repevent.Event{
 		Type: repevent.EventTypeArtifactPush,
 		Resource: &model.Resource{

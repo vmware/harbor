@@ -1,4 +1,4 @@
-import {of as observableOf,  forkJoin} from "rxjs";
+import {of as observableOf,  forkJoin, throwError} from "rxjs";
 import {mergeMap, catchError} from 'rxjs/operators';
 import { ChangeDetectorRef, ChangeDetectionStrategy, ViewChild } from "@angular/core";
 import { Component, OnInit, Input, Output, EventEmitter } from "@angular/core";
@@ -139,9 +139,9 @@ export class AddGroupComponent implements OnInit {
                   this.translateService.get(message).subscribe(res =>
                     operateChanges(operMessage, OperationState.failure, res)
                   );
-                  return observableThrowError(message);
+                  return observableThrowError(error);
               }),
-        catchError(error => observableOf(error.status)), );
+        catchError(error => observableThrowError(error)), );
       });
     forkJoin(GroupAdders$)
       .subscribe(results => {
@@ -150,6 +150,8 @@ export class AddGroupComponent implements OnInit {
         } else {
           this.added.emit(true);
         }
+      }, error => {
+        this.msgHandler.handleError(error);
       });
     this.opened = false;
   }

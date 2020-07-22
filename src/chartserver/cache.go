@@ -14,13 +14,14 @@ import (
 )
 
 const (
-	standardExpireTime  = 3600 * time.Second
-	redisENVKey         = "_REDIS_URL"
-	cacheDriverENVKey   = "CHART_CACHE_DRIVER" // "memory" or "redis"
-	cacheDriverMem      = "memory"
-	cacheDriverRedis    = "redis"
-	cacheCollectionName = "helm_chart_cache"
-	maxTry              = 10
+	standardExpireTime       = 3600 * time.Second
+	redisENVKey              = "_REDIS_URL_CORE"
+	cacheDriverENVKey        = "CHART_CACHE_DRIVER" // "memory" or "redis"
+	cacheDriverMem           = "memory"
+	cacheDriverRedis         = "redis"
+	cacheDriverRedisSentinel = "redis_sentinel"
+	cacheCollectionName      = "helm_chart_cache"
+	maxTry                   = 10
 )
 
 // ChartCache is designed to cache some processed data for repeated accessing
@@ -169,6 +170,27 @@ func initCacheDriver(cacheConfig *ChartCacheConfig) beego_cache.Cache {
 		for {
 			count++
 			redisCache, err := beego_cache.NewCache(cacheDriverRedis, cacheConfig.Config)
+			if err != nil {
+				// Just logged
+				hlog.Errorf("Failed to initialize redis cache: %s", err)
+
+				if count < maxTry {
+					<-time.After(time.Duration(backoff(count)) * time.Second)
+					continue
+				}
+
+				return nil
+			}
+
+			hlog.Info("Enable redis cache for chart caching")
+			return redisCache
+		}
+	case cacheDriverRedisSentinel:
+		// New with retry
+		count := 0
+		for {
+			count++
+			redisCache, err := beego_cache.NewCache(cacheDriverRedisSentinel, cacheConfig.Config)
 			if err != nil {
 				// Just logged
 				hlog.Errorf("Failed to initialize redis cache: %s", err)

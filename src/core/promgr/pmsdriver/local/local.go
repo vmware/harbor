@@ -83,6 +83,7 @@ func (d *driver) Create(project *models.Project) (int64, error) {
 	pro := &models.Project{
 		Name:         project.Name,
 		OwnerID:      project.OwnerID,
+		RegistryID:   project.RegistryID,
 		CreationTime: t,
 		UpdateTime:   t,
 	}

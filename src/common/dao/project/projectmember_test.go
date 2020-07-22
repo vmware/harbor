@@ -310,7 +310,7 @@ func TestGetTotalOfProjectMembers(t *testing.T) {
 		wantErr bool
 	}{
 		{"Get total of project admin", args{currentProject.ProjectID, []int{common.RoleProjectAdmin}}, 2, false},
-		{"Get total of master", args{currentProject.ProjectID, []int{common.RoleMaster}}, 0, false},
+		{"Get total of maintainer", args{currentProject.ProjectID, []int{common.RoleMaintainer}}, 0, false},
 		{"Get total of developer", args{currentProject.ProjectID, []int{common.RoleDeveloper}}, 0, false},
 		{"Get total of guest", args{currentProject.ProjectID, []int{common.RoleGuest}}, 0, false},
 	}

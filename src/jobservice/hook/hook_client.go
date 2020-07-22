@@ -59,7 +59,7 @@ func NewClient(ctx context.Context) Client {
 	if commonhttp.InternalEnableVerifyClientCert() {
 		tlsConfig, err := commonhttp.GetInternalTLSConfig()
 		if err != nil {
-			log.Errorf("client load cert file with err: %w", err)
+			log.Errorf("client load cert file with err: %v", err)
 		}
 		transport.TLSClientConfig = tlsConfig
 	}

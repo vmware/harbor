@@ -137,9 +137,10 @@ describe('ChartDetailComponent', () => {
             "current_user_role_id": 1,
             "has_project_admin_role": true,
             "is_member": true,
-            "role_name": 'master',
+            "role_name": 'maintainer',
             "repo_count": 0,
             "chart_count": 1,
+            "registry_id" : 0,
             "metadata": {
                 "public": "true",
                 "enable_content_trust": "string",

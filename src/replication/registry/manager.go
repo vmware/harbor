@@ -19,6 +19,8 @@ import (
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/dao"
@@ -31,7 +33,7 @@ type Manager interface {
 	// Add new registry
 	Add(*model.Registry) (int64, error)
 	// List registries, returns total count, registry list and error
-	List(...*model.RegistryQuery) (int64, []*model.Registry, error)
+	List(*q.Query) (int64, []*model.Registry, error)
 	// Get the specified registry
 	Get(int64) (*model.Registry, error)
 	// GetByName gets registry by name
@@ -85,36 +87,22 @@ func (m *DefaultManager) GetByName(name string) (*model.Registry, error) {
 }
 
 // List lists registries according to query provided.
-func (m *DefaultManager) List(query ...*model.RegistryQuery) (int64, []*model.Registry, error) {
-	var registryQueries []*dao.ListRegistryQuery
-	if len(query) > 0 {
-		// limit being -1 indicates no pagination specified, result in all registries matching name returned.
-		listQuery := &dao.ListRegistryQuery{
-			Query: query[0].Name,
-			Limit: -1,
-		}
-		if query[0].Pagination != nil {
-			listQuery.Offset = query[0].Pagination.Page * query[0].Pagination.Size
-			listQuery.Limit = query[0].Pagination.Size
-		}
-
-		registryQueries = append(registryQueries, listQuery)
-	}
-	total, registries, err := dao.ListRegistries(registryQueries...)
+func (m *DefaultManager) List(query *q.Query) (int64, []*model.Registry, error) {
+	count, registries, err := dao.ListRegistries(orm.Context(), query)
 	if err != nil {
-		return -1, nil, err
+		return 0, nil, err
 	}
 
 	var results []*model.Registry
 	for _, r := range registries {
 		registry, err := fromDaoModel(r)
 		if err != nil {
-			return -1, nil, err
+			return 0, nil, err
 		}
 		results = append(results, registry)
 	}
 
-	return total, results, nil
+	return count, results, nil
 }
 
 // Add adds a new registry
@@ -158,7 +146,7 @@ func (m *DefaultManager) Remove(id int64) error {
 // HealthCheck checks health status of every registries and update their status. It will check whether a registry
 // is reachable and the credential is valid
 func (m *DefaultManager) HealthCheck() error {
-	_, registries, err := m.List()
+	_, registries, err := m.List(nil)
 	if err != nil {
 		return err
 	}

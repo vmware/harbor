@@ -11,26 +11,24 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { finalize } from "rxjs/operators";
+import { finalize } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { AddWebhookComponent } from "./add-webhook/add-webhook.component";
-import { AddWebhookFormComponent } from "./add-webhook-form/add-webhook-form.component";
+import { AddWebhookComponent } from './add-webhook/add-webhook.component';
+import { AddWebhookFormComponent } from './add-webhook-form/add-webhook-form.component';
 import { ActivatedRoute } from '@angular/router';
-import { Webhook, LastTrigger } from './webhook';
+import { LastTrigger, Webhook } from './webhook';
 import { WebhookService } from './webhook.service';
-import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { Project } from '../project';
-import {
-  ConfirmationTargets,
-  ConfirmationState,
-  ConfirmationButtons
-} from "../../shared/shared.const";
+import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from '../../shared/shared.const';
 
-import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
-import { ConfirmationDialogComponent } from "../../shared/confirmation-dialog/confirmation-dialog.component";
-import { clone } from "../../../lib/utils/utils";
-import { forkJoin, Observable } from "rxjs";
+import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
+import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
+import { clone } from '../../../lib/utils/utils';
+import { forkJoin, Observable } from 'rxjs';
+import { UserPermissionService, USERSTATICPERMISSION } from '../../../lib/services';
+import { ClrLoadingState } from '@clr/angular';
 
 @Component({
   templateUrl: './webhook.component.html',
@@ -53,11 +51,15 @@ export class WebhookComponent implements OnInit {
   loadingMetadata: boolean = false;
   loadingWebhookList: boolean = false;
   loadingTriggers: boolean = false;
+  hasCreatPermission: boolean = false;
+  hasUpdatePermission: boolean = false;
+  addBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
   constructor(
     private route: ActivatedRoute,
     private translate: TranslateService,
     private webhookService: WebhookService,
-    private messageHandlerService: MessageHandlerService) { }
+    private messageHandlerService: MessageHandlerService,
+    private userPermissionService: UserPermissionService,) { }
 
   ngOnInit() {
     this.projectId = +this.route.snapshot.parent.params['id'];
@@ -67,6 +69,22 @@ export class WebhookComponent implements OnInit {
       this.projectName = project.name;
     }
     this.getData();
+    this.getPermissions();
+  }
+  getPermissions() {
+    const permissionsList: Observable<boolean>[] = [];
+    permissionsList.push(this.userPermissionService.getPermission(this.projectId,
+      USERSTATICPERMISSION.WEBHOOK.KEY, USERSTATICPERMISSION.WEBHOOK.VALUE.CREATE));
+    permissionsList.push(this.userPermissionService.getPermission(this.projectId,
+      USERSTATICPERMISSION.WEBHOOK.KEY, USERSTATICPERMISSION.WEBHOOK.VALUE.UPDATE));
+    this.addBtnState = ClrLoadingState.LOADING;
+    forkJoin(...permissionsList).subscribe(Rules => {
+      [this.hasCreatPermission, this.hasUpdatePermission] = Rules;
+      this.addBtnState = ClrLoadingState.SUCCESS;
+    }, error => {
+      this.messageHandlerService.error(error);
+      this.addBtnState = ClrLoadingState.ERROR;
+    });
   }
 
   getData() {
@@ -188,6 +206,7 @@ export class WebhookComponent implements OnInit {
       this.addWebhookComponent.isEdit = true;
       this.addWebhookComponent.addWebhookFormComponent.isModify = true;
       this.addWebhookComponent.addWebhookFormComponent.webhook = clone(this.selectedRow[0]);
+      this.addWebhookComponent.addWebhookFormComponent.originValue = clone(this.selectedRow[0]);
       this.addWebhookComponent.addWebhookFormComponent.webhook.event_types = clone(this.selectedRow[0].event_types);
     }
   }

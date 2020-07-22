@@ -1,8 +1,8 @@
-import shutil, os
-
+import os
+import shutil
 from g import config_dir, templates_dir, data_dir, DEFAULT_GID, DEFAULT_UID
-from utils.misc import prepare_dir, generate_random_string
 from utils.jinja import render_jinja
+from utils.misc import prepare_dir, generate_random_string
 
 core_config_dir = os.path.join(config_dir, "core", "certificates")
 core_env_template_path = os.path.join(templates_dir, "core", "env.jinja")
@@ -19,7 +19,7 @@ def prepare_core(config_dict, with_notary, with_clair, with_trivy, with_chartmus
     # Render Core
     # set cache for chart repo server
     # default set 'memory' mode, if redis is configured then set to 'redis'
-    if len(config_dict['redis_host']) > 0:
+    if len(config_dict['redis_url_core']) > 0:
         chart_cache_driver = "redis"
     else:
         chart_cache_driver = "memory"

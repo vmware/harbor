@@ -17,13 +17,21 @@ storage:
     disable: true
 {% endif %}
 redis:
-  addr: {{redis_host}}:{{redis_port}}
+{% if sentinel_master_set %}
+  # sentinel hosts with comma
+  addr: {{redis_host}}
+  sentinelMasterSet: {{sentinel_master_set}}
+{% else %}
+  addr: {{redis_host}}
+{% endif %}
   password: {{redis_password}}
   db: {{redis_db_index_reg}}
 http:
 {% if internal_tls.enabled %}
   addr: :5443
   tls:
+    certificate: /etc/harbor/tls/registry.crt
+    key: /etc/harbor/tls/registry.key
     minimumtls: tls1.2
 {% else %}
   addr: :5000
@@ -31,12 +39,6 @@ http:
   secret: placeholder
   debug:
     addr: localhost:5001
-{% if internal_tls.enabled %}
-  tls:
-    certificate: /etc/harbor/tls/registry.crt
-    key: /etc/harbor/tls/registry.key
-{% endif %}
-
 auth:
   htpasswd:
     realm: harbor-registry-basic-realm

@@ -54,7 +54,7 @@ export class UserService {
     }
     // Handle the related exceptions
     handleError(error: any): Observable<any> {
-        return observableThrowError(error.error || error);
+        return observableThrowError(error);
     }
 
     // Get the user list

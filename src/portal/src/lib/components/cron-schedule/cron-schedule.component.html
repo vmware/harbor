@@ -1,6 +1,5 @@
-<div class="normal-wrapper-box flex-layout" *ngIf="!isEditMode">
-  <div class="normal-wrapper">
-    <span [style.width]="buttonMarginLeft" class="font-style">{{ labelCurrent | translate }}</span>
+<div class="normal-wrapper-box" *ngIf="!isEditMode">
+    <span class="font-style" [style.width]="labelWidth">{{ labelCurrent | translate }}</span>
     <span>{{(originScheduleType ? 'SCHEDULE.'+ originScheduleType.toUpperCase(): "") | translate}}</span>
     <a [hidden]="originScheduleType!==SCHEDULE_TYPE.HOURLY" href="javascript:void(0)" role="tooltip"
       aria-haspopup="true" class="tooltip tooltip-top-right">
@@ -19,14 +18,13 @@
     </a>
     <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }} :</span>
     <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">{{ oriCron }}</span>
-  </div>
-  <button [style.margin-left]="buttonMarginLeft" [disabled]="disabled" class="btn btn-primary " (click)="editSchedule()"
-    id="editSchedule">
-    {{ "BUTTON.EDIT" | translate }}
-  </button>
+    <button  [disabled]="disabled" class="btn btn-link" (click)="editSchedule()"
+             id="editSchedule">
+      {{ "BUTTON.EDIT" | translate }}
+    </button>
 </div>
-<div class="setting-wrapper flex-layout" *ngIf="isEditMode">
-  <span [style.width]="buttonMarginLeft" class="font-style">{{ labelEdit | translate }}</span>
+<div class="normal-wrapper-box" *ngIf="isEditMode">
+  <span class="font-style" [style.width]="labelWidth">{{ labelEdit | translate }}</span>
   <div class="select select-schedule clr-select-wrapper">
     <select name="selectPolicy" id="selectPolicy" [(ngModel)]="scheduleType">
       <option [value]="SCHEDULE_TYPE.NONE">{{'SCHEDULE.NONE' | translate}}</option>
@@ -41,7 +39,7 @@
     <label for="targetCron" aria-haspopup="true" role="tooltip" [class.clr-error]="dateInvalid"
       class="tooltip tooltip-validation tooltip-md tooltip-top-left cron-label">
       <input type="text" (blur)="blurInvalid()" (input)="inputInvalid()" name="targetCron" id="targetCron"
-        #cronStringInput="ngModel" required class="clr-input form-control" [(ngModel)]="cronString">
+        #cronStringInput="ngModel" required class="clr-input form-control ml-1" [(ngModel)]="cronString">
       <clr-control-error *ngIf="dateInvalid">{{'TOOLTIP.CRON_REQUIRED' | translate}}</clr-control-error>
     </label>
     <a href="javascript:void(0)" role="tooltip" aria-haspopup="true"
@@ -52,12 +50,10 @@
       </div>
     </a>
   </div>
-  <div class="confirm-button">
-    <button [style.margin-left]="buttonMarginLeft" class="btn btn-primary " (click)="save()" id="config-save">
-      {{ "BUTTON.SAVE" | translate }}
-    </button>
-    <button class="btn btn-primary " (click)="isEditMode=false">
-      {{ "BUTTON.CANCEL" | translate }}
-    </button>
-  </div>
+  <button class="btn btn-link " (click)="save()" id="config-save">
+    {{ "BUTTON.SAVE" | translate }}
+  </button>
+  <button class="btn btn-link " (click)="isEditMode=false">
+    {{ "BUTTON.CANCEL" | translate }}
+  </button>
 </div>

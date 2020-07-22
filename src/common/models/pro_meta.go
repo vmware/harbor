@@ -25,7 +25,7 @@ const (
 	ProMetaPreventVul           = "prevent_vul" // prevent vulnerable images from being pulled
 	ProMetaSeverity             = "severity"
 	ProMetaAutoScan             = "auto_scan"
-	ProMetaReuseSysCVEWhitelist = "reuse_sys_cve_whitelist"
+	ProMetaReuseSysCVEAllowlist = "reuse_sys_cve_allowlist"
 )
 
 // ProjectMetadata holds the metadata of a project.

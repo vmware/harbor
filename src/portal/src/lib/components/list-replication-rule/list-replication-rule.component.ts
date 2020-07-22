@@ -203,6 +203,8 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
                 this.reload.emit(true);
                 let hnd = setInterval(() => this.ref.markForCheck(), 200);
                 setTimeout(() => clearInterval(hnd), 2000);
+            }, error => {
+                this.errorHandler.error(error);
             });
         }
     }
@@ -227,7 +229,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
                     this.translateService.get(message).subscribe(res =>
                         operateChanges(operMessage, OperationState.failure, res)
                     );
-                    return observableThrowError(message);
+                    return observableThrowError(error);
                 }));
     }
 }

@@ -16,10 +16,12 @@ package blob
 
 import (
 	"context"
-	"testing"
-
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
+	"testing"
+	"time"
+
+	"github.com/goharbor/harbor/src/pkg/blob/models"
 )
 
 type ManagerTestSuite struct {
@@ -200,6 +202,7 @@ func (suite *ManagerTestSuite) TestUpdate() {
 			suite.Equal(digest, blob.Digest)
 			suite.Equal("media type", blob.ContentType)
 			suite.Equal(int64(1000), blob.Size)
+			suite.Equal(models.StatusNone, blob.Status)
 		}
 	}
 }
@@ -220,6 +223,11 @@ func (suite *ManagerTestSuite) TestList() {
 	blobs, err = Mgr.List(ctx, ListParams{BlobDigests: []string{digest1, digest2}})
 	suite.Nil(err)
 	suite.Len(blobs, 2)
+
+	blobs, err = Mgr.List(ctx, models.ListParams{UpdateTime: time.Now().Add(-time.Hour)})
+	if suite.Nil(err) {
+		suite.Len(blobs, 0)
+	}
 }
 
 func (suite *ManagerTestSuite) TestListByArtifact() {
@@ -254,6 +262,77 @@ func (suite *ManagerTestSuite) TestListByArtifact() {
 	blobs, err = Mgr.List(ctx, ListParams{ArtifactDigest: artifact2})
 	suite.Nil(err)
 	suite.Len(blobs, 3)
+}
+
+func (suite *ManagerTestSuite) TestDelete() {
+	ctx := suite.Context()
+	digest := suite.DigestString()
+	blobID, err := Mgr.Create(ctx, digest, "media type", 100)
+	suite.Nil(err)
+
+	err = Mgr.Delete(ctx, blobID)
+	suite.Nil(err)
+}
+
+func (suite *ManagerTestSuite) TestUpdateStatus() {
+	ctx := suite.Context()
+
+	digest := suite.DigestString()
+	_, err := Mgr.Create(ctx, digest, "media type", 100)
+	suite.Nil(err)
+
+	blob, err := Mgr.Get(ctx, digest)
+	if suite.Nil(err) {
+
+		blob.Status = "unknown"
+		count, err := Mgr.UpdateBlobStatus(ctx, blob)
+		suite.NotNil(err)
+		suite.Equal(int64(-1), count)
+
+		// StatusNone cannot be updated to StatusDeleting
+		blob.Status = models.StatusDeleting
+		count, err = Mgr.UpdateBlobStatus(ctx, blob)
+		suite.Nil(err)
+		suite.Equal(int64(0), count)
+
+		blob.Status = models.StatusDelete
+		count, err = Mgr.UpdateBlobStatus(ctx, blob)
+		suite.Nil(err)
+		suite.Equal(int64(1), count)
+
+		{
+			blob, err := Mgr.Get(ctx, digest)
+			suite.Nil(err)
+			suite.Equal(digest, blob.Digest)
+			suite.Equal(models.StatusDelete, blob.Status)
+		}
+	}
+}
+
+func (suite *ManagerTestSuite) TestUselessBlobs() {
+	ctx := suite.Context()
+
+	blobs, err := Mgr.UselessBlobs(ctx, 0)
+	suite.Require().Nil(err)
+	beforeAdd := len(blobs)
+
+	Mgr.Create(ctx, suite.DigestString(), "media type", 100)
+	Mgr.Create(ctx, suite.DigestString(), "media type", 100)
+	digest := suite.DigestString()
+	blobID, err := Mgr.Create(ctx, digest, "media type", 100)
+	suite.Nil(err)
+
+	projectID := int64(1)
+	_, err = Mgr.AssociateWithProject(ctx, blobID, projectID)
+	suite.Nil(err)
+
+	blobs, err = Mgr.UselessBlobs(ctx, 0)
+	suite.Require().Nil(err)
+	suite.Require().Equal(2+beforeAdd, len(blobs))
+
+	blobs, err = Mgr.UselessBlobs(ctx, 2)
+	suite.Require().Nil(err)
+	suite.Require().Equal(0, len(blobs))
 }
 
 func TestManagerTestSuite(t *testing.T) {

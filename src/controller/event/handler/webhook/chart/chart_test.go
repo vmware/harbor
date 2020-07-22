@@ -46,7 +46,7 @@ func TestChartPreprocessHandler_Handle(t *testing.T) {
 			models.ProMetaEnableContentTrust:   "true",
 			models.ProMetaPreventVul:           "true",
 			models.ProMetaSeverity:             "Low",
-			models.ProMetaReuseSysCVEWhitelist: "false",
+			models.ProMetaReuseSysCVEAllowlist: "false",
 		},
 	})
 	defer func(id int64) {

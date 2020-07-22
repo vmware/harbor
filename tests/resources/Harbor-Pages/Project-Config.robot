@@ -53,33 +53,33 @@ Prevent Running Should Be Selected
 Auto Scan Should Be Selected
     Checkbox Should Be Selected  //hbr-project-policy-config//input[@name='scan-image-on-push']
 
-Select System CVE Whitelist
+Select System CVE Allowlist
     Retry Element Click    ${project_config_system_wl_radio_input}
 
-Select Prject CVE Whitelist
+Select Prject CVE Allowlist
     Retry Element Click    ${project_config_project_wl_radio_input}
 
-Add System CVE Whitelist to Project CVE Whitelist By Add System Button Click
+Add System CVE Allowlist to Project CVE Allowlist By Add System Button Click
     Goto Project Config
-    Select Prject CVE Whitelist
+    Select Prject CVE Allowlist
     Retry Element Click    ${project_configuration_wl_project_add_system_btn}
     Retry Element Click    ${project_config_save_btn}
 
-Set Project To Project Level CVE Whitelist
+Set Project To Project Level CVE Allowlist
     Goto Project Config
-    Select Prject CVE Whitelist
+    Select Prject CVE Allowlist
     Retry Element Click    ${project_config_save_btn}
 
-Add Items to Project CVE Whitelist
+Add Items to Project CVE Allowlist
     [Arguments]    ${cve_id}
     Goto Project Config
-    Select Prject CVE Whitelist
+    Select Prject CVE Allowlist
     Retry Element Click    ${project_config_project_wl_add_btn}
     Retry Text Input    ${configuration_system_wl_textarea}    ${cve_id}
     Retry Element Click    ${project_config_project_wl_add_confirm_btn}
     Retry Element Click    ${project_config_save_btn}
 
-Delete Top Item In Project CVE Whitelist
+Delete Top Item In Project CVE Allowlist
     [Arguments]
     Goto Project Config
     Retry Element Click    ${project_configuration_wl_delete_a_cve_id_icon}

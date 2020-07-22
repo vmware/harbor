@@ -1,20 +1,14 @@
 package dao
 
 import (
+	"context"
+
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
+	liborm "github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/replication/dao/models"
 )
-
-// ListRegistryQuery defines the query conditions to list registry.
-type ListRegistryQuery struct {
-	// Query is name query
-	Query string
-	// Offset specifies the offset in the registry list to return
-	Offset int64
-	// Limit specifies the maximum registries to return
-	Limit int64
-}
 
 // AddRegistry add a new registry
 func AddRegistry(registry *models.Registry) (int64, error) {
@@ -55,34 +49,37 @@ func GetRegistryByURL(url string) (*models.Registry, error) {
 	return &r, err
 }
 
-// ListRegistries lists registries. Registries returned are sorted by creation time.
-// - query: query to the registry name, name query and pagination are defined.
-func ListRegistries(query ...*ListRegistryQuery) (int64, []*models.Registry, error) {
-	o := dao.GetOrmer()
-
-	q := o.QueryTable(&models.Registry{})
-	if len(query) > 0 && len(query[0].Query) > 0 {
-		q = q.Filter("name__contains", query[0].Query)
+// ListRegistries lists registries
+func ListRegistries(ctx context.Context, query *q.Query) (int64, []*models.Registry, error) {
+	var countQuery *q.Query
+	if query != nil {
+		// ignore the page number and size
+		countQuery = &q.Query{
+			Keywords: query.Keywords,
+		}
 	}
-
-	total, err := q.Count()
+	countQs, err := liborm.QuerySetter(ctx, &models.Registry{}, countQuery)
 	if err != nil {
-		return -1, nil, err
+		return 0, nil, err
+	}
+	count, err := countQs.Count()
+	if err != nil {
+		return 0, nil, err
 	}
 
-	// limit being -1 means no pagination specified.
-	if len(query) > 0 && query[0].Limit != -1 {
-		q = q.Offset(query[0].Offset).Limit(query[0].Limit)
+	qs, err := liborm.QuerySetter(ctx, &models.Registry{}, query)
+	if err != nil {
+		return 0, nil, err
 	}
 	var registries []*models.Registry
-	_, err = q.All(&registries)
+	_, err = qs.All(&registries)
 	if err != nil {
-		return total, nil, err
+		return 0, nil, err
 	}
 	if registries == nil {
 		registries = []*models.Registry{}
 	}
-	return total, registries, nil
+	return count, registries, nil
 }
 
 // UpdateRegistry updates one registry

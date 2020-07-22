@@ -82,6 +82,7 @@ ${rule_confirm_btn}    //*[@id='ruleBtnOk']
 ${rule_cancel_btn}    //*[@id='ruleBtnCancel']
 ${filter_rules_btn}    //*[@id='filter-rules']
 ${filter_rules_input}  //*[@id='filter-rules']//input
+${del_remote_checkbox}  //label[@for='ruleDeletion']
 
 
 

@@ -105,7 +105,7 @@ export class HelmChartDefaultService extends HelmChartService {
 
 
   private handleErrorObservable(error: HttpErrorResponse) {
-    return observableThrowError(error.error || error);
+    return observableThrowError(error);
   }
 
   public getHelmCharts(

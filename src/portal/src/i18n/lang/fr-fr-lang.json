@@ -169,7 +169,11 @@
         "TASKS": "Tâches",
         "API_EXPLORER": "Explorateur d'Api",
         "HARBOR_API_MANAGEMENT": "Harbor API V2.0",
-        "HELM_API_MANAGEMENT": "Harbor API"
+        "HELM_API_MANAGEMENT": "Harbor API",
+        "DISTRIBUTIONS": {
+            "NAME": "Distributions",
+            "INSTANCES": "Instances"
+        }
     },
     "USER": {
         "ADD_ACTION": "UTILISATEUR",
@@ -232,7 +236,12 @@
         "STORAGE_QUOTA": "Quota de stockage",
         "COUNT_QUOTA_TIP": "Entrez un entier entre '1' et '100000000', ou '-1' pour un quota illimité",
         "STORAGE_QUOTA_TIP": "La limite haute du Quota de stockage n'accepte que des valeurs entières, au maximum '1024TB'. Entrez '-1' pour un quota illimité",
-        "QUOTA_UNLIMIT_TIP": "Pour un quota illimité, entrez '-1'."
+        "QUOTA_UNLIMIT_TIP": "Pour un quota illimité, entrez '-1'.",
+        "TYPE": "Type",
+        "PROXY_CACHE": "Proxy Cache",
+        "PROXY_CACHE_TOOLTIP": "Activez cette option pour permettre à ce projet d'agir comme un cache de pull pour un espace de noms particulier dans un registre cible. Harbor ne peut agir en tant que proxy que pour les registres DockerHub et Harbor.",
+        "ENDPOINT": "Endpoint",
+        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Résumé",
@@ -426,10 +435,12 @@
         "ROLE": "Rôle",
         "SYS_ADMIN": "Administrateur Système",
         "PROJECT_ADMIN": "Administrateur de Projet",
-        "PROJECT_MASTER": "Propriétaire",
+        "PROJECT_INTAINER": "Propriétaire",
         "DEVELOPER": "Développeur",
         "GUEST": "Invité",
-        "LIMITED_GUEST": "Invité avec droits limités"
+        "LIMITED_GUEST": "Invité avec droits limités",
+        "DELETION_TITLE": "Confirmer la suppression des membres du groupe",
+        "DELETION_SUMMARY": "Voulez-vous supprimer le(s) membre(s) du groupe {{param}} ?"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nom d'utilisateur",
@@ -688,7 +699,8 @@
         "DEPLOY": "DEPLOYER",
         "ADDITIONAL_INFO": "Ajouter des informations additionnelles",
         "REPO_NAME": "Dépôt",
-        "MARKDOWN": "La syntaxe Markdown est supportée"
+        "MARKDOWN": "La syntaxe Markdown est supportée",
+        "LAST_MODIFIED": "Dernière modification"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",
@@ -1165,17 +1177,19 @@
         "MSG_SCHEDULE_SET": "La planification de la Garbage Collection a été configurée",
         "MSG_SCHEDULE_RESET": "La planification de la Garbage Collection a été réinitialisée",
         "PARAMETERS": "Paramètres",
-        "DELETE_UNTAGGED": "Supprimer les artefacts non taggués"
+        "DELETE_UNTAGGED": "Supprimer les artefacts non taggués",
+        "EXPLAIN": "GC est une opération gourmande en puissance de calcul qui peut impacter les performances  du registre",
+        "DRY_RUN_SUCCESS": "Exécution à blanc déclenchée avec succès"
     },
     "RETAG": {
         "MSG_SUCCESS": "Artefact copié",
         "TIP_REPO": "Un nom de dépôt est divisé en composants de chemin. Un composant d'un nom de dépôt doit être composé d'au moins un caractère alphanumérique en minuscule, éventuellement séparé par .-_. Plus strictement, il doit correspondre à l'expression régulière [a-z0-9] + (?: [._-] [a-z0-9] +) *. Si un nom de dépôt a deux ou plusieurs composants de chemin, ils doivent être séparés par une barre oblique ('/'). La longueur totale d'un nom de référentiel, y compris les barres obliques, doit être inférieure à 256 caractères.",
         "TIP_TAG": "Un tag est un label appliqué à une image Docker dans un dépôt. Les tags sont la façon dont les différentes images d'un dépôt se distinguent les unes des autres.Elles doivent correspondre à la regex: (`[\\ w] [\\ w .-] {0,127}`)"
     },
-    "CVE_WHITELIST": {
+    "CVE_ALLOWLIST": {
         "DEPLOYMENT_SECURITY": "Sécurité de déploiement",
-        "CVE_WHITELIST": "Liste blanche de CVE",
-        "SYS_WHITELIST_EXPLAIN": "La liste blanche système permet les vulnérabilités de cette liste d'être ignorées lors du calcul de la vulnérabilité d'une image.",
+        "CVE_ALLOWLIST": "Liste blanche de CVE",
+        "SYS_ALLOWLIST_EXPLAIN": "La liste blanche système permet les vulnérabilités de cette liste d'être ignorées lors du calcul de la vulnérabilité d'une image.",
         "ADD_SYS": "Ajouter des IDs de CVE à la liste blanche système",
         "WARNING_SYS": "La liste blanche système a expiré. Vous pouvez activer la liste en repoussant la date d'expiration.",
         "WARNING_PRO": "La liste blanche projet a expiré. Vous pouvez activer la liste en repoussant la date d'expiration.",
@@ -1185,10 +1199,11 @@
         "NONE": "Aucune",
         "EXPIRES_AT": "Expire le",
         "NEVER_EXPIRES": "N'expire jamais",
-        "PRO_WHITELIST_EXPLAIN": "La liste blanche projet permet aux vulnérabilités de cette liste d'être ignorées lors du push ou du pull d'images.",
+        "PRO_ALLOWLIST_EXPLAIN": "La liste blanche projet permet aux vulnérabilités de cette liste d'être ignorées lors du push ou du pull d'images.",
         "PRO_OR_SYS": "Vous pouvez utiliser la liste blanche système ou cliquer sur 'Liste blanche projet' pour créer une nouvelle liste blanche",
         "MERGE_INTO": "Ajoutez des Ids de CVE individuels avant de cliquer sur 'COPIER DEPUIS SYSTEME' pour ajouter également la liste blanche système",
-        "PRO_WHITELIST": "Liste blanche projet",
+        "SYS_ALLOWLIST": "Liste blanche système",
+        "PRO_ALLOWLIST": "Liste blanche projet",
         "ADD_SYSTEM": "COPIER DEPUIS SYSTEME"
     },
     "TAG_RETENTION": {
@@ -1383,5 +1398,71 @@
         "HELP_INFO_1": "Le scanneur par défaut a été installé. Pour installer d'autres scanneurs,",
         "HELP_INFO_2": "référez-vous à la documentation.",
         "NO_DEFAULT_SCANNER": "Pas de scanneur par défaut"
+    },
+    "DISTRIBUTION": {
+        "FILTER_INSTANCE_PLACEHOLDER": "Filtrer les instances",
+        "FILTER_HISTORIES_PLACEHOLDER": "Filtrer les historiques",
+        "ADD_ACTION": "NOUVELLE INSTANCE",
+        "PREHEAT_ACTION": "Préchauffer",
+        "EDIT_ACTION": "Editer",
+        "ENABLE_ACTION": "Activer",
+        "DISABLE_ACTION": "Désactiver",
+        "DELETE_ACTION": "Supprimer",
+        "NOT_FOUND": "Introuvable",
+        "NAME": "Nom",
+        "ENDPOINT": "Endpoint",
+        "STATUS": "Statut",
+        "ENABLED": "Activer",
+        "SETUP_TIMESTAMP": "Horodatage d'installation",
+        "PROVIDER": "Fournisseur",
+        "DELETION_TITLE": "Confirmer la suppression de l'instance",
+        "DELETION_SUMMARY": "Voulez-vous supprimer l'/les instance(s) {{param}} ?",
+        "ENABLE_TITLE": "Activer l'/les instance(s)",
+        "ENABLE_SUMMARY": "Voulez-vous activer l'/les instance(s) {{param}} ?",
+        "DISABLE_TITLE": "Désactiver l'/les instance(s)",
+        "DISABLE_SUMMARY": "Voulez-vous désactiver l'/les instance(s) {{param}} ?",
+        "IMAGE": "Image",
+        "START_TIME": "Démarrage",
+        "FINISH_TIME": "Fin",
+        "INSTANCE": "Instance",
+        "HISTORIES": "Historiques",
+        "CREATE_SUCCESS": "Instance créée avec succès",
+        "CREATE_FAILED": "Echec de la création de l'instance",
+        "DELETED_SUCCESS": "Instance(s) supprimée(s) avec succès",
+        "DELETED_FAILED": "Echec de la création de(s) l'instance(s)",
+        "ENABLE_SUCCESS": "Instance(s) activée(s) avec succès",
+        "ENABLE_FAILED": "Echec de l'activation de(s) l'instance(s)",
+        "DISABLE_SUCCESS": "Instance(s) désactivée(s) avec succès",
+        "DISABLE_FAILED": "Echec de la désactivation de(s) l'instance(s)",
+        "UPDATE_SUCCESS": "Instance mise à jour avec succès",
+        "UPDATE_FAILED": "Echec de la mise à jour de l'instance",
+        "REQUEST_PREHEAT_SUCCESS": "Requête de préchauffage effectuée",
+        "REQUEST_PREHEAT_FAILED": "Requête de préchauffage échouée",
+        "DESCRIPTION": "description",
+        "AUTH_MODE": "Mode d'authentification",
+        "USERNAME": "Nom d'utilisateur",
+        "PASSWORD": "Mot de Passe",
+        "TOKEN": "Token",
+        "SETUP_NEW_INSTANCE": "Configurer une nouvelle instance",
+        "EDIT_INSTANCE": "Editer l'instance",
+        "SETUP": {
+            "NAME_PLACEHOLDER": "Entrer le nom de l'instance",
+            "DESCRIPTION_PLACEHOLDER": "Entrer la description de l'instance",
+            "ENDPOINT_PLACEHOLDER": "Entrer le endpoint de l'instance ",
+            "USERNAME_PLACEHOLDER": "Entrer le Nom d'utilisateur",
+            "PASSWORD_PLACEHOLDER": "Entrer le Mot de passe",
+            "TOKEN_PLACEHOLDER": "Entrer le token"
+        },
+        "MAINTAINER": "Mainteneur(s)",
+        "SOURCE": "Source",
+        "VERSION": "Version",
+        "SET_AS_DEFAULT": "Par défaut",
+        "DELETE_INSTANCE": "Supprimer l'instance",
+        "ENABLE_INSTANCE": "Activer l'instance",
+        "DISABLE_INSTANCE": "Désactiver l'instance",
+        "SET_DEFAULT_SUCCESS": "Configuration par défaut effectuée",
+        "SET_DEFAULT_FAILED": "Configuration par défaut échouée",
+        "UPDATE_INSTANCE": "Mettre à jour l'instance",
+        "CREATE_INSTANCE": "Créer une instance"
     }
 }

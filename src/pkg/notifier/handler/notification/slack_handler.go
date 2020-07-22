@@ -89,8 +89,8 @@ func (s *SlackHandler) process(event *model.HookEvent) error {
 			JobKind: job.KindGeneric,
 		},
 	}
-	// Create a webhookJob to send message to slack
-	j.Name = job.WebhookJob
+	// Create a slackJob to send message to slack
+	j.Name = job.SlackJob
 
 	// Convert payload to slack format
 	payload, err := s.convert(event.Payload)
@@ -99,11 +99,8 @@ func (s *SlackHandler) process(event *model.HookEvent) error {
 	}
 
 	j.Parameters = map[string]interface{}{
-		"payload": payload,
-		"address": event.Target.Address,
-		// Users can define a auth header in http statement in notification(webhook) policy.
-		// So it will be sent in header in http request.
-		"auth_header":      event.Target.AuthHeader,
+		"payload":          payload,
+		"address":          event.Target.Address,
 		"skip_cert_verify": event.Target.SkipCertVerify,
 	}
 	return notification.HookManager.StartHook(event, j)

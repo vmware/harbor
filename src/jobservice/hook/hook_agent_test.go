@@ -166,7 +166,8 @@ func (suite *HookAgentTestSuite) TestRetryAndPopMin() {
 func (suite *HookAgentTestSuite) checkStatus() {
 	t := job.NewBasicTrackerWithID(context.TODO(), suite.jid, suite.namespace, suite.pool, nil, list.New())
 	err := t.Load()
-	suite.NoError(err, "load updated job stats")
+	require.NoError(suite.T(), err, "load updated job stats")
+	require.NotNil(suite.T(), t.Job(), "latest job stats")
 	suite.Equal(job.SuccessStatus.String(), t.Job().Info.HookAck.Status, "ack status")
 }
 

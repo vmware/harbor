@@ -15,22 +15,36 @@
 package blob
 
 import (
+	"github.com/goharbor/harbor/src/lib/errors"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
-	"github.com/justinas/alice"
 )
 
-// PutManifestMiddleware middleware which create Blobs for the foreign layers and associate them with the project,
-// update the content type of the Blobs which already exist,
+// PutManifestMiddleware middleware middleware is to update the manifest status according to the different situation before the request passed into proxy(distribution).
+// and it creates Blobs for the foreign layers and associate them with the project, updates the content type of the Blobs which already exist,
 // create Blob for the manifest, associate all Blobs with the manifest after PUT /v2/<name>/manifests/<reference> success.
 func PutManifestMiddleware() func(http.Handler) http.Handler {
 	before := middleware.BeforeRequest(func(r *http.Request) error {
-		// Do nothing, only make the request nopclose
-		return nil
+		ctx := r.Context()
+		logger := log.G(ctx)
+
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			return err
+		}
+
+		contentType := r.Header.Get("Content-Type")
+		_, descriptor, err := distribution.UnmarshalManifest(contentType, body)
+		if err != nil {
+			logger.Errorf("unmarshal manifest failed, error: %v", err)
+			return errors.Wrapf(err, "unmarshal manifest failed").WithCode(errors.MANIFESTINVALID)
+		}
+
+		return probeBlob(r, descriptor.Digest.String())
 	})
 
 	after := middleware.AfterResponse(func(w http.ResponseWriter, r *http.Request, statusCode int) error {
@@ -99,7 +113,5 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 		return nil
 	})
 
-	return func(next http.Handler) http.Handler {
-		return alice.New(before, after).Then(next)
-	}
+	return middleware.Chain(before, after)
 }

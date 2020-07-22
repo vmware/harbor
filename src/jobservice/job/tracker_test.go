@@ -151,9 +151,6 @@ func (suite *TrackerTestSuite) TestTracker() {
 	st, err = t.Status()
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), StoppedStatus, st)
-
-	err = t.Expire()
-	assert.NoError(suite.T(), err)
 }
 
 // TestPeriodicTracker tests tracker of periodic

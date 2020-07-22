@@ -69,7 +69,7 @@ func (m *MetadataAPI) Prepare() {
 	}
 
 	if project == nil {
-		m.SendNotFoundError(fmt.Errorf("project %d not found", id))
+		m.handleProjectNotFound(id)
 		return
 	}
 

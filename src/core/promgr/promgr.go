@@ -16,7 +16,7 @@ package promgr
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
+	"github.com/goharbor/harbor/src/pkg/scan/allowlist"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/models"
@@ -47,7 +47,7 @@ type defaultProjectManager struct {
 	pmsDriver      pmsdriver.PMSDriver
 	metaMgrEnabled bool // if metaMgrEnabled is enabled, metaMgr will be used to CURD metadata
 	metaMgr        metamgr.ProjectMetadataManager
-	whitelistMgr   whitelist.Manager
+	allowlistMgr   allowlist.Manager
 }
 
 // NewDefaultProjectManager returns an instance of defaultProjectManager,
@@ -60,7 +60,7 @@ func NewDefaultProjectManager(driver pmsdriver.PMSDriver, metaMgrEnabled bool) P
 	}
 	if metaMgrEnabled {
 		mgr.metaMgr = metamgr.NewDefaultProjectMetadataManager()
-		mgr.whitelistMgr = whitelist.NewDefaultManager()
+		mgr.allowlistMgr = allowlist.NewDefaultManager()
 	}
 	return mgr
 }
@@ -82,11 +82,11 @@ func (d *defaultProjectManager) Get(projectIDOrName interface{}) (*models.Projec
 		for k, v := range meta {
 			project.Metadata[k] = v
 		}
-		wl, err := d.whitelistMgr.Get(project.ProjectID)
+		wl, err := d.allowlistMgr.Get(project.ProjectID)
 		if err != nil {
 			return nil, err
 		}
-		project.CVEWhitelist = *wl
+		project.CVEAllowlist = *wl
 	}
 	return project, nil
 }
@@ -96,7 +96,7 @@ func (d *defaultProjectManager) Create(project *models.Project) (int64, error) {
 		return 0, err
 	}
 	if d.metaMgrEnabled {
-		d.whitelistMgr.CreateEmpty(id)
+		d.allowlistMgr.CreateEmpty(id)
 		if len(project.Metadata) > 0 {
 			if err = d.metaMgr.Add(id, project.Metadata); err != nil {
 				log.Errorf("failed to add metadata for project %s: %v", project.Name, err)
@@ -132,7 +132,7 @@ func (d *defaultProjectManager) Update(projectIDOrName interface{}, project *mod
 	}
 	// TODO transaction?
 	if d.metaMgrEnabled {
-		if err := d.whitelistMgr.Set(pro.ProjectID, project.CVEWhitelist); err != nil {
+		if err := d.allowlistMgr.Set(pro.ProjectID, project.CVEAllowlist); err != nil {
 			return err
 		}
 		if len(project.Metadata) > 0 {
@@ -195,7 +195,7 @@ func (d *defaultProjectManager) List(query *models.ProjectQueryParam) (*models.P
 			project.Metadata = meta
 		}
 	}
-	// the whitelist is not populated deliberately
+	// the allowlist is not populated deliberately
 	return result, nil
 }
 

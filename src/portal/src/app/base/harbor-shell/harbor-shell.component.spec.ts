@@ -20,6 +20,7 @@ import { PasswordSettingService } from '../../account/password-setting/password-
 import { SkinableConfig } from '../../services/skinable-config.service';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 import { AppConfigService } from "../../services/app-config.service";
+import { ErrorHandler } from '../../../lib/utils/error-handler';
 
 describe('HarborShellComponent', () => {
     let component: HarborShellComponent;
@@ -86,6 +87,7 @@ describe('HarborShellComponent', () => {
                 { provide: AccountSettingsModalService, useValue: mockAccountSettingsModalService },
                 { provide: PasswordSettingService, useValue: mockPasswordSettingService },
                 { provide: SkinableConfig, useValue: mockSkinableConfig },
+                ErrorHandler
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
         }).compileComponents();

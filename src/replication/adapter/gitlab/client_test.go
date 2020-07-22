@@ -11,7 +11,6 @@ import (
 )
 
 func TestProjects(t *testing.T) {
-	// chart museum enabled
 	server := test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodGet,
 		Pattern: "/api/v4/projects",

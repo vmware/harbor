@@ -1,4 +1,4 @@
-FROM golang:1.13.8
+FROM golang:1.14.5
 
 ADD .   /go/src/github.com/quay/clair/
 WORKDIR /go/src/github.com/quay/clair/

@@ -15,19 +15,14 @@
 package quota
 
 import (
-	"io/ioutil"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/goharbor/harbor/src/controller/blob"
-	"github.com/goharbor/harbor/src/controller/event/metadata"
-	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
-	"github.com/goharbor/harbor/src/pkg/distribution"
-	"github.com/goharbor/harbor/src/pkg/notifier/event"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
 // PutManifestMiddleware middleware to request count and storage resources for the project
@@ -35,24 +30,10 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 	return RequestMiddleware(RequestConfig{
 		ReferenceObject:   projectReferenceObject,
 		Resources:         putManifestResources,
-		ResourcesExceeded: putManifestResourcesEvent(1),
-		ResourcesWarning:  putManifestResourcesEvent(2),
+		ResourcesExceeded: projectResourcesEvent(1),
+		ResourcesWarning:  projectResourcesEvent(2),
 	})
 }
-
-var (
-	unmarshalManifest = func(r *http.Request) (distribution.Manifest, distribution.Descriptor, error) {
-		lib.NopCloseRequest(r)
-
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			return nil, distribution.Descriptor{}, err
-		}
-
-		contentType := r.Header.Get("Content-Type")
-		return distribution.UnmarshalManifest(contentType, body)
-	}
-)
 
 func putManifestResources(r *http.Request, reference, referenceID string) (types.ResourceList, error) {
 	logger := log.G(r.Context()).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
@@ -62,7 +43,7 @@ func putManifestResources(r *http.Request, reference, referenceID string) (types
 	manifest, descriptor, err := unmarshalManifest(r)
 	if err != nil {
 		logger.Errorf("unmarshal manifest failed, error: %v", err)
-		return nil, err
+		return nil, errors.Wrap(err, "unmarshal manifest failed").WithCode(errors.MANIFESTINVALID)
 	}
 
 	exist, err := blobController.Exist(r.Context(), descriptor.Digest.String(), blob.IsAssociatedWithProject(projectID))
@@ -98,43 +79,4 @@ func putManifestResources(r *http.Request, reference, referenceID string) (types
 	}
 
 	return types.ResourceList{types.ResourceStorage: size}, nil
-}
-
-func putManifestResourcesEvent(level int) func(*http.Request, string, string, string) event.Metadata {
-	return func(r *http.Request, reference, referenceID string, message string) event.Metadata {
-		ctx := r.Context()
-
-		logger := log.G(ctx).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
-
-		_, descriptor, err := unmarshalManifest(r)
-		if err != nil {
-			logger.Errorf("unmarshal manifest failed, error: %v", err)
-			return nil
-		}
-
-		projectID, _ := strconv.ParseInt(referenceID, 10, 64)
-		project, err := projectController.Get(ctx, projectID)
-		if err != nil {
-			logger.Errorf("get project %d failed, error: %v", projectID, err)
-
-			return nil
-		}
-
-		path := r.URL.EscapedPath()
-
-		var tag string
-		if ref := distribution.ParseReference(path); !distribution.IsDigest(ref) {
-			tag = ref
-		}
-
-		return &metadata.QuotaMetaData{
-			Project:  project,
-			Tag:      tag,
-			Digest:   descriptor.Digest.String(),
-			RepoName: distribution.ParseName(path),
-			Level:    level,
-			Msg:      message,
-			OccurAt:  time.Now(),
-		}
-	}
 }

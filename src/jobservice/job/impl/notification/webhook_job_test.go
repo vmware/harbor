@@ -76,5 +76,5 @@ func TestRun(t *testing.T) {
 		"auth_header":      "auth_test",
 	}
 	// test incorrect webhook response
-	assert.Nil(t, rep.Run(ctx, paramsWrong))
+	assert.NotNil(t, rep.Run(ctx, paramsWrong))
 }

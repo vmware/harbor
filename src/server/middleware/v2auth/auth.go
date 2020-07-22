@@ -16,7 +16,9 @@ package v2auth
 
 import (
 	"fmt"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -27,10 +29,11 @@ import (
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	serror "github.com/goharbor/harbor/src/server/error"
 )
 
-const authHeader = "Authorization"
+const (
+	authHeader = "Authorization"
+)
 
 type reqChecker struct {
 	pm promgr.ProjectManager
@@ -86,9 +89,9 @@ func getChallenge(req *http.Request, accessList []access) string {
 		return `Basic realm="harbor"`
 	}
 	// No auth header, treat it as CLI and redirect to token service
-	ep, err := config.ExtEndpoint()
+	ep, err := tokenSvcEndpoint(req)
 	if err != nil {
-		logger.Errorf("failed to get the external endpoint, error: %v", err)
+		logger.Errorf("failed to get the endpoint for token service, error: %v", err)
 	}
 	tokenSvc := fmt.Sprintf("%s/service/token", strings.TrimSuffix(ep, "/"))
 	scope := ""
@@ -103,6 +106,19 @@ func getChallenge(req *http.Request, accessList []access) string {
 		challenge = fmt.Sprintf(`%s,scope="%s"`, challenge, scope)
 	}
 	return challenge
+}
+
+func tokenSvcEndpoint(req *http.Request) (string, error) {
+	logger := log.G(req.Context())
+	rawCoreURL := config.InternalCoreURL()
+	if coreURL, err := url.Parse(rawCoreURL); err == nil {
+		if req.Host == coreURL.Host {
+			return rawCoreURL, nil
+		}
+	} else {
+		logger.Errorf("Failed to parse core url, error: %v, fallback to external endpoint", err)
+	}
+	return config.ExtEndpoint()
 }
 
 var (
@@ -125,7 +141,7 @@ func Middleware() func(http.Handler) http.Handler {
 				// the header is needed for "docker manifest" commands: https://github.com/docker/cli/issues/989
 				rw.Header().Set("Docker-Distribution-Api-Version", "registry/2.0")
 				rw.Header().Set("Www-Authenticate", challenge)
-				serror.SendError(rw, errors.UnauthorizedError(err).WithMessage(err.Error()))
+				lib_http.SendError(rw, errors.UnauthorizedError(err).WithMessage(err.Error()))
 				return
 			}
 			next.ServeHTTP(rw, req)

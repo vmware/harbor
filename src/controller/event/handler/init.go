@@ -4,11 +4,13 @@ import (
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/auditlog"
 	"github.com/goharbor/harbor/src/controller/event/handler/internal"
+	"github.com/goharbor/harbor/src/controller/event/handler/p2p"
 	"github.com/goharbor/harbor/src/controller/event/handler/replication"
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/artifact"
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/chart"
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/quota"
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/scan"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notifier"
 )
 
@@ -33,6 +35,11 @@ func init() {
 	notifier.Subscribe(event.TopicCreateTag, &replication.Handler{})
 	notifier.Subscribe(event.TopicDeleteTag, &replication.Handler{})
 
+	// p2p preheat
+	notifier.Subscribe(event.TopicPushArtifact, &p2p.Handler{Context: orm.Context})
+	notifier.Subscribe(event.TopicScanningCompleted, &p2p.Handler{Context: orm.Context})
+	notifier.Subscribe(event.TopicArtifactLabeled, &p2p.Handler{Context: orm.Context})
+
 	// audit logs
 	notifier.Subscribe(event.TopicPushArtifact, &auditlog.Handler{})
 	notifier.Subscribe(event.TopicPullArtifact, &auditlog.Handler{})
@@ -44,5 +51,6 @@ func init() {
 	notifier.Subscribe(event.TopicDeleteTag, &auditlog.Handler{})
 
 	// internal
-	notifier.Subscribe(event.TopicPullArtifact, &internal.Handler{})
+	notifier.Subscribe(event.TopicPullArtifact, &internal.Handler{Context: orm.Context})
+	notifier.Subscribe(event.TopicPushArtifact, &internal.Handler{Context: orm.Context})
 }

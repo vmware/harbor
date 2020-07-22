@@ -43,6 +43,7 @@ def cnab_push_bundle(bundle_file, target):
     raise Exception(r"Fail to get sha256 in returned data: {}".format(ret))
 
 def push_cnab_bundle(harbor_server, user, password, service_image, invocation_image, target, auto_update_bundle = True):
+    docker_api.docker_info_display()
     docker_api.docker_login_cmd(harbor_server, user, password, enable_manifest = False)
     bundle_file = load_bundle(service_image, invocation_image)
     fixed_bundle_file = cnab_fixup_bundle(bundle_file, target, auto_update_bundle = auto_update_bundle)

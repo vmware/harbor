@@ -28,10 +28,10 @@ jobs:
       #- self-hosted
       - ubuntu-latest
     steps:
-      - name: Set up Go 1.13
+      - name: Set up Go 1.14
         uses: actions/setup-go@v1
         with:
-           go-version: 1.13.8
+           go-version: 1.14.5
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -71,12 +71,15 @@ jobs:
         run: |
           cd src/github.com/goharbor/harbor
           env
+          df -h
           bash ./tests/showtime.sh ./tests/ci/ut_install.sh
       - name: script
         run: |
           echo IP: $IP
+          df -h
           cd src/github.com/goharbor/harbor
           bash ./tests/showtime.sh ./tests/ci/ut_run.sh $IP
+          df -h
       - name: Codecov For BackEnd
         uses: codecov/codecov-action@v1
         with:
@@ -90,10 +93,10 @@ jobs:
       #- self-hosted
       - ubuntu-latest
     steps:
-      - name: Set up Go 1.13
+      - name: Set up Go 1.14
         uses: actions/setup-go@v1
         with:
-          go-version: 1.13.8
+          go-version: 1.14.5
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -113,6 +116,8 @@ jobs:
           echo "::set-env name=GOPATH::$(go env GOPATH):$GITHUB_WORKSPACE"
           echo "::add-path::$(go env GOPATH)/bin"
           echo "::set-env name=TOKEN_PRIVATE_KEY_PATH::${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem"
+          IP=`hostname -I | awk '{print $1}'`
+          echo "::set-env name=IP::$IP"
         shell: bash
       - name: before_install
         run: |
@@ -120,35 +125,61 @@ jobs:
           cd src/github.com/goharbor/harbor
           pwd
           env
+          df -h
           #sudo apt install -y xvfb
           #xvfb-run ls
           curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
           chmod +x docker-compose
           sudo mv docker-compose /usr/local/bin
-          IP=`hostname -I | awk '{print $1}'`
           echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
-          echo "::set-env name=IP::$IP"
           sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
           sudo update-ca-certificates
           sudo service docker restart
+          wget https://get.helm.sh/helm-v2.14.1-linux-386.tar.gz && tar zxvf helm-v2.14.1-linux-386.tar.gz
+          sudo mv linux-386/helm /usr/local/bin/helm2
+          helm2 init --client-only
+          helm2 plugin list | grep push || helm2 plugin install https://github.com/chartmuseum/helm-push
           wget https://get.helm.sh/helm-v3.1.1-linux-386.tar.gz && tar zxvf helm-v3.1.1-linux-386.tar.gz
           sudo mv linux-386/helm /usr/local/bin/helm3
-          helm3 plugin install https://github.com/chartmuseum/helm-push
-          mkdir -p $CNAB_PATH && cd $CNAB_PATH && git clone https://github.com/cnabio/cnab-to-oci.git
+          helm3 plugin list | grep push || helm3 plugin install https://github.com/chartmuseum/helm-push
+          rm -rf $CNAB_PATH;mkdir -p $CNAB_PATH && cd $CNAB_PATH && git clone https://github.com/cnabio/cnab-to-oci.git
           cd cnab-to-oci && git checkout v0.3.0-beta4
           go list
           make build
           sudo mv bin/cnab-to-oci /usr/local/bin
+          curl -LO https://github.com/deislabs/oras/releases/download/v0.8.1/oras_0.8.1_linux_amd64.tar.gz
+          mkdir -p oras-install/
+          tar -zxf oras_0.8.1_*.tar.gz -C oras-install/
+          sudo mv oras-install/oras /usr/local/bin/
+          sudo apt-get update && sudo apt-get install -y \
+          build-essential \
+          uuid-dev \
+          libgpgme-dev \
+          squashfs-tools \
+          libseccomp-dev \
+          pkg-config \
+          cryptsetup-bin
+          export VERSION=3.5.3 && \
+          wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz && \
+          tar -xzf singularity-${VERSION}.tar.gz && \
+          cd singularity
+          ./mconfig && \
+          make -C builddir && \
+          sudo make -C builddir install
       - name: install
         run: |
           cd src/github.com/goharbor/harbor
           env
+          df -h
+          docker system prune -a -f
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
       - name: script
         run: |
           cd src/github.com/goharbor/harbor
           echo IP: $IP
+          df -h
           bash ./tests/showtime.sh ./tests/ci/api_run.sh DB $IP
+          df -h
 
   APITEST_LDAP:
     env:
@@ -157,10 +188,10 @@ jobs:
       #- self-hosted
       - ubuntu-latest
     steps:
-      - name: Set up Go 1.13
+      - name: Set up Go 1.14
         uses: actions/setup-go@v1
         with:
-          go-version: 1.13.8
+          go-version: 1.14.5
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -185,6 +216,7 @@ jobs:
           cd src/github.com/goharbor/harbor
           pwd
           env
+          df -h
           #sudo apt install -y xvfb
           #xvfb-run ls
           curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
@@ -200,12 +232,15 @@ jobs:
         run: |
           cd src/github.com/goharbor/harbor
           env
+          df -h
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP LDAP
       - name: script
         run: |
           echo IP: $IP
+          df -h
           cd src/github.com/goharbor/harbor
           bash ./tests/showtime.sh ./tests/ci/api_run.sh LDAP $IP
+          df -h
 
   OFFLINE:
     env:
@@ -214,10 +249,10 @@ jobs:
       #- self-hosted
       - ubuntu-latest
     steps:
-      - name: Set up Go 1.13
+      - name: Set up Go 1.14
         uses: actions/setup-go@v1
         with:
-          go-version: 1.13.8
+          go-version: 1.14.5
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -243,6 +278,7 @@ jobs:
           cd src/github.com/goharbor/harbor
           pwd
           env
+          df -h
           #sudo apt install -y xvfb
           #xvfb-run ls
           curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
@@ -257,8 +293,10 @@ jobs:
       - name: script
         run: |
           echo IP: $IP
+          df -h
           cd src/github.com/goharbor/harbor
           bash ./tests/showtime.sh ./tests/ci/distro_installer.sh
+          df -h
 
   UI_UT:
     env:
@@ -276,8 +314,10 @@ jobs:
       - name: script
         run: |
           echo IP: $IP
+          df -h
           cd src/github.com/goharbor/harbor
           bash ./tests/showtime.sh ./tests/ci/ui_ut_run.sh
+          df -h
       - name: Codecov For UI
         uses: codecov/codecov-action@v1
         with:

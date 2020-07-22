@@ -28,7 +28,7 @@ export class CronScheduleComponent implements OnChanges {
   @Input() labelEdit: string;
   @Input() labelCurrent: string;
   @Input() disabled: boolean;
-  @Input() buttonMarginLeft: string = '200px';
+  @Input() labelWidth: string = '200px';
   dateInvalid: boolean;
   originScheduleType: string;
   oriCron: string;

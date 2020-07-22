@@ -15,6 +15,7 @@
 package api
 
 import (
+	"github.com/goharbor/harbor/src/lib/q"
 	"net/http"
 	"testing"
 
@@ -29,7 +30,7 @@ type fakedRegistryManager struct{}
 func (f *fakedRegistryManager) Add(*model.Registry) (int64, error) {
 	return 0, nil
 }
-func (f *fakedRegistryManager) List(...*model.RegistryQuery) (int64, []*model.Registry, error) {
+func (f *fakedRegistryManager) List(query *q.Query) (int64, []*model.Registry, error) {
 	return 0, nil, nil
 }
 func (f *fakedRegistryManager) Get(id int64) (*model.Registry, error) {

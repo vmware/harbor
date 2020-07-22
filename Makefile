@@ -9,7 +9,7 @@
 # compile_golangimage:
 #			compile from golang image
 #			for example: make compile_golangimage -e GOBUILDIMAGE= \
-#							golang:1.13.8
+#							golang:1.14.5
 # compile_core, compile_jobservice: compile specific binary
 #
 # build:	build Harbor docker images from photon baseimage
@@ -98,16 +98,19 @@ PKGVERSIONTAG=dev
 PREPARE_VERSION_NAME=versions
 
 #versions
-REGISTRYVERSION=v2.7.1-patch-2819-2553
+REGISTRYVERSION=v2.7.1-patch-2819-2553-redis
 NOTARYVERSION=v0.6.1
-CLAIRVERSION=v2.1.1
+CLAIRVERSION=v2.1.4
 NOTARYMIGRATEVERSION=v3.5.4
-CLAIRADAPTERVERSION=v1.0.2
-TRIVYVERSION=v0.6.0
-TRIVYADAPTERVERSION=v0.9.0
+CLAIRADAPTERVERSION=v1.1.0-rc1
+TRIVYVERSION=v0.9.1
+TRIVYADAPTERVERSION=v0.13.0
 
 # version of chartmuseum
-CHARTMUSEUMVERSION=v0.9.0
+CHARTMUSEUMVERSION=v0.12.0-redis
+
+# version of chartmuseum for pulling the source code
+CHARTMUSEUM_SRC_TAG=v0.12.0
 
 # version of registry for pulling the source code
 REGISTRY_SRC_TAG=v2.7.1
@@ -137,7 +140,7 @@ DOCKERCMD=$(shell which docker)
 DOCKERBUILD=$(DOCKERCMD) build
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERPULL=$(DOCKERCMD) pull
-DOCKERIMASES=$(DOCKERCMD) images
+DOCKERIMAGES=$(DOCKERCMD) images
 DOCKERSAVE=$(DOCKERCMD) save
 DOCKERCOMPOSECMD=$(shell which docker-compose)
 DOCKERTAG=$(DOCKERCMD) tag
@@ -150,7 +153,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.13.8
+GOBUILDIMAGE=golang:1.14.5
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -304,11 +307,11 @@ SWAGGER_IMAGENAME=goharbor/swagger
 SWAGGER_VERSION=v0.21.0
 SWAGGER=$(DOCKERCMD) run --rm -u $(shell id -u):$(shell id -g) -v $(BUILDPATH):$(BUILDPATH) -w $(BUILDPATH) ${SWAGGER_IMAGENAME}:${SWAGGER_VERSION}
 SWAGGER_GENERATE_SERVER=${SWAGGER} generate server --template-dir=$(TOOLSPATH)/swagger/templates --exclude-main
-SWAAGER_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/swagger/Dockerfile --build-arg SWAGGER_VERSION=${SWAGGER_VERSION} -t ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) .
+SWAGGER_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/swagger/Dockerfile --build-arg SWAGGER_VERSION=${SWAGGER_VERSION} -t ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) .
 
 SWAGGER_IMAGENAME:
-	@if [ "$(shell ${DOCKERIMASES} -q ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) 2> /dev/null)" == "" ]; then \
-		${SWAAGER_IMAGE_BUILD_CMD} && echo "build swagger image successfully" || (echo "build swagger image failed" && exit 1) ; \
+	@if [ "$(shell ${DOCKERIMAGES} -q ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) 2> /dev/null)" == "" ]; then \
+		${SWAGGER_IMAGE_BUILD_CMD} && echo "build swagger image successfully" || (echo "build swagger image failed" && exit 1) ; \
 	fi
 
 # $1 the path of swagger spec
@@ -323,6 +326,29 @@ endef
 
 gen_apis: SWAGGER_IMAGENAME
 	$(call swagger_generate_server,api/v2.0/swagger.yaml,src/server/v2.0,harbor)
+
+
+MOCKERY_IMAGENAME=goharbor/mockery
+MOCKERY_VERSION=v2.1.0
+MOCKERY=$(DOCKERCMD) run --rm -u $(shell id -u):$(shell id -g) -v $(BUILDPATH):$(BUILDPATH) -w $(BUILDPATH) ${MOCKERY_IMAGENAME}:${MOCKERY_VERSION}
+MOCKERY_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/mockery/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg MOCKERY_VERSION=${MOCKERY_VERSION} -t ${MOCKERY_IMAGENAME}:$(MOCKERY_VERSION) .
+
+MOCKERY_IMAGE:
+	@if [ "$(shell ${DOCKERIMAGES} -q ${MOCKERY_IMAGENAME}:$(MOCKERY_VERSION) 2> /dev/null)" == "" ]; then \
+		${MOCKERY_IMAGE_BUILD_CMD} && echo "build mockery image successfully" || (echo "build mockery image failed" && exit 1) ; \
+	fi
+
+gen_mocks: MOCKERY_IMAGE
+	${MOCKERY} go generate ./...
+
+mocks_check: gen_mocks
+	@echo checking mocks...
+	@res=$$(git status -s src/ | awk '{ printf("%s\n", $$2) }' | egrep .*.go); \
+	if [ -n "$${res}" ]; then \
+		echo mocks of the interface are out of date... ; \
+		echo "$${res}"; \
+		exit 1; \
+	fi
 
 export VERSIONS_FOR_PREPARE
 versions_prepare:
@@ -375,7 +401,7 @@ build:
 	 -e TRIVYVERSION=$(TRIVYVERSION) -e TRIVYADAPTERVERSION=$(TRIVYADAPTERVERSION) \
 	 -e CLAIRVERSION=$(CLAIRVERSION) -e CLAIRADAPTERVERSION=$(CLAIRADAPTERVERSION) -e VERSIONTAG=$(VERSIONTAG) \
 	 -e BUILDBIN=$(BUILDBIN) \
-	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER) \
+	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e CHARTMUSEUM_SRC_TAG=$(CHARTMUSEUM_SRC_TAG) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER) \
 	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG) -e BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
 	 -e CLAIRURL=$(CLAIRURL) -e CHARTURL=$(CHARTURL) -e NORARYURL=$(NORARYURL) -e REGISTRYURL=$(REGISTRYURL) -e CLAIR_ADAPTER_DOWNLOAD_URL=$(CLAIR_ADAPTER_DOWNLOAD_URL) \
 	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL)
@@ -383,8 +409,8 @@ build:
 build_base_docker:
 	@for name in chartserver clair clair-adapter trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
 		echo $$name ; \
-		$(DOCKERBUILD) --pull -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) . ; \
-		$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) ; \
+		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . && \
+		$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
 	done
 
 pull_base_docker:
@@ -432,7 +458,7 @@ gosec:
 		$(GOPATH)/bin/gosec -fmt=json -out=harbor_gas_output.json -quiet ./... | true ; \
 	fi
 
-go_check: gen_apis misspell gofmt commentfmt golint govet
+go_check: gen_apis mocks_check misspell gofmt commentfmt golint govet
 
 gofmt:
 	@echo checking gofmt...
@@ -513,12 +539,11 @@ down:
 
 swagger_client:
 	@echo "Generate swagger client"
-	wget -q https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.3.1/swagger-codegen-cli-2.3.1.jar -O swagger-codegen-cli.jar
+	wget https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.3.1/swagger-codegen-cli-2.3.1.jar -O swagger-codegen-cli.jar
 	rm -rf harborclient
 	mkdir  -p harborclient/harbor_client
 	mkdir  -p harborclient/harbor_swagger_client
 	mkdir  -p harborclient/harbor_v2_swagger_client
-	sed -i "/type: basic/ a\\security:\n  - basicAuth: []" api/v2.0/swagger.yaml
 	java -jar swagger-codegen-cli.jar generate -i api/swagger.yaml -l python -o harborclient/harbor_client -DpackageName=client
 	java -jar swagger-codegen-cli.jar generate -i api/v2.0/legacy_swagger.yaml -l python -o harborclient/harbor_swagger_client -DpackageName=swagger_client
 	java -jar swagger-codegen-cli.jar generate -i api/v2.0/swagger.yaml -l python -o harborclient/harbor_v2_swagger_client -DpackageName=v2_swagger_client

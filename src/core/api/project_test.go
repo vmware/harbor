@@ -494,16 +494,16 @@ func TestHighestRole(t *testing.T) {
 		{
 			[]int{
 				common.RoleDeveloper,
-				common.RoleMaster,
+				common.RoleMaintainer,
 				common.RoleLimitedGuest,
 			},
-			common.RoleMaster,
+			common.RoleMaintainer,
 		},
 		{
 			[]int{
 				common.RoleProjectAdmin,
-				common.RoleMaster,
-				common.RoleMaster,
+				common.RoleMaintainer,
+				common.RoleMaintainer,
 			},
 			common.RoleProjectAdmin,
 		},

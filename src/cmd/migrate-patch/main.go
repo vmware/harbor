@@ -33,14 +33,14 @@ func main() {
 		log.Fatalf("Failed to connect to Database, error: %v\n", err)
 	}
 	defer db.Close()
-	c := make(chan int, 1)
+	c := make(chan struct{}, 1)
 	go func() {
 		err := db.Ping()
 		for ; err != nil; err = db.Ping() {
-			log.Printf("Failed to Ping DB, sleep for 1 second.\n")
+			log.Println("Failed to Ping DB, sleep for 1 second.")
 			time.Sleep(1 * time.Second)
 		}
-		c <- 1
+		c <- struct{}{}
 	}()
 	select {
 	case <-c:
@@ -54,11 +54,11 @@ func main() {
 		log.Fatalf("Failed to check schema_migrations table, error: %v \n", err)
 	}
 	if tblCount == 0 {
-		log.Printf("schema_migrations table does not exist, skip.\n")
+		log.Println("schema_migrations table does not exist, skip.")
 		return
 	}
 	if colCount > 0 {
-		log.Printf("schema_migrations table does not require update, skip.\n")
+		log.Println("schema_migrations table does not require update, skip.")
 		return
 	}
 	if _, err := db.Exec(pgSQLDelRows); err != nil {
@@ -67,5 +67,5 @@ func main() {
 	if _, err := db.Exec(pgSQLAlterStmt); err != nil {
 		log.Fatalf("Failed to update database, error: %v \n", err)
 	}
-	log.Printf("Done updating database. \n")
+	log.Println("Done updating database.")
 }

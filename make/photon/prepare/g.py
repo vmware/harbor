@@ -26,6 +26,7 @@ trust_ca_dir = secret_dir.joinpath('keys', 'trust_ca')
 internal_tls_dir = secret_dir.joinpath('tls')
 
 storage_ca_bundle_filename = 'storage_ca_bundle.crt'
+internal_ca_filename = 'harbor_internal_ca.crt'
 
 old_private_key_pem_path = Path('/config/core/private_key.pem')
 old_crt_path = Path('/config/registry/root.crt')
@@ -39,6 +40,7 @@ versions_file_path = Path('/usr/src/app/versions')
 
 cert_dir = config_dir.joinpath("nginx", "cert")
 core_cert_dir = config_dir.joinpath("core", "certificates")
+shared_cert_dir = config_dir.joinpath("shared", "trust-certificates")
 
 INTERNAL_NO_PROXY_DN = {
     '127.0.0.1',

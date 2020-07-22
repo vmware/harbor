@@ -292,7 +292,7 @@ func AddProjectMember(projectID int64, request models.MemberReq) (int, error) {
 func isValidRole(role int) bool {
 	switch role {
 	case common.RoleProjectAdmin,
-		common.RoleMaster,
+		common.RoleMaintainer,
 		common.RoleDeveloper,
 		common.RoleGuest,
 		common.RoleLimitedGuest:

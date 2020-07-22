@@ -47,8 +47,8 @@ export abstract class ProjectService {
   abstract updateProjectPolicy(
     projectId: number | string,
     projectPolicy: ProjectPolicy,
-    reuseSysCVEVWhitelist: string,
-    projectWhitelist: object
+    reuseSysCVEVAllowlist: string,
+    projectAllowlist: object
   ): Observable<any>;
 
   /**
@@ -69,7 +69,7 @@ export abstract class ProjectService {
     page?: number,
     pageSize?: number
   ): Observable<HttpResponse<Project[]>>;
-  abstract createProject(name: string, metadata: any, storageLimit: number): Observable<any>;
+  abstract createProject(name: string, metadata: any, storageLimit: number, registryId: number): Observable<any>;
   abstract deleteProject(projectId: number): Observable<any>;
   abstract checkProjectExists(projectName: string): Observable<any>;
   abstract checkProjectMember(projectId: number): Observable<any>;
@@ -109,8 +109,8 @@ export class ProjectDefaultService extends ProjectService {
   public updateProjectPolicy(
     projectId: number | string,
     projectPolicy: ProjectPolicy,
-    reuseSysCVEVWhitelist: string,
-    projectWhitelist: object
+    reuseSysCVEVAllowlist: string,
+    projectAllowlist: object
   ): any {
     let baseUrl: string = this.config.projectBaseEndpoint
       ? this.config.projectBaseEndpoint
@@ -125,9 +125,9 @@ export class ProjectDefaultService extends ProjectService {
               prevent_vul: projectPolicy.PreventVulImg ? "true" : "false",
               severity: projectPolicy.PreventVulImgSeverity,
               auto_scan: projectPolicy.ScanImgOnPush ? "true" : "false",
-              reuse_sys_cve_whitelist: reuseSysCVEVWhitelist
+              reuse_sys_cve_allowlist: reuseSysCVEVAllowlist
           },
-            cve_whitelist: projectWhitelist
+            cve_allowlist: projectAllowlist
         },
         HTTP_JSON_OPTIONS
       )
@@ -149,12 +149,13 @@ export class ProjectDefaultService extends ProjectService {
                catchError(error => observableThrowError(error)), );
   }
 
-  public createProject(name: string, metadata: any, storageLimit: number): Observable<any> {
+  public createProject(name: string, metadata: any, storageLimit: number, registryId: number): Observable<any> {
     return this.http
                .post(`${ CURRENT_BASE_HREF }/projects`,
-                JSON.stringify({'project_name': name, 'metadata': {
-                  public: metadata.public ? 'true' : 'false',
-                },
+                 JSON.stringify({
+                   'project_name': name, registry_id: +registryId, 'metadata': {
+                     public: metadata.public ? 'true' : 'false'
+                   },
                 storage_limit: storageLimit
               })
                 , HTTP_JSON_OPTIONS).pipe(

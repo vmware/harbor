@@ -17,6 +17,7 @@ package orm
 import (
 	"context"
 	"errors"
+
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/lib/log"
 )
@@ -38,6 +39,11 @@ func NewContext(ctx context.Context, o orm.Ormer) context.Context {
 		ctx = context.Background()
 	}
 	return context.WithValue(ctx, ormKey{}, o)
+}
+
+// Context returns a context with an orm
+func Context() context.Context {
+	return NewContext(context.Background(), orm.NewOrm())
 }
 
 // WithTransaction a decorator which make f run in transaction

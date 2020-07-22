@@ -5,7 +5,7 @@ Make Swagger Client
     [Return]  ${rc}
 
 Setup API Test
-    Retry Keyword When Error  Make Swagger Client
+    Retry Keyword N Times When Error  10  Make Swagger Client
 
 Harbor API Test
     [Arguments]  ${testcase_name}

@@ -1,0 +1,238 @@
+<clr-modal
+  [(clrModalOpen)]="opened"
+  [clrModalClosable]="false"
+  [clrModalStaticBackdrop]="true"
+>
+  <h3 class="modal-title">{{ title | translate }}</h3>
+  <div class="modal-body">
+    <inline-alert class="modal-title"></inline-alert>
+    <form #instanceForm="ngForm" class="clr-form clr-form-horizontal">
+      <!-- 1. provider -->
+      <clr-select-container>
+        <label class="required">{{
+          'DISTRIBUTION.PROVIDER' | translate
+        }}</label>
+        <select
+          clrSelect
+          name="provider"
+          id="provider"
+          [(ngModel)]="model.vendor"
+          [disabled]="editingMode"
+          required
+        >
+          <option class="display-none" value=""></option>
+          <option
+            *ngFor="let provider of providers"
+            value="{{ provider.id }}"
+            >{{ provider.name }}</option
+          >
+        </select>
+        <clr-control-error>
+          {{ 'TOOLTIP.ITEM_REQUIRED' | translate }}
+        </clr-control-error>
+      </clr-select-container>
+
+      <!-- 2. name -->
+      <clr-input-container>
+        <label class="required clr-control-label" for="name">{{
+          'DISTRIBUTION.NAME' | translate
+        }}</label>
+        <input
+          clrInput
+          required
+          type="text"
+          id="name"
+          autocomplete="off"
+          placeholder="{{ 'DISTRIBUTION.SETUP.NAME_PLACEHOLDER' | translate }}"
+          [(ngModel)]="model.name"
+          name="name"
+          [disabled]="editingMode"
+        />
+        <clr-control-error>
+          {{ 'TOOLTIP.ITEM_REQUIRED' | translate }}
+        </clr-control-error>
+      </clr-input-container>
+
+      <!-- 3. description -->
+      <clr-textarea-container>
+        <label>{{ 'DISTRIBUTION.DESCRIPTION' | translate }}</label>
+        <textarea
+          clrTextarea
+          type="text"
+          id="description"
+          class="inputWidth"
+          row="3"
+          placeholder="{{
+            'DISTRIBUTION.SETUP.DESCRIPTION_PLACEHOLDER' | translate
+          }}"
+          [(ngModel)]="model.description"
+          [ngModelOptions]="{ standalone: true }"
+        ></textarea>
+      </clr-textarea-container>
+
+      <!-- 4. endpoint -->
+      <clr-input-container>
+        <label class="required clr-control-label" for="endpoint">{{
+          'DISTRIBUTION.ENDPOINT' | translate
+        }}</label>
+        <input
+          clrInput
+          required
+          pattern="^([hH][tT]{2}[pP]:\/\/|[hH][tT]{2}[pP][sS]:\/\/)(.*?)*$"
+          type="text"
+          id="endpoint"
+          placeholder="{{
+            'DISTRIBUTION.SETUP.ENDPOINT_PLACEHOLDER' | translate
+          }}"
+          [(ngModel)]="model.endpoint"
+          name="endpoint"
+          autocomplete="off"
+        />
+        <clr-control-error>{{
+          'TOOLTIP.ENDPOINT_FORMAT' | translate
+        }}</clr-control-error>
+      </clr-input-container>
+
+      <!-- 5. enabled -->
+      <clr-checkbox-container *ngIf="!editingMode">
+        <label for="enabled">
+          <span>{{ 'DISTRIBUTION.ENABLED' | translate }}</span>
+        </label>
+        <clr-checkbox-wrapper>
+          <input
+            clrCheckbox
+            id="enabled"
+            name="enabled"
+            type="checkbox"
+            [(ngModel)]="model.enabled"
+          />
+        </clr-checkbox-wrapper>
+      </clr-checkbox-container>
+
+      <!-- auth mode -->
+      <clr-radio-container clrInline>
+        <label>{{ 'DISTRIBUTION.AUTH_MODE' | translate }}</label>
+        <clr-radio-wrapper>
+          <input
+            clrRadio
+            type="radio"
+            name="auth_mode"
+            id="none_mode"
+            value="NONE"
+            [(ngModel)]="model.auth_mode"
+            (change)="authModeChange()"
+            [ngModelOptions]="{ standalone: true }"
+          />
+          <label for="none_mode">NONE</label>
+        </clr-radio-wrapper>
+        <clr-radio-wrapper>
+          <input
+            clrRadio
+            type="radio"
+            name="auth_mode"
+            id="basic_mode"
+            value="BASIC"
+            [(ngModel)]="model.auth_mode"
+            (change)="authModeChange()"
+            [ngModelOptions]="{ standalone: true }"
+          />
+          <label for="basic_mode">Basic</label>
+        </clr-radio-wrapper>
+        <clr-radio-wrapper>
+          <input
+            clrRadio
+            type="radio"
+            name="auth_mode"
+            id="token_mode"
+            value="OAUTH"
+            [(ngModel)]="model.auth_mode"
+            (change)="authModeChange()"
+            [ngModelOptions]="{ standalone: true }"
+          />
+          <label for="token_mode">OAuth</label>
+        </clr-radio-wrapper>
+      </clr-radio-container>
+
+      <!-- auth data -->
+      <span *ngIf="model.auth_mode == 'BASIC'">
+        <clr-input-container>
+          <label class="required clr-control-label" for="auth_data_username">{{
+            'DISTRIBUTION.USERNAME' | translate
+          }}</label>
+          <input
+            clrInput
+            required
+            type="text"
+            id="auth_data_username"
+            [(ngModel)]="authData['username']"
+            placeholder="{{
+              'DISTRIBUTION.SETUP.USERNAME_PLACEHOLDER' | translate
+            }}"
+            name="auth_data_username"
+            autocomplete="off"
+          />
+          <clr-control-error>
+            {{ 'TOOLTIP.ITEM_REQUIRED' | translate }}
+          </clr-control-error>
+        </clr-input-container>
+        <clr-input-container>
+          <label class="required clr-control-label" for="auth_data_password">{{
+            'DISTRIBUTION.PASSWORD' | translate
+          }}</label>
+          <input
+            clrInput
+            required
+            type="password"
+            id="auth_data_password"
+            [(ngModel)]="authData['password']"
+            placeholder="{{
+              'DISTRIBUTION.SETUP.PASSWORD_PLACEHOLDER' | translate
+            }}"
+            name="auth_data_password"
+            autocomplete="off"
+          />
+          <clr-control-error>
+            {{ 'TOOLTIP.ITEM_REQUIRED' | translate }}
+          </clr-control-error>
+        </clr-input-container>
+      </span>
+      <span *ngIf="model.auth_mode == 'OAUTH'">
+        <clr-input-container>
+          <label class="required clr-control-label" for="auth_data_token">{{
+            'DISTRIBUTION.TOKEN' | translate
+          }}</label>
+          <input
+            clrInput
+            required
+            type="text"
+            id="auth_data_token"
+            [(ngModel)]="authData['token']"
+            placeholder="{{
+              'DISTRIBUTION.SETUP.TOKEN_PLACEHOLDER' | translate
+            }}"
+            name="auth_data_token"
+            autocomplete="off"
+          />
+          <clr-control-error>
+            {{ 'TOOLTIP.ITEM_REQUIRED' | translate }}
+          </clr-control-error>
+        </clr-input-container>
+      </span>
+      <span *ngIf="model.auth_mode == 'NONE'"></span>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancel()">
+      {{ 'BUTTON.CANCEL' | translate }}
+    </button>
+    <button
+      [clrLoading]="saveBtnState"
+      type="button"
+      class="btn btn-primary"
+      (click)="submit()"
+      [disabled]="!isValid || !hasChangesForEdit()"
+    >
+      {{ 'BUTTON.OK' | translate }}
+    </button>
+  </div>
+</clr-modal>

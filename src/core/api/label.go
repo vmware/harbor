@@ -24,6 +24,8 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/label"
 )
 
 // LabelAPI handles requests for label management
@@ -293,6 +295,12 @@ func (l *LabelAPI) Delete() {
 		l.SendInternalServerError(fmt.Errorf("failed to delete resource label mappings of label %d: %v", id, err))
 		return
 	}
+
+	if err := label.Mgr.RemoveFromAllArtifacts(orm.Context(), id); err != nil {
+		l.SendInternalServerError(fmt.Errorf("failed to remove the label %d from all artifacts: %v", id, err))
+		return
+	}
+
 	if err := dao.DeleteLabel(id); err != nil {
 		l.SendInternalServerError(fmt.Errorf("failed to delete label %d: %v", id, err))
 		return

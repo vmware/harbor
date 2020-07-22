@@ -11,6 +11,12 @@ except ImportError:
     pip.main(['install', 'docker'])
     import docker
 
+def docker_info_display():
+    command = ["docker", "info", "-f", "'{{.OSType}}/{{.Architecture}}'"]
+    print "Docker Info: ", command
+    ret = base.run_command(command)
+    print "Command return: ", ret
+
 def docker_login_cmd(harbor_host, user, password, enable_manifest = True):
     command = ["sudo", "docker", "login", harbor_host, "-u", user, "-p", password]
     print "Docker Login Command: ", command

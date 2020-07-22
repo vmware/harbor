@@ -1,9 +1,11 @@
 package retention
 
 import (
+	"context"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
 	"strings"
@@ -201,12 +203,16 @@ func (s *ControllerTestSuite) TestExecution() {
 type fakeRetentionScheduler struct {
 }
 
-func (f *fakeRetentionScheduler) Schedule(cron string, callbackFuncName string, params interface{}) (int64, error) {
+func (f *fakeRetentionScheduler) Schedule(ctx context.Context, cron string, callbackFuncName string, params interface{}) (int64, error) {
 	return 111, nil
 }
 
-func (f *fakeRetentionScheduler) UnSchedule(id int64) error {
+func (f *fakeRetentionScheduler) UnSchedule(ctx context.Context, id int64) error {
 	return nil
+}
+
+func (f *fakeRetentionScheduler) GetSchedule(ctx context.Context, id int64) (*scheduler.Schedule, error) {
+	return nil, nil
 }
 
 type fakeLauncher struct {

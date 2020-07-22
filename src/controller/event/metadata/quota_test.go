@@ -15,34 +15,66 @@
 package metadata
 
 import (
+	"testing"
+
 	event2 "github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type quotaEventTestSuite struct {
 	suite.Suite
 }
 
-func (r *quotaEventTestSuite) TestResolveOfDeleteRepositoryEventMetadata() {
+func (suite *quotaEventTestSuite) TestResolveOfDeleteRepositoryEventMetadata() {
 	e := &event.Event{}
 	metadata := &QuotaMetaData{
 		RepoName: "library/hello-world",
 		Tag:      "latest",
-		Digest:   "sha256:123absd",
+		Digest:   "sha256:469b2a896fbc1123f4894ac8023003f23588967aee5c2cbbce15d6b49dfe048e",
 		Level:    1,
 		Msg:      "quota exceed",
 	}
 	err := metadata.Resolve(e)
-	r.Require().Nil(err)
-	r.Equal(event2.TopicQuotaExceed, e.Topic)
-	r.Require().NotNil(e.Data)
+	suite.Nil(err)
+	suite.Equal(event2.TopicQuotaExceed, e.Topic)
+	suite.NotNil(e.Data)
 	data, ok := e.Data.(*event2.QuotaEvent)
-	r.Require().True(ok)
-	r.Equal("library/hello-world", data.Resource)
+	suite.True(ok)
+	suite.Equal("library/hello-world", data.RepoName)
+	suite.NotNil(data.Resource)
+	suite.Equal("latest", data.Resource.Tag)
+	suite.Equal("sha256:469b2a896fbc1123f4894ac8023003f23588967aee5c2cbbce15d6b49dfe048e", data.Resource.Digest)
+}
+
+func (suite *quotaEventTestSuite) TestNoResource() {
+	e := &event.Event{}
+	metadata := &QuotaMetaData{
+		RepoName: "library/hello-world",
+		Level:    2,
+		Msg:      "quota exceed",
+	}
+	err := metadata.Resolve(e)
+	suite.Nil(err)
+	suite.Equal(event2.TopicQuotaWarning, e.Topic)
+	suite.NotNil(e.Data)
+	data, ok := e.Data.(*event2.QuotaEvent)
+	suite.True(ok)
+	suite.Equal("library/hello-world", data.RepoName)
+	suite.Nil(data.Resource)
+}
+
+func (suite *quotaEventTestSuite) TestUnsupportedStatus() {
+	e := &event.Event{}
+	metadata := &QuotaMetaData{
+		RepoName: "library/hello-world",
+		Level:    3,
+		Msg:      "quota exceed",
+	}
+	err := metadata.Resolve(e)
+	suite.Error(err)
 }
 
 func TestQuotaEventTestSuite(t *testing.T) {
-	suite.Run(t, &repositoryEventTestSuite{})
+	suite.Run(t, &quotaEventTestSuite{})
 }

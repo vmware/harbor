@@ -25,3 +25,9 @@ comment:
   layout: "reach,diff,flags,tree"
   behavior: default
   require_changes: no
+
+ignore:
+  - "src/vendor"
+  - "src/testing"
+  - "src/github.com/goharbor/harbor/src/server/v2.0/restapi/**/*"
+  - "src/github.com/goharbor/harbor/src/server/v2.0/models"

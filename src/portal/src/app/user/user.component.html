@@ -11,7 +11,7 @@
         <div>
             <clr-datagrid (clrDgRefresh)="load($event)" [clrDgLoading]="inProgress"  [(clrDgSelected)]="selectedRow">
                 <clr-dg-action-bar>
-                    <button type="button" class="btn  btn-secondary" (click)="addNewUser()" [disabled]="!canCreateUser"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'USER.ADD_ACTION' | translate}}</button>
+                    <button type="button" class="btn  btn-secondary" id="add-new-user" (click)="addNewUser()" [disabled]="!canCreateUser"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'USER.ADD_ACTION' | translate}}</button>
                     <button type="button" class="btn  btn-secondary" id="set-admin" [disabled]="!ifSameRole" (click)="changeAdminRole()" ><clr-icon shape="wrench" size="16"></clr-icon>&nbsp;{{ISADMNISTRATOR  | translate}}</button>
                     <clr-dropdown  [clrCloseMenuOnItemClick]="false" class="btn  btn-link" clrDropdownTrigger>
                         <span id='member-action'>{{'BUTTON.ACTIONS' | translate}}<clr-icon shape="caret down"></clr-icon></span>

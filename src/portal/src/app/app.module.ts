@@ -46,6 +46,7 @@ import { ProjectQuotasComponent } from './project-quotas/project-quotas.componen
 import { HarborLibraryModule } from "../lib/harbor-library.module";
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AllPipesModule } from './all-pipes/all-pipes.module';
+import { DistributionModule } from './distribution/distribution.module';
 registerLocaleData(zh, 'zh-cn');
 registerLocaleData(es, 'es-es');
 registerLocaleData(localeFr, 'fr-fr');
@@ -85,7 +86,8 @@ export function getCurrentLanguage(translateService: TranslateService) {
         OidcOnboardModule,
         LicenseModule,
         HarborLibraryModule,
-        AllPipesModule
+        AllPipesModule,
+        DistributionModule,
     ],
     exports: [
     ],

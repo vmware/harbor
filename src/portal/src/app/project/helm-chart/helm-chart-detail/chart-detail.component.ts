@@ -13,6 +13,7 @@ export class HelmChartDetailComponent implements OnInit {
 
   projectId: number | string;
   project: Project;
+  projectName: string;
   chartName: string;
   chartVersion: string;
   currentUser: SessionUser;
@@ -36,6 +37,7 @@ export class HelmChartDetailComponent implements OnInit {
     if (resolverData) {
       this.project = <Project>(resolverData["projectResolver"]);
       this.roleName = this.project.role_name;
+      this.projectName = this.project.name;
       this.hasProjectAdminRole = this.project.has_project_admin_role;
     }
   }

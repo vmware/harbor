@@ -1,9 +1,10 @@
-import os, copy, subprocess
-
+import copy
+import os
+import subprocess
 from g import config_dir, templates_dir, DEFAULT_GID, DEFAULT_UID, data_dir
-from utils.misc import prepare_dir
+from urllib.parse import urlsplit
 from utils.jinja import render_jinja
-
+from utils.misc import prepare_dir
 
 registry_config_dir = os.path.join(config_dir, "registry")
 registry_config_template_path = os.path.join(templates_dir, "registry", "config.yml.jinja")
@@ -26,8 +27,11 @@ def prepare_registry(config_dict):
 
     gen_passwd_file(config_dict)
     storage_provider_info = get_storage_provider_info(
-    config_dict['storage_provider_name'],
-    config_dict['storage_provider_config'])
+        config_dict['storage_provider_name'],
+        config_dict['storage_provider_config'])
+
+    # process redis info
+    redis_ops = parse_redis(config_dict['redis_url_reg'])
 
     render_jinja(
         registry_config_template_path,
@@ -36,8 +40,26 @@ def prepare_registry(config_dict):
         gid=DEFAULT_GID,
         level=levels_map[config_dict['log_level']],
         storage_provider_info=storage_provider_info,
-        **config_dict)
+        **config_dict, **redis_ops)
 
+
+def parse_redis(redis_url):
+    u = urlsplit(redis_url)
+    if not u.scheme or u.scheme == 'redis':
+        return {
+            'redis_host': u.netloc.split('@')[-1],
+            'redis_password': u.password or '',
+            'redis_db_index_reg': u.path and int(u.path[1:]) or 0,
+        }
+    elif u.scheme == 'redis+sentinel':
+        return {
+            'sentinel_master_set': u.path.split('/')[1],
+            'redis_host': u.netloc.split('@')[-1],
+            'redis_password': u.password or '',
+            'redis_db_index_reg': len(u.path.split('/')) == 3 and int(u.path.split('/')[2]) or 0,
+        }
+    else:
+        raise Exception('bad redis url for registry:' + redis_url)
 
 def get_storage_provider_info(provider_name, provider_config):
     provider_config_copy = copy.deepcopy(provider_config)

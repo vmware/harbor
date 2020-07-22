@@ -2,6 +2,7 @@ package immutable
 
 import (
 	"fmt"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 
 	common_util "github.com/goharbor/harbor/src/common/utils"
@@ -10,7 +11,6 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	errors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	serror "github.com/goharbor/harbor/src/server/error"
 )
 
 // Middleware ...
@@ -21,11 +21,11 @@ func Middleware() func(http.Handler) http.Handler {
 				var e *ErrImmutable
 				if errors.As(err, &e) {
 					pkgE := errors.New(e).WithCode(errors.PreconditionCode)
-					serror.SendError(rw, pkgE)
+					lib_http.SendError(rw, pkgE)
 					return
 				}
 				pkgE := errors.New(fmt.Errorf("error occurred when to handle request in immutable handler: %v", err)).WithCode(errors.GeneralCode)
-				serror.SendError(rw, pkgE)
+				lib_http.SendError(rw, pkgE)
 				return
 			}
 			next.ServeHTTP(rw, req)
@@ -40,7 +40,7 @@ func handlePush(req *http.Request) error {
 	none := lib.ArtifactInfo{}
 	art := lib.GetArtifactInfo(req.Context())
 	if art == none {
-		return errors.New("cannot get the manifest information from request context")
+		return errors.New("cannot get the manifest information from request context").WithCode(errors.NotFoundCode)
 	}
 
 	af, err := artifact.Ctl.GetByReference(req.Context(), art.Repository, art.Tag, &artifact.Option{

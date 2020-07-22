@@ -11,11 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-export const supportedLangs = ['en-us', 'zh-cn', 'es-es', 'fr-fr', 'pt-br', 'tr-tr'];
+export const supportedLangs = ['en-us', 'zh-cn', 'zh-tw', 'es-es', 'fr-fr', 'pt-br', 'tr-tr'];
 export const enLang = "en-us";
 export const languageNames = {
   "en-us": "English",
   "zh-cn": "中文简体",
+  "zh-tw": "中文繁體",
   "es-es": "Español",
   "fr-fr": "Français",
   "pt-br": "Português do Brasil",
@@ -42,7 +43,8 @@ export const enum ConfirmationTargets {
   HELM_CHART,
   HELM_CHART_VERSION,
   WEBHOOK,
-  SCANNER
+  SCANNER,
+  INSTANCE
 }
 
 export const enum ActionType {
@@ -65,13 +67,13 @@ export const RoleInfo = {
   1: "MEMBER.PROJECT_ADMIN",
   2: "MEMBER.DEVELOPER",
   3: "MEMBER.GUEST",
-  4: "MEMBER.PROJECT_MASTER",
+  4: "MEMBER.PROJECT_MAINTAINER",
   5: "MEMBER.LIMITED_GUEST",
 };
 
 export const RoleMapping = {
   "projectAdmin": "MEMBER.PROJECT_ADMIN",
-  "master": "MEMBER.PROJECT_MASTER",
+  "maintainer": "MEMBER.PROJECT_MAINTAINER",
   "developer": "MEMBER.DEVELOPER",
   "guest": "MEMBER.GUEST",
   "limitedGuest": "MEMBER.LIMITED_GUEST",
@@ -81,13 +83,13 @@ export const ProjectRoles = [
   { id: 1, value: "MEMBER.PROJECT_ADMIN" },
   { id: 2, value: "MEMBER.DEVELOPER" },
   { id: 3, value: "MEMBER.GUEST" },
-  { id: 4, value: "MEMBER.PROJECT_MASTER" },
+  { id: 4, value: "MEMBER.PROJECT_MAINTAINER" },
   { id: 5, value: "MEMBER.LIMITED_GUEST" },
 ];
 
 export enum Roles {
   PROJECT_ADMIN = 1,
-  PROJECT_MASTER = 4,
+  PROJECT_MAINTAINER = 4,
   DEVELOPER = 2,
   GUEST = 3,
   LIMITED_GUEST = 5,

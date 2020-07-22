@@ -2,7 +2,8 @@ import os
 import sys
 import click
 import pathlib
-from subprocess import check_call, PIPE, STDOUT
+import logging
+from subprocess import Popen, PIPE, STDOUT, CalledProcessError
 
 from utils.cert import openssl_installed
 from utils.misc import get_realpath
@@ -25,8 +26,8 @@ def gencert(path, days):
     if not os.path.exists(path):
         click.echo('path {} not exist, create it...'.format(path))
         os.makedirs(path, exist_ok=True)
-
-    shell_stat = check_call([gen_tls_script, days], stdout=PIPE, stderr=STDOUT, cwd=path)
-    if shell_stat != 0:
-        click.echo('Can not generate internal tls certs')
-        sys.exit(-1)
+    with Popen([gen_tls_script, days], stdout=PIPE, stderr=STDOUT, cwd=path) as p:
+        for line in p.stdout:
+            click.echo(line, nl=False)
+    if p.returncode != 0:
+        raise CalledProcessError(p.returncode, p.args)

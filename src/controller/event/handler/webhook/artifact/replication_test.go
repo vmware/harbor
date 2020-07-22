@@ -1,19 +1,22 @@
 package artifact
 
 import (
+	"context"
+	"testing"
+	"time"
+
+	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/promgr/metamgr"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/replication"
 	daoModels "github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"testing"
-	"time"
 )
 
 type fakedNotificationPolicyMgr struct {
@@ -28,7 +31,7 @@ type fakedReplicationMgr struct {
 type fakedReplicationRegistryMgr struct {
 }
 
-type fakedProjectMgr struct {
+type fakedProjectCtl struct {
 }
 
 func (f *fakedNotificationPolicyMgr) Create(*models.NotificationPolicy) (int64, error) {
@@ -92,7 +95,15 @@ func (f *fakedReplicationMgr) GetExecution(int64) (*daoModels.Execution, error) 
 func (f *fakedReplicationMgr) ListTasks(...*daoModels.TaskQuery) (int64, []*daoModels.Task, error) {
 	return 0, nil, nil
 }
-func (f *fakedReplicationMgr) GetTask(int64) (*daoModels.Task, error) {
+func (f *fakedReplicationMgr) GetTask(id int64) (*daoModels.Task, error) {
+	if id == 1 {
+		return &daoModels.Task{
+			ExecutionID: 1,
+			// project info not included when replicating with docker registry
+			SrcResource: "alpine:[v1]",
+			DstResource: "gxt/alpine:[v1] ",
+		}, nil
+	}
 	return &daoModels.Task{
 		ExecutionID: 1,
 		SrcResource: "library/alpine:[v1]",
@@ -150,7 +161,7 @@ func (f *fakedReplicationRegistryMgr) Add(*model.Registry) (int64, error) {
 }
 
 // List registries, returns total count, registry list and error
-func (f *fakedReplicationRegistryMgr) List(...*model.RegistryQuery) (int64, []*model.Registry, error) {
+func (f *fakedReplicationRegistryMgr) List(query *q.Query) (int64, []*model.Registry, error) {
 	return 0, nil, nil
 }
 
@@ -185,63 +196,38 @@ func (f *fakedReplicationRegistryMgr) HealthCheck() error {
 	return nil
 }
 
-func (f *fakedProjectMgr) Get(projectIDOrName interface{}) (*models.Project, error) {
+func (f *fakedProjectCtl) Get(ctx context.Context, projectID int64, options ...project.Option) (*models.Project, error) {
 	return &models.Project{ProjectID: 1}, nil
 }
-func (f *fakedProjectMgr) Create(*models.Project) (int64, error) {
-	return 0, nil
+func (f *fakedProjectCtl) GetByName(ctx context.Context, projectName string, options ...project.Option) (*models.Project, error) {
+	return &models.Project{ProjectID: 1}, nil
 }
-func (f *fakedProjectMgr) Delete(projectIDOrName interface{}) error {
-	return nil
-}
-func (f *fakedProjectMgr) Update(projectIDOrName interface{}, project *models.Project) error {
-	return nil
-}
-func (f *fakedProjectMgr) List(query *models.ProjectQueryParam) (*models.ProjectQueryResult, error) {
+func (f *fakedProjectCtl) List(ctx context.Context, query *models.ProjectQueryParam, options ...project.Option) ([]*models.Project, error) {
 	return nil, nil
-}
-func (f *fakedProjectMgr) IsPublic(projectIDOrName interface{}) (bool, error) {
-	return true, nil
-}
-func (f *fakedProjectMgr) Exists(projectIDOrName interface{}) (bool, error) {
-	return false, nil
-}
-
-// get all public project
-func (f *fakedProjectMgr) GetPublic() ([]*models.Project, error) {
-	return nil, nil
-}
-
-func (f *fakedProjectMgr) GetAuthorized(user *models.User) ([]*models.Project, error) {
-	return nil, nil
-}
-
-// if the project manager uses a metadata manager, return it, otherwise return nil
-func (f *fakedProjectMgr) GetMetadataManager() metamgr.ProjectMetadataManager {
-	return nil
 }
 
 func TestReplicationHandler_Handle(t *testing.T) {
+	common_dao.PrepareTestForPostgresSQL()
 	config.Init()
 
 	PolicyMgr := notification.PolicyMgr
 	execution := replication.OperationCtl
 	rpPolicy := replication.PolicyCtl
 	rpRegistry := replication.RegistryMgr
-	project := config.GlobalProjectMgr
+	prj := project.Ctl
 
 	defer func() {
 		notification.PolicyMgr = PolicyMgr
 		replication.OperationCtl = execution
 		replication.PolicyCtl = rpPolicy
 		replication.RegistryMgr = rpRegistry
-		config.GlobalProjectMgr = project
+		project.Ctl = prj
 	}()
 	notification.PolicyMgr = &fakedNotificationPolicyMgr{}
 	replication.OperationCtl = &fakedReplicationMgr{}
 	replication.PolicyCtl = &fakedReplicationPolicyMgr{}
 	replication.RegistryMgr = &fakedReplicationRegistryMgr{}
-	config.GlobalProjectMgr = &fakedProjectMgr{}
+	project.Ctl = &fakedProjectCtl{}
 
 	handler := &ReplicationHandler{}
 
@@ -254,17 +240,27 @@ func TestReplicationHandler_Handle(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "ImagePreprocessHandler Want Error 1",
+			name: "ReplicationHandler Want Error 1",
 			args: args{
 				data: "",
 			},
 			wantErr: true,
 		},
 		{
-			name: "ImagePreprocessHandler 1",
+			name: "ReplicationHandler 1",
 			args: args{
 				data: &event.ReplicationEvent{
 					OccurAt: time.Now(),
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "ReplicationHandler with docker registry",
+			args: args{
+				data: &event.ReplicationEvent{
+					OccurAt:           time.Now(),
+					ReplicationTaskID: 1,
 				},
 			},
 			wantErr: false,

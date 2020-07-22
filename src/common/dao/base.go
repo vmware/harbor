@@ -29,8 +29,6 @@ import (
 const (
 	// NonExistUserID : if a user does not exist, the ID of the user will be 0.
 	NonExistUserID = 0
-	// ClairDBAlias ...
-	ClairDBAlias = "clair-db"
 )
 
 // ErrDupRows is returned by DAO when inserting failed with error "duplicate key value violates unique constraint"
@@ -46,23 +44,6 @@ type Database interface {
 	Register(alias ...string) error
 	// UpgradeSchema upgrades the DB schema to the latest version
 	UpgradeSchema() error
-}
-
-// InitClairDB ...
-func InitClairDB(clairDB *models.PostGreSQL) error {
-	p := &pgsql{
-		host:     clairDB.Host,
-		port:     strconv.Itoa(clairDB.Port),
-		usr:      clairDB.Username,
-		pwd:      clairDB.Password,
-		database: clairDB.Database,
-		sslmode:  clairDB.SSLMode,
-	}
-	if err := p.Register(ClairDBAlias); err != nil {
-		return err
-	}
-	log.Info("initialized clair database")
-	return nil
 }
 
 // UpgradeSchema will call the internal migrator to upgrade schema based on the setting of database.

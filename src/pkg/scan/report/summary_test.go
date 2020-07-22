@@ -111,7 +111,7 @@ func (suite *SummaryTestSuite) TestSummaryGenerateSummaryWithOptions() {
 	cveSet := make(CVESet)
 	cveSet["2019-0980-0909"] = struct{}{}
 
-	summaries, err := GenerateSummary(suite.r, WithCVEWhitelist(&cveSet))
+	summaries, err := GenerateSummary(suite.r, WithCVEAllowlist(&cveSet))
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), summaries)
 

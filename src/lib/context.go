@@ -14,7 +14,9 @@
 
 package lib
 
-import "context"
+import (
+	"context"
+)
 
 type contextKey string
 

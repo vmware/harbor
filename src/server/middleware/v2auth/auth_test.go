@@ -92,6 +92,7 @@ func TestMain(m *testing.M) {
 	}
 	conf := map[string]interface{}{
 		common.ExtEndpoint: "https://harbor.test",
+		common.CoreURL:     "https://harbor.core:8443",
 	}
 	config.InitWithSettings(conf)
 	if rc := m.Run(); rc != 0 {
@@ -238,12 +239,14 @@ func TestGetChallenge(t *testing.T) {
 	}))
 	req3x := req3.Clone(req3.Context())
 	req3x.SetBasicAuth("", "")
+	req3x.Host = "harbor.test"
 	req4, _ := http.NewRequest(http.MethodGet, "https://registry.test/v2/project_1/hello-world/manifests/v1", nil)
 	req4 = req4.WithContext(lib.WithArtifactInfo(context.Background(), lib.ArtifactInfo{
 		Repository:  "project_1/hello-world",
 		Reference:   "v1",
 		ProjectName: "project_1",
 	}))
+	req4.Host = "harbor.core:8443"
 
 	cases := []struct {
 		request   *http.Request
@@ -275,7 +278,7 @@ func TestGetChallenge(t *testing.T) {
 		},
 		{
 			request:   req4,
-			challenge: `Bearer realm="https://harbor.test/service/token",service="harbor-registry",scope="repository:project_1/hello-world:pull"`,
+			challenge: `Bearer realm="https://harbor.core:8443/service/token",service="harbor-registry",scope="repository:project_1/hello-world:pull"`,
 		},
 	}
 	for _, c := range cases {

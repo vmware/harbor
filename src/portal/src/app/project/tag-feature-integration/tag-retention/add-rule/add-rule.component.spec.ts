@@ -11,10 +11,12 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TagRetentionService } from "../tag-retention.service";
 import { InlineAlertComponent } from "../../../../shared/inline-alert/inline-alert.component";
 import { delay } from 'rxjs/operators';
+import { ErrorHandler } from '../../../../../lib/utils/error-handler';
 describe('AddRuleComponent', () => {
     let component: AddRuleComponent;
     let fixture: ComponentFixture<AddRuleComponent>;
     const mockTagRetentionService = { };
+
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             schemas: [
@@ -32,6 +34,7 @@ describe('AddRuleComponent', () => {
             declarations: [AddRuleComponent, InlineAlertComponent],
             providers: [
                 TranslateService,
+                ErrorHandler,
                 { provide: TagRetentionService, useValue: mockTagRetentionService },
             ]
         })

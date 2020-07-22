@@ -15,7 +15,7 @@ import (
 	"github.com/goharbor/harbor/src/replication"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
-	helm_repo "k8s.io/helm/pkg/repo"
+	helm_repo "helm.sh/helm/v3/pkg/repo"
 )
 
 // ListCharts gets the chart list under the namespace

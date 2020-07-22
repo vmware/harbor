@@ -56,6 +56,10 @@
                             <clr-icon shape="cloud-traffic" clrVerticalNavIcon></clr-icon>
                             {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}
                         </a>
+                        <a clrVerticalNavLink routerLink="/harbor/distribution/instances" routerLinkActive="active">
+                            <clr-icon shape="share"></clr-icon>
+                            {{'SIDE_NAV.DISTRIBUTIONS.NAME' | translate}}
+                        </a>
                         <a *ngIf="!withAdmiral" clrVerticalNavLink routerLink="/harbor/labels"
                             routerLinkActive="active">
                             <clr-icon shape="tag" clrVerticalNavIcon></clr-icon>
@@ -80,37 +84,22 @@
                     </clr-vertical-nav-group-children>
                 </clr-vertical-nav-group>
             </div>
-            <div>
-            <div class="vertical-nav-footer">
+            <div class="mb-1">
                 <ng-container *ngFor="let theme of themeArray;let i=index">
                     <ng-container *ngIf="theme.showStyle === styleMode">
-                        <a class="nav-link nav-icon theme-select"
-                           (click)="themeChanged(theme)">
-                            <clr-icon size="20" *ngIf="styleMode ==='DARK'" shape="sun" class="is-solid"></clr-icon>
-                            <clr-icon size="20" *ngIf="styleMode ==='LIGHT'" shape="moon" class="is-solid"></clr-icon>
+                        <a clrVerticalNavLink (click)="themeChanged(theme)">
+                            <clr-icon clrVerticalNavIcon size="20" *ngIf="styleMode ==='DARK'" shape="sun"
+                                      class="is-solid"></clr-icon>
+                            <clr-icon clrVerticalNavIcon size="20" *ngIf="styleMode ==='LIGHT'" shape="moon"
+                                      class="is-solid"></clr-icon>
                             {{ theme.text | translate }}
                         </a>
                     </ng-container>
                 </ng-container>
-            </div>
-
-            <clr-vertical-nav-group routerLinkActive="active">
-                <clr-icon shape="network-globe" clrVerticalNavIcon></clr-icon>
-                {{'SIDE_NAV.API_EXPLORER' | translate}}
-                <a routerLink="#" hidden aria-hidden="true"></a>
-                <clr-vertical-nav-group-children *clrIfExpanded="true">
-                    <a class="font-size-13" clrVerticalNavLink target="_blank" routerLink="/devcenter-api-2.0"
-                        routerLinkActive="active">
-                        <clr-icon shape="network-globe" clrVerticalNavIcon></clr-icon>
-                        {{'SIDE_NAV.HARBOR_API_MANAGEMENT' | translate}}
-                    </a>
-                    <a class="font-size-13" clrVerticalNavLink target="_blank" routerLink="/devcenter-api"
-                    routerLinkActive="active">
-                        <clr-icon shape="network-globe" clrVerticalNavIcon></clr-icon>
-                        {{'SIDE_NAV.HELM_API_MANAGEMENT' | translate}}
-                    </a>
-                </clr-vertical-nav-group-children>
-            </clr-vertical-nav-group>
+                <a clrVerticalNavLink routerLinkActive="active" target="_blank" routerLink="/devcenter-api-2.0">
+                    <clr-icon shape="network-globe" clrVerticalNavIcon></clr-icon>
+                    {{'SIDE_NAV.HARBOR_API_MANAGEMENT' | translate}}
+                </a>
             </div>
         </clr-vertical-nav>
         <hbr-operation-model *ngIf="isUserExisting"></hbr-operation-model>

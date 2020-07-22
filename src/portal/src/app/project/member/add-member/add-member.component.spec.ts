@@ -12,6 +12,7 @@ import { UserService } from '../../../user/user.service';
 import { of } from 'rxjs';
 import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
 import { ActivatedRoute } from '@angular/router';
+import { ErrorHandler } from '../../../../lib/utils/error-handler';
 
 describe('AddMemberComponent', () => {
     let component: AddMemberComponent;
@@ -54,6 +55,7 @@ describe('AddMemberComponent', () => {
                 { provide: MemberService, useValue: mockMemberService },
                 { provide: UserService, useValue: mockUserService },
                 { provide: MessageHandlerService, useValue: mockMessageHandlerService },
+                ErrorHandler,
                 {
                     provide: ActivatedRoute, useValue: {
                         RouterparamMap: of({ get: (key) => 'value' }),

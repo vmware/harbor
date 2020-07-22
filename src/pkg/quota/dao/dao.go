@@ -19,12 +19,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg/quota/driver"
 	"github.com/goharbor/harbor/src/pkg/quota/models"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
 // DAO the dao for Quota and QuotaUsage
@@ -260,21 +258,6 @@ FROM
 	var quotas []*models.Quota
 	if _, err := o.Raw(sql, params).QueryRows(&quotas); err != nil {
 		return nil, err
-	}
-
-	for _, quota := range quotas {
-		d, ok := driver.Get(quota.Reference)
-		if !ok {
-			continue
-		}
-
-		ref, err := d.Load(ctx, quota.ReferenceID)
-		if err != nil {
-			log.Warning(fmt.Sprintf("Load quota reference object (%s, %s) failed: %v", quota.Reference, quota.ReferenceID, err))
-			continue
-		}
-
-		quota.Ref = ref
 	}
 
 	return quotas, nil

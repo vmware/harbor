@@ -98,7 +98,9 @@ export class Configuration {
     oidc_client_id?: StringValueItem;
     oidc_client_secret?: StringValueItem;
     oidc_verify_cert?: BoolValueItem;
+    oidc_auto_onboard?: BoolValueItem;
     oidc_scope?: StringValueItem;
+    oidc_user_claim?: StringValueItem;
     count_per_project: NumberValueItem;
     storage_per_project: NumberValueItem;
     cfg_expiration: NumberValueItem;
@@ -155,8 +157,10 @@ export class Configuration {
         this.oidc_client_id = new StringValueItem('', true);
         this.oidc_client_secret = new StringValueItem('', true);
         this.oidc_verify_cert = new BoolValueItem(false, true);
+        this.oidc_auto_onboard = new BoolValueItem(false, true);
         this.oidc_scope = new StringValueItem('', true);
         this.oidc_groups_claim = new StringValueItem('', true);
+        this.oidc_user_claim = new StringValueItem('', true);
         this.count_per_project = new NumberValueItem(-1, true);
         this.storage_per_project = new NumberValueItem(-1, true);
     }

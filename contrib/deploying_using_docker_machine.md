@@ -16,7 +16,7 @@ You can get this IP address using:
 $ docker-machine ip harbor.mydomain.com
 ```
 
-Make sure to change the `hostname` in `Deploy/harbor.yml` to `harbor.mydomain.com`, configure everything else according to the [Harbor Installation Guide](../docs/installation_guide.md) and run `prepare`.
+Copy `Deploy/harbor.yml.tmp` to `Deploy/harbor.yml` and make sure to change the `hostname` in `Deploy/harbor.yml` to `harbor.mydomain.com`, configure everything else according to the [Harbor Installation Guide](../docs/installation_guide.md) and run `prepare`.
 
 Now, activate the created Docker Machine instance:
 

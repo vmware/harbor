@@ -15,17 +15,43 @@
 package api
 
 import (
+	"github.com/docker/distribution/registry/storage/driver"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-func TestHandleInternalServerError(t *testing.T) {
+func TestHandleError(t *testing.T) {
 	w := httptest.NewRecorder()
-	handleInternalServerError(w)
+	HandleInternalServerError(w, errors.New("internal"))
 
 	if w.Code != http.StatusInternalServerError {
 		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusInternalServerError)
+	}
+
+	w = httptest.NewRecorder()
+	HandleBadRequest(w, errors.New("BadRequest"))
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusBadRequest)
+	}
+
+	w = httptest.NewRecorder()
+	HandleNotMethodAllowed(w)
+	if w.Code != http.StatusMethodNotAllowed {
+		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusMethodNotAllowed)
+	}
+
+	w = httptest.NewRecorder()
+	HandleError(w, errors.New("handle error"))
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusInternalServerError)
+	}
+
+	w = httptest.NewRecorder()
+	HandleError(w, driver.PathNotFoundError{Path: "/blobstore/nonexist"})
+	if w.Code != http.StatusNotFound {
+		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusNotFound)
 	}
 
 }

@@ -113,9 +113,15 @@ var (
 
 			{Resource: ResourceArtifactLabel, Action: ActionCreate},
 			{Resource: ResourceArtifactLabel, Action: ActionDelete},
+
+			{Resource: ResourcePreatPolicy, Action: ActionCreate},
+			{Resource: ResourcePreatPolicy, Action: ActionRead},
+			{Resource: ResourcePreatPolicy, Action: ActionUpdate},
+			{Resource: ResourcePreatPolicy, Action: ActionDelete},
+			{Resource: ResourcePreatPolicy, Action: ActionList},
 		},
 
-		"master": {
+		"maintainer": {
 			{Resource: ResourceSelf, Action: ActionRead},
 
 			{Resource: ResourceMember, Action: ActionRead},
@@ -326,8 +332,8 @@ func (role *projectRBACRole) GetRoleName() string {
 	switch role.roleID {
 	case common.RoleProjectAdmin:
 		return "projectAdmin"
-	case common.RoleMaster:
-		return "master"
+	case common.RoleMaintainer:
+		return "maintainer"
 	case common.RoleDeveloper:
 		return "developer"
 	case common.RoleGuest:

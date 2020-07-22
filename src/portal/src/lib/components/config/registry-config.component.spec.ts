@@ -19,7 +19,7 @@ import {
   ScanningResultDefaultService,
   SystemInfoService,
   SystemInfoDefaultService,
-  SystemInfo, SystemCVEWhitelist
+  SystemInfo, SystemCVEAllowlist
 } from '../../services';
 import { Configuration } from './config';
 import { of } from 'rxjs';
@@ -57,7 +57,7 @@ describe('RegistryConfigComponent (inline template)', () => {
     "harbor_version": "v1.1.1-rc1-160-g565110d",
     "next_scan_all": 0
   };
-  let mockSystemWhitelist: SystemCVEWhitelist = {
+  let mockSystemAllowlist: SystemCVEAllowlist = {
     "expires_at": 1561996800,
     "id": 1,
     "items": [],
@@ -96,7 +96,7 @@ describe('RegistryConfigComponent (inline template)', () => {
     systemInfoService = fixture.debugElement.injector.get(SystemInfoService);
     spy = spyOn(cfgService, 'getConfigurations').and.returnValue(of(mockConfig));
     spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValue(of(mockSystemInfo));
-    spySystemInfo = spyOn(systemInfoService, 'getSystemWhitelist').and.returnValue(of(mockSystemWhitelist));
+    spySystemInfo = spyOn(systemInfoService, 'getSystemAllowlist').and.returnValue(of(mockSystemAllowlist));
     fixture.detectChanges();
   });
 

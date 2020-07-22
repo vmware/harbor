@@ -127,7 +127,7 @@ func (suite *MiddlewareTestSuite) TestNoArtifactInfo() {
 	rr := httptest.NewRecorder()
 
 	Middleware()(suite.next).ServeHTTP(rr, req)
-	suite.Equal(rr.Code, http.StatusInternalServerError)
+	suite.Equal(rr.Code, http.StatusNotFound)
 }
 
 func (suite *MiddlewareTestSuite) TestGetArtifactFailed() {

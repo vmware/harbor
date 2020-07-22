@@ -90,14 +90,12 @@
       </div>
     </section>
   </form>
-  <div class="mt-1" *ngIf="!isModify">
-      <button type="button" id="webhook-test-add" [clrLoading]="checkBtnState" class="btn btn-outline" (click)="onTestEndpoint()" [disabled]="checking || enpointURL.errors">{{'WEBHOOK.TEST_ENDPOINT_BUTTON' | translate}}</button>
+  <div class="mt-1 bottom-btn" *ngIf="!isModify">
       <button type="button" class="btn btn-outline" id="add-webhook-cancel" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
       <button type="button" id="new-webhook-continue" class="btn btn-primary" [disabled]="!isValid" (click)="add()">{{'BUTTON.ADD' | translate}}</button>
   </div>
   <div class="mt-1 bottom-btn" *ngIf="isModify">
-      <button type="button" [clrLoading]="checkBtnState" class="btn btn-outline" id="webhook-test" (click)="onTestEndpoint()" [disabled]="checking || enpointURL.errors">{{'WEBHOOK.TEST_ENDPOINT_BUTTON' | translate}}</button>
       <button type="button" class="btn btn-outline" id="edit-webhook-cancel" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
-      <button type="button" class="btn btn-primary" id="edit-webhook-save" [disabled]="!isValid" (click)="save()">{{'BUTTON.SAVE' | translate}}</button>
+      <button type="button" class="btn btn-primary" id="edit-webhook-save" [disabled]="!isValid || !hasChange()" (click)="save()">{{'BUTTON.SAVE' | translate}}</button>
   </div>
 </div>

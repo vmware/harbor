@@ -1,0 +1,901 @@
+diff --git a/configuration/configuration.go b/configuration/configuration.go
+index b347d63b..04cdd230 100644
+--- a/configuration/configuration.go
++++ b/configuration/configuration.go
+@@ -162,6 +162,9 @@ type Configuration struct {
+ 		// Addr specifies the the redis instance available to the application.
+ 		Addr string `yaml:"addr,omitempty"`
+ 
++		// SentinelMasterSet specifies the the redis sentinel master set name.
++		SentinelMasterSet string `yaml:"sentinelMasterSet,omitempty"`
++
+ 		// Password string to use when making a connection.
+ 		Password string `yaml:"password,omitempty"`
+ 
+diff --git a/registry/handlers/app.go b/registry/handlers/app.go
+index 978851bb..a8379071 100644
+--- a/registry/handlers/app.go
++++ b/registry/handlers/app.go
+@@ -3,6 +3,7 @@ package handlers
+ import (
+ 	"context"
+ 	cryptorand "crypto/rand"
++	"errors"
+ 	"expvar"
+ 	"fmt"
+ 	"math/rand"
+@@ -15,6 +16,8 @@ import (
+ 	"strings"
+ 	"time"
+ 
++	"github.com/FZambia/sentinel"
++
+ 	"github.com/docker/distribution"
+ 	"github.com/docker/distribution/configuration"
+ 	dcontext "github.com/docker/distribution/context"
+@@ -24,7 +27,7 @@ import (
+ 	"github.com/docker/distribution/notifications"
+ 	"github.com/docker/distribution/reference"
+ 	"github.com/docker/distribution/registry/api/errcode"
+-	"github.com/docker/distribution/registry/api/v2"
++	v2 "github.com/docker/distribution/registry/api/v2"
+ 	"github.com/docker/distribution/registry/auth"
+ 	registrymiddleware "github.com/docker/distribution/registry/middleware/registry"
+ 	repositorymiddleware "github.com/docker/distribution/registry/middleware/repository"
+@@ -498,6 +501,44 @@ func (app *App) configureRedis(configuration *configuration.Configuration) {
+ 		return
+ 	}
+ 
++	var getRedisAddr func() (string, error)
++	var testOnBorrow func(c redis.Conn, t time.Time) error
++	if configuration.Redis.SentinelMasterSet != "" {
++		sntnl := &sentinel.Sentinel{
++			Addrs:      strings.Split(configuration.Redis.Addr, ","),
++			MasterName: configuration.Redis.SentinelMasterSet,
++			Dial: func(addr string) (redis.Conn, error) {
++				c, err := redis.DialTimeout("tcp", addr,
++					configuration.Redis.DialTimeout,
++					configuration.Redis.ReadTimeout,
++					configuration.Redis.WriteTimeout)
++				if err != nil {
++					return nil, err
++				}
++				return c, nil
++			},
++		}
++		getRedisAddr = func() (string, error) {
++			return sntnl.MasterAddr()
++		}
++		testOnBorrow = func(c redis.Conn, t time.Time) error {
++			if !sentinel.TestRole(c, "master") {
++				return errors.New("role check failed")
++			}
++			return nil
++		}
++
++	} else {
++		getRedisAddr = func() (string, error) {
++			return configuration.Redis.Addr, nil
++		}
++		testOnBorrow = func(c redis.Conn, t time.Time) error {
++			// TODO(stevvooe): We can probably do something more interesting
++			// here with the health package.
++			_, err := c.Do("PING")
++			return err
++		}
++	}
+ 	pool := &redis.Pool{
+ 		Dial: func() (redis.Conn, error) {
+ 			// TODO(stevvooe): Yet another use case for contextual timing.
+@@ -513,8 +554,11 @@ func (app *App) configureRedis(configuration *configuration.Configuration) {
+ 				}
+ 			}
+ 
+-			conn, err := redis.DialTimeout("tcp",
+-				configuration.Redis.Addr,
++			redisAddr, err := getRedisAddr()
++			if err != nil {
++				return nil, err
++			}
++			conn, err := redis.DialTimeout("tcp", redisAddr,
+ 				configuration.Redis.DialTimeout,
+ 				configuration.Redis.ReadTimeout,
+ 				configuration.Redis.WriteTimeout)
+@@ -546,16 +590,11 @@ func (app *App) configureRedis(configuration *configuration.Configuration) {
+ 			done(nil)
+ 			return conn, nil
+ 		},
+-		MaxIdle:     configuration.Redis.Pool.MaxIdle,
+-		MaxActive:   configuration.Redis.Pool.MaxActive,
+-		IdleTimeout: configuration.Redis.Pool.IdleTimeout,
+-		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+-			// TODO(stevvooe): We can probably do something more interesting
+-			// here with the health package.
+-			_, err := c.Do("PING")
+-			return err
+-		},
+-		Wait: false, // if a connection is not available, proceed without cache.
++		MaxIdle:      configuration.Redis.Pool.MaxIdle,
++		MaxActive:    configuration.Redis.Pool.MaxActive,
++		IdleTimeout:  configuration.Redis.Pool.IdleTimeout,
++		TestOnBorrow: testOnBorrow,
++		Wait:         false, // if a connection is not available, proceed without cache.
+ 	}
+ 
+ 	app.redis = pool
+diff --git a/registry/handlers/app_test.go b/registry/handlers/app_test.go
+index 12c0b61c..8a644d83 100644
+--- a/registry/handlers/app_test.go
++++ b/registry/handlers/app_test.go
+@@ -11,7 +11,7 @@ import (
+ 	"github.com/docker/distribution/configuration"
+ 	"github.com/docker/distribution/context"
+ 	"github.com/docker/distribution/registry/api/errcode"
+-	"github.com/docker/distribution/registry/api/v2"
++	v2 "github.com/docker/distribution/registry/api/v2"
+ 	"github.com/docker/distribution/registry/auth"
+ 	_ "github.com/docker/distribution/registry/auth/silly"
+ 	"github.com/docker/distribution/registry/storage"
+@@ -140,7 +140,29 @@ func TestAppDispatcher(t *testing.T) {
+ // TestNewApp covers the creation of an application via NewApp with a
+ // configuration.
+ func TestNewApp(t *testing.T) {
+-	ctx := context.Background()
++
++	config := configuration.Configuration{
++		Storage: configuration.Storage{
++			"testdriver": nil,
++			"maintenance": configuration.Parameters{"uploadpurging": map[interface{}]interface{}{
++				"enabled": false,
++			}},
++		},
++		Auth: configuration.Auth{
++			// For now, we simply test that new auth results in a viable
++			// application.
++			"silly": {
++				"realm":   "realm-test",
++				"service": "service-test",
++			},
++		},
++	}
++	runAppWithConfig(t, config)
++}
++
++// TestNewApp covers the creation of an application via NewApp with a
++// configuration(with redis).
++func TestNewAppWithRedis(t *testing.T) {
+ 	config := configuration.Configuration{
+ 		Storage: configuration.Storage{
+ 			"testdriver": nil,
+@@ -157,7 +179,38 @@ func TestNewApp(t *testing.T) {
+ 			},
+ 		},
+ 	}
++	config.Redis.Addr = "127.0.0.1:6379"
++	config.Redis.DB = 0
++	runAppWithConfig(t, config)
++}
+ 
++// TestNewApp covers the creation of an application via NewApp with a
++// configuration(with redis sentinel cluster).
++func TestNewAppWithRedisSentinelCluster(t *testing.T) {
++	config := configuration.Configuration{
++		Storage: configuration.Storage{
++			"testdriver": nil,
++			"maintenance": configuration.Parameters{"uploadpurging": map[interface{}]interface{}{
++				"enabled": false,
++			}},
++		},
++		Auth: configuration.Auth{
++			// For now, we simply test that new auth results in a viable
++			// application.
++			"silly": {
++				"realm":   "realm-test",
++				"service": "service-test",
++			},
++		},
++	}
++	config.Redis.Addr = "192.168.0.11:26379,192.168.0.12:26379"
++	config.Redis.DB = 0
++	config.Redis.SentinelMasterSet = "mymaster"
++	runAppWithConfig(t, config)
++}
++
++func runAppWithConfig(t *testing.T, config configuration.Configuration) {
++	ctx := context.Background()
+ 	// Mostly, with this test, given a sane configuration, we are simply
+ 	// ensuring that NewApp doesn't panic. We might want to tweak this
+ 	// behavior.
+diff --git a/vendor.conf b/vendor.conf
+index a249caf2..fcc9fee2 100644
+--- a/vendor.conf
++++ b/vendor.conf
+@@ -49,3 +49,4 @@ gopkg.in/yaml.v2 v2.2.1
+ rsc.io/letsencrypt e770c10b0f1a64775ae91d240407ce00d1a5bdeb https://github.com/dmcgowan/letsencrypt.git
+ github.com/opencontainers/go-digest a6d0ee40d4207ea02364bd3b9e8e77b9159ba1eb
+ github.com/opencontainers/image-spec ab7389ef9f50030c9b245bc16b981c7ddf192882
++github.com/FZambia/sentinel 5585739eb4b6478aa30161866ccf9ce0ef5847c7 https://github.com/jeremyxu2010/sentinel.git
+diff --git a/vendor/github.com/FZambia/sentinel/LICENSE b/vendor/github.com/FZambia/sentinel/LICENSE
+new file mode 100644
+index 00000000..8dada3ed
+--- /dev/null
++++ b/vendor/github.com/FZambia/sentinel/LICENSE
+@@ -0,0 +1,201 @@
++                                 Apache License
++                           Version 2.0, January 2004
++                        http://www.apache.org/licenses/
++
++   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
++
++   1. Definitions.
++
++      "License" shall mean the terms and conditions for use, reproduction,
++      and distribution as defined by Sections 1 through 9 of this document.
++
++      "Licensor" shall mean the copyright owner or entity authorized by
++      the copyright owner that is granting the License.
++
++      "Legal Entity" shall mean the union of the acting entity and all
++      other entities that control, are controlled by, or are under common
++      control with that entity. For the purposes of this definition,
++      "control" means (i) the power, direct or indirect, to cause the
++      direction or management of such entity, whether by contract or
++      otherwise, or (ii) ownership of fifty percent (50%) or more of the
++      outstanding shares, or (iii) beneficial ownership of such entity.
++
++      "You" (or "Your") shall mean an individual or Legal Entity
++      exercising permissions granted by this License.
++
++      "Source" form shall mean the preferred form for making modifications,
++      including but not limited to software source code, documentation
++      source, and configuration files.
++
++      "Object" form shall mean any form resulting from mechanical
++      transformation or translation of a Source form, including but
++      not limited to compiled object code, generated documentation,
++      and conversions to other media types.
++
++      "Work" shall mean the work of authorship, whether in Source or
++      Object form, made available under the License, as indicated by a
++      copyright notice that is included in or attached to the work
++      (an example is provided in the Appendix below).
++
++      "Derivative Works" shall mean any work, whether in Source or Object
++      form, that is based on (or derived from) the Work and for which the
++      editorial revisions, annotations, elaborations, or other modifications
++      represent, as a whole, an original work of authorship. For the purposes
++      of this License, Derivative Works shall not include works that remain
++      separable from, or merely link (or bind by name) to the interfaces of,
++      the Work and Derivative Works thereof.
++
++      "Contribution" shall mean any work of authorship, including
++      the original version of the Work and any modifications or additions
++      to that Work or Derivative Works thereof, that is intentionally
++      submitted to Licensor for inclusion in the Work by the copyright owner
++      or by an individual or Legal Entity authorized to submit on behalf of
++      the copyright owner. For the purposes of this definition, "submitted"
++      means any form of electronic, verbal, or written communication sent
++      to the Licensor or its representatives, including but not limited to
++      communication on electronic mailing lists, source code control systems,
++      and issue tracking systems that are managed by, or on behalf of, the
++      Licensor for the purpose of discussing and improving the Work, but
++      excluding communication that is conspicuously marked or otherwise
++      designated in writing by the copyright owner as "Not a Contribution."
++
++      "Contributor" shall mean Licensor and any individual or Legal Entity
++      on behalf of whom a Contribution has been received by Licensor and
++      subsequently incorporated within the Work.
++
++   2. Grant of Copyright License. Subject to the terms and conditions of
++      this License, each Contributor hereby grants to You a perpetual,
++      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
++      copyright license to reproduce, prepare Derivative Works of,
++      publicly display, publicly perform, sublicense, and distribute the
++      Work and such Derivative Works in Source or Object form.
++
++   3. Grant of Patent License. Subject to the terms and conditions of
++      this License, each Contributor hereby grants to You a perpetual,
++      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
++      (except as stated in this section) patent license to make, have made,
++      use, offer to sell, sell, import, and otherwise transfer the Work,
++      where such license applies only to those patent claims licensable
++      by such Contributor that are necessarily infringed by their
++      Contribution(s) alone or by combination of their Contribution(s)
++      with the Work to which such Contribution(s) was submitted. If You
++      institute patent litigation against any entity (including a
++      cross-claim or counterclaim in a lawsuit) alleging that the Work
++      or a Contribution incorporated within the Work constitutes direct
++      or contributory patent infringement, then any patent licenses
++      granted to You under this License for that Work shall terminate
++      as of the date such litigation is filed.
++
++   4. Redistribution. You may reproduce and distribute copies of the
++      Work or Derivative Works thereof in any medium, with or without
++      modifications, and in Source or Object form, provided that You
++      meet the following conditions:
++
++      (a) You must give any other recipients of the Work or
++          Derivative Works a copy of this License; and
++
++      (b) You must cause any modified files to carry prominent notices
++          stating that You changed the files; and
++
++      (c) You must retain, in the Source form of any Derivative Works
++          that You distribute, all copyright, patent, trademark, and
++          attribution notices from the Source form of the Work,
++          excluding those notices that do not pertain to any part of
++          the Derivative Works; and
++
++      (d) If the Work includes a "NOTICE" text file as part of its
++          distribution, then any Derivative Works that You distribute must
++          include a readable copy of the attribution notices contained
++          within such NOTICE file, excluding those notices that do not
++          pertain to any part of the Derivative Works, in at least one
++          of the following places: within a NOTICE text file distributed
++          as part of the Derivative Works; within the Source form or
++          documentation, if provided along with the Derivative Works; or,
++          within a display generated by the Derivative Works, if and
++          wherever such third-party notices normally appear. The contents
++          of the NOTICE file are for informational purposes only and
++          do not modify the License. You may add Your own attribution
++          notices within Derivative Works that You distribute, alongside
++          or as an addendum to the NOTICE text from the Work, provided
++          that such additional attribution notices cannot be construed
++          as modifying the License.
++
++      You may add Your own copyright statement to Your modifications and
++      may provide additional or different license terms and conditions
++      for use, reproduction, or distribution of Your modifications, or
++      for any such Derivative Works as a whole, provided Your use,
++      reproduction, and distribution of the Work otherwise complies with
++      the conditions stated in this License.
++
++   5. Submission of Contributions. Unless You explicitly state otherwise,
++      any Contribution intentionally submitted for inclusion in the Work
++      by You to the Licensor shall be under the terms and conditions of
++      this License, without any additional terms or conditions.
++      Notwithstanding the above, nothing herein shall supersede or modify
++      the terms of any separate license agreement you may have executed
++      with Licensor regarding such Contributions.
++
++   6. Trademarks. This License does not grant permission to use the trade
++      names, trademarks, service marks, or product names of the Licensor,
++      except as required for reasonable and customary use in describing the
++      origin of the Work and reproducing the content of the NOTICE file.
++
++   7. Disclaimer of Warranty. Unless required by applicable law or
++      agreed to in writing, Licensor provides the Work (and each
++      Contributor provides its Contributions) on an "AS IS" BASIS,
++      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
++      implied, including, without limitation, any warranties or conditions
++      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
++      PARTICULAR PURPOSE. You are solely responsible for determining the
++      appropriateness of using or redistributing the Work and assume any
++      risks associated with Your exercise of permissions under this License.
++
++   8. Limitation of Liability. In no event and under no legal theory,
++      whether in tort (including negligence), contract, or otherwise,
++      unless required by applicable law (such as deliberate and grossly
++      negligent acts) or agreed to in writing, shall any Contributor be
++      liable to You for damages, including any direct, indirect, special,
++      incidental, or consequential damages of any character arising as a
++      result of this License or out of the use or inability to use the
++      Work (including but not limited to damages for loss of goodwill,
++      work stoppage, computer failure or malfunction, or any and all
++      other commercial damages or losses), even if such Contributor
++      has been advised of the possibility of such damages.
++
++   9. Accepting Warranty or Additional Liability. While redistributing
++      the Work or Derivative Works thereof, You may choose to offer,
++      and charge a fee for, acceptance of support, warranty, indemnity,
++      or other liability obligations and/or rights consistent with this
++      License. However, in accepting such obligations, You may act only
++      on Your own behalf and on Your sole responsibility, not on behalf
++      of any other Contributor, and only if You agree to indemnify,
++      defend, and hold each Contributor harmless for any liability
++      incurred by, or claims asserted against, such Contributor by reason
++      of your accepting any such warranty or additional liability.
++
++   END OF TERMS AND CONDITIONS
++
++   APPENDIX: How to apply the Apache License to your work.
++
++      To apply the Apache License to your work, attach the following
++      boilerplate notice, with the fields enclosed by brackets "{}"
++      replaced with your own identifying information. (Don't include
++      the brackets!)  The text should be enclosed in the appropriate
++      comment syntax for the file format. We also recommend that a
++      file or class name and description of purpose be included on the
++      same "printed page" as the copyright notice for easier
++      identification within third-party archives.
++
++   Copyright {yyyy} {name of copyright owner}
++
++   Licensed under the Apache License, Version 2.0 (the "License");
++   you may not use this file except in compliance with the License.
++   You may obtain a copy of the License at
++
++       http://www.apache.org/licenses/LICENSE-2.0
++
++   Unless required by applicable law or agreed to in writing, software
++   distributed under the License is distributed on an "AS IS" BASIS,
++   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++   See the License for the specific language governing permissions and
++   limitations under the License.
+diff --git a/vendor/github.com/FZambia/sentinel/README.md b/vendor/github.com/FZambia/sentinel/README.md
+new file mode 100644
+index 00000000..f544c54e
+--- /dev/null
++++ b/vendor/github.com/FZambia/sentinel/README.md
+@@ -0,0 +1,39 @@
++go-sentinel
++===========
++
++Redis Sentinel support for [redigo](https://github.com/gomodule/redigo) library.
++
++Documentation
++-------------
++
++- [API Reference](http://godoc.org/github.com/FZambia/sentinel)
++
++Alternative solution
++--------------------
++
++You can alternatively configure Haproxy between your application and Redis to proxy requests to Redis master instance if you only need HA:
++
++```
++listen redis
++    server redis-01 127.0.0.1:6380 check port 6380 check inter 2s weight 1 inter 2s downinter 5s rise 10 fall 2
++    server redis-02 127.0.0.1:6381 check port 6381 check inter 2s weight 1 inter 2s downinter 5s rise 10 fall 2 backup
++    bind *:6379
++    mode tcp
++    option tcpka
++    option tcplog
++    option tcp-check
++    tcp-check send PING\r\n
++    tcp-check expect string +PONG
++    tcp-check send info\ replication\r\n
++    tcp-check expect string role:master
++    tcp-check send QUIT\r\n
++    tcp-check expect string +OK
++    balance roundrobin
++```
++
++This way you don't need to use this library.
++
++License
++-------
++
++Library is available under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html). 
+diff --git a/vendor/github.com/FZambia/sentinel/sentinel.go b/vendor/github.com/FZambia/sentinel/sentinel.go
+new file mode 100644
+index 00000000..79209e9f
+--- /dev/null
++++ b/vendor/github.com/FZambia/sentinel/sentinel.go
+@@ -0,0 +1,426 @@
++package sentinel
++
++import (
++	"errors"
++	"fmt"
++	"net"
++	"strings"
++	"sync"
++	"time"
++
++	"github.com/garyburd/redigo/redis"
++)
++
++// Sentinel provides a way to add high availability (HA) to Redis Pool using
++// preconfigured addresses of Sentinel servers and name of master which Sentinels
++// monitor. It works with Redis >= 2.8.12 (mostly because of ROLE command that
++// was introduced in that version, it's possible though to support old versions
++// using INFO command).
++//
++// Example of the simplest usage to contact master "mymaster":
++//
++//  func newSentinelPool() *redis.Pool {
++//  	sntnl := &sentinel.Sentinel{
++//  		Addrs:      []string{":26379", ":26380", ":26381"},
++//  		MasterName: "mymaster",
++//  		Dial: func(addr string) (redis.Conn, error) {
++//  			timeout := 500 * time.Millisecond
++//  			c, err := redis.DialTimeout("tcp", addr, timeout, timeout, timeout)
++//  			if err != nil {
++//  				return nil, err
++//  			}
++//  			return c, nil
++//  		},
++//  	}
++//  	return &redis.Pool{
++//  		MaxIdle:     3,
++//  		MaxActive:   64,
++//  		Wait:        true,
++//  		IdleTimeout: 240 * time.Second,
++//  		Dial: func() (redis.Conn, error) {
++//  			masterAddr, err := sntnl.MasterAddr()
++//  			if err != nil {
++//  				return nil, err
++//  			}
++//  			c, err := redis.Dial("tcp", masterAddr)
++//  			if err != nil {
++//  				return nil, err
++//  			}
++//  			return c, nil
++//  		},
++//  		TestOnBorrow: func(c redis.Conn, t time.Time) error {
++//  			if !sentinel.TestRole(c, "master") {
++//  				return errors.New("Role check failed")
++//  			} else {
++//  				return nil
++//  			}
++//  		},
++//  	}
++//  }
++type Sentinel struct {
++	// Addrs is a slice with known Sentinel addresses.
++	Addrs []string
++
++	// MasterName is a name of Redis master Sentinel servers monitor.
++	MasterName string
++
++	// Dial is a user supplied function to connect to Sentinel on given address. This
++	// address will be chosen from Addrs slice.
++	// Note that as per the redis-sentinel client guidelines, a timeout is mandatory
++	// while connecting to Sentinels, and should not be set to 0.
++	Dial func(addr string) (redis.Conn, error)
++
++	// Pool is a user supplied function returning custom connection pool to Sentinel.
++	// This can be useful to tune options if you are not satisfied with what default
++	// Sentinel pool offers. See defaultPool() method for default pool implementation.
++	// In most cases you only need to provide Dial function and let this be nil.
++	Pool func(addr string) *redis.Pool
++
++	mu    sync.RWMutex
++	pools map[string]*redis.Pool
++	addr  string
++}
++
++// NoSentinelsAvailable is returned when all sentinels in the list are exhausted
++// (or none configured), and contains the last error returned by Dial (which
++// may be nil)
++type NoSentinelsAvailable struct {
++	lastError error
++}
++
++func (ns NoSentinelsAvailable) Error() string {
++	if ns.lastError != nil {
++		return fmt.Sprintf("redigo: no sentinels available; last error: %s", ns.lastError.Error())
++	}
++	return fmt.Sprintf("redigo: no sentinels available")
++}
++
++// putToTop puts Sentinel address to the top of address list - this means
++// that all next requests will use Sentinel on this address first.
++//
++// From Sentinel guidelines:
++//
++// The first Sentinel replying to the client request should be put at the
++// start of the list, so that at the next reconnection, we'll try first
++// the Sentinel that was reachable in the previous connection attempt,
++// minimizing latency.
++//
++// Lock must be held by caller.
++func (s *Sentinel) putToTop(addr string) {
++	addrs := s.Addrs
++	if addrs[0] == addr {
++		// Already on top.
++		return
++	}
++	newAddrs := []string{addr}
++	for _, a := range addrs {
++		if a == addr {
++			continue
++		}
++		newAddrs = append(newAddrs, a)
++	}
++	s.Addrs = newAddrs
++}
++
++// putToBottom puts Sentinel address to the bottom of address list.
++// We call this method internally when see that some Sentinel failed to answer
++// on application request so next time we start with another one.
++//
++// Lock must be held by caller.
++func (s *Sentinel) putToBottom(addr string) {
++	addrs := s.Addrs
++	if addrs[len(addrs)-1] == addr {
++		// Already on bottom.
++		return
++	}
++	newAddrs := []string{}
++	for _, a := range addrs {
++		if a == addr {
++			continue
++		}
++		newAddrs = append(newAddrs, a)
++	}
++	newAddrs = append(newAddrs, addr)
++	s.Addrs = newAddrs
++}
++
++// defaultPool returns a connection pool to one Sentinel. This allows
++// us to call concurrent requests to Sentinel using connection Do method.
++func (s *Sentinel) defaultPool(addr string) *redis.Pool {
++	return &redis.Pool{
++		MaxIdle:     3,
++		MaxActive:   10,
++		Wait:        true,
++		IdleTimeout: 240 * time.Second,
++		Dial: func() (redis.Conn, error) {
++			return s.Dial(addr)
++		},
++		TestOnBorrow: func(c redis.Conn, t time.Time) error {
++			_, err := c.Do("PING")
++			return err
++		},
++	}
++}
++
++func (s *Sentinel) get(addr string) redis.Conn {
++	pool := s.poolForAddr(addr)
++	return pool.Get()
++}
++
++func (s *Sentinel) poolForAddr(addr string) *redis.Pool {
++	s.mu.Lock()
++	if s.pools == nil {
++		s.pools = make(map[string]*redis.Pool)
++	}
++	pool, ok := s.pools[addr]
++	if ok {
++		s.mu.Unlock()
++		return pool
++	}
++	s.mu.Unlock()
++	newPool := s.newPool(addr)
++	s.mu.Lock()
++	p, ok := s.pools[addr]
++	if ok {
++		s.mu.Unlock()
++		return p
++	}
++	s.pools[addr] = newPool
++	s.mu.Unlock()
++	return newPool
++}
++
++func (s *Sentinel) newPool(addr string) *redis.Pool {
++	if s.Pool != nil {
++		return s.Pool(addr)
++	}
++	return s.defaultPool(addr)
++}
++
++// close connection pool to Sentinel.
++// Lock must be hold by caller.
++func (s *Sentinel) close() {
++	if s.pools != nil {
++		for _, pool := range s.pools {
++			pool.Close()
++		}
++	}
++	s.pools = nil
++}
++
++func (s *Sentinel) doUntilSuccess(f func(redis.Conn) (interface{}, error)) (interface{}, error) {
++	s.mu.RLock()
++	addrs := s.Addrs
++	s.mu.RUnlock()
++
++	var lastErr error
++
++	for _, addr := range addrs {
++		conn := s.get(addr)
++		reply, err := f(conn)
++		conn.Close()
++		if err != nil {
++			lastErr = err
++			s.mu.Lock()
++			pool, ok := s.pools[addr]
++			if ok {
++				pool.Close()
++				delete(s.pools, addr)
++			}
++			s.putToBottom(addr)
++			s.mu.Unlock()
++			continue
++		}
++		s.putToTop(addr)
++		return reply, nil
++	}
++
++	return nil, NoSentinelsAvailable{lastError: lastErr}
++}
++
++// MasterAddr returns an address of current Redis master instance.
++func (s *Sentinel) MasterAddr() (string, error) {
++	res, err := s.doUntilSuccess(func(c redis.Conn) (interface{}, error) {
++		return queryForMaster(c, s.MasterName)
++	})
++	if err != nil {
++		return "", err
++	}
++	return res.(string), nil
++}
++
++// SlaveAddrs returns a slice with known slave addresses of current master instance.
++func (s *Sentinel) SlaveAddrs() ([]string, error) {
++	res, err := s.doUntilSuccess(func(c redis.Conn) (interface{}, error) {
++		return queryForSlaveAddrs(c, s.MasterName)
++	})
++	if err != nil {
++		return nil, err
++	}
++	return res.([]string), nil
++}
++
++// Slave represents a Redis slave instance which is known by Sentinel.
++type Slave struct {
++	ip    string
++	port  string
++	flags string
++}
++
++// Addr returns an address of slave.
++func (s *Slave) Addr() string {
++	return net.JoinHostPort(s.ip, s.port)
++}
++
++// Available returns if slave is in working state at moment based on information in slave flags.
++func (s *Slave) Available() bool {
++	return !strings.Contains(s.flags, "disconnected") && !strings.Contains(s.flags, "s_down")
++}
++
++// Slaves returns a slice with known slaves of master instance.
++func (s *Sentinel) Slaves() ([]*Slave, error) {
++	res, err := s.doUntilSuccess(func(c redis.Conn) (interface{}, error) {
++		return queryForSlaves(c, s.MasterName)
++	})
++	if err != nil {
++		return nil, err
++	}
++	return res.([]*Slave), nil
++}
++
++// SentinelAddrs returns a slice of known Sentinel addresses Sentinel server aware of.
++func (s *Sentinel) SentinelAddrs() ([]string, error) {
++	res, err := s.doUntilSuccess(func(c redis.Conn) (interface{}, error) {
++		return queryForSentinels(c, s.MasterName)
++	})
++	if err != nil {
++		return nil, err
++	}
++	return res.([]string), nil
++}
++
++// Discover allows to update list of known Sentinel addresses. From docs:
++//
++// A client may update its internal list of Sentinel nodes following this procedure:
++// 1) Obtain a list of other Sentinels for this master using the command SENTINEL sentinels <master-name>.
++// 2) Add every ip:port pair not already existing in our list at the end of the list.
++func (s *Sentinel) Discover() error {
++	addrs, err := s.SentinelAddrs()
++	if err != nil {
++		return err
++	}
++	s.mu.Lock()
++	for _, addr := range addrs {
++		if !stringInSlice(addr, s.Addrs) {
++			s.Addrs = append(s.Addrs, addr)
++		}
++	}
++	s.mu.Unlock()
++	return nil
++}
++
++// Close closes current connection to Sentinel.
++func (s *Sentinel) Close() error {
++	s.mu.Lock()
++	s.close()
++	s.mu.Unlock()
++	return nil
++}
++
++// TestRole wraps GetRole in a test to verify if the role matches an expected
++// role string. If there was any error in querying the supplied connection,
++// the function returns false. Works with Redis >= 2.8.12.
++// It's not goroutine safe, but if you call this method on pooled connections
++// then you are OK.
++func TestRole(c redis.Conn, expectedRole string) bool {
++	role, err := getRole(c)
++	if err != nil || role != expectedRole {
++		return false
++	}
++	return true
++}
++
++// getRole is a convenience function supplied to query an instance (master or
++// slave) for its role. It attempts to use the ROLE command introduced in
++// redis 2.8.12.
++func getRole(c redis.Conn) (string, error) {
++	res, err := c.Do("ROLE")
++	if err != nil {
++		return "", err
++	}
++	rres, ok := res.([]interface{})
++	if ok {
++		return redis.String(rres[0], nil)
++	}
++	return "", errors.New("redigo: can not transform ROLE reply to string")
++}
++
++func queryForMaster(conn redis.Conn, masterName string) (string, error) {
++	res, err := redis.Strings(conn.Do("SENTINEL", "get-master-addr-by-name", masterName))
++	if err != nil {
++		return "", err
++	}
++	if len(res) < 2 {
++		return "", errors.New("redigo: malformed get-master-addr-by-name reply")
++	}
++	masterAddr := net.JoinHostPort(res[0], res[1])
++	return masterAddr, nil
++}
++
++func queryForSlaveAddrs(conn redis.Conn, masterName string) ([]string, error) {
++	slaves, err := queryForSlaves(conn, masterName)
++	if err != nil {
++		return nil, err
++	}
++	slaveAddrs := make([]string, 0)
++	for _, slave := range slaves {
++		slaveAddrs = append(slaveAddrs, slave.Addr())
++	}
++	return slaveAddrs, nil
++}
++
++func queryForSlaves(conn redis.Conn, masterName string) ([]*Slave, error) {
++	res, err := redis.Values(conn.Do("SENTINEL", "slaves", masterName))
++	if err != nil {
++		return nil, err
++	}
++	slaves := make([]*Slave, 0)
++	for _, a := range res {
++		sm, err := redis.StringMap(a, err)
++		if err != nil {
++			return slaves, err
++		}
++		slave := &Slave{
++			ip:    sm["ip"],
++			port:  sm["port"],
++			flags: sm["flags"],
++		}
++		slaves = append(slaves, slave)
++	}
++	return slaves, nil
++}
++
++func queryForSentinels(conn redis.Conn, masterName string) ([]string, error) {
++	res, err := redis.Values(conn.Do("SENTINEL", "sentinels", masterName))
++	if err != nil {
++		return nil, err
++	}
++	sentinels := make([]string, 0)
++	for _, a := range res {
++		sm, err := redis.StringMap(a, err)
++		if err != nil {
++			return sentinels, err
++		}
++		sentinels = append(sentinels, fmt.Sprintf("%s:%s", sm["ip"], sm["port"]))
++	}
++	return sentinels, nil
++}
++
++func stringInSlice(str string, slice []string) bool {
++	for _, s := range slice {
++		if s == str {
++			return true
++		}
++	}
++	return false
++}

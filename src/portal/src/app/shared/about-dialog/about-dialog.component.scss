@@ -12,10 +12,15 @@
 .content {
     margin:0 10px 10px 10px;
     outline: none;
+    width: 470px;
 }
 
 .harbor-icon {
-    transform: translateX(-100%);
     width: 56px;
     filter: drop-shadow(rgb(0, 0, 0) 58px 2px);
+}
+
+.harbor-logo-black {
+    width: 60px;
+    overflow: hidden;
 }

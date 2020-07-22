@@ -142,5 +142,8 @@ func (a *authorizer) fetchToken(scopes []*scope) (*token, error) {
 	if err = json.Unmarshal(body, token); err != nil {
 		return nil, err
 	}
+	if len(token.Token) == 0 && len(token.AccessToken) > 0 {
+		token.Token = token.AccessToken
+	}
 	return token, nil
 }

@@ -11,7 +11,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	htesting "github.com/goharbor/harbor/src/testing"
-	helm_repo "k8s.io/helm/pkg/repo"
+	helm_repo "helm.sh/helm/v3/pkg/repo"
 )
 
 // The frontend server

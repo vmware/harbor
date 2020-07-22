@@ -21,7 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/quota/models"
-	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
 // QuotaUpdateRequest struct for the body of put quota API
@@ -126,7 +126,7 @@ func (qa *QuotaAPI) List() {
 		return
 	}
 
-	quotas, err := quota.Ctl.List(ctx, query)
+	quotas, err := quota.Ctl.List(ctx, query, quota.WithReferenceObject())
 	if err != nil {
 		qa.SendInternalServerError(fmt.Errorf("failed to query database for quotas, error: %v", err))
 		return

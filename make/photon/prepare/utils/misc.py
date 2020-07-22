@@ -1,9 +1,11 @@
-import os, string, sys
+import os
 import secrets
+import string
+import sys
 from pathlib import Path
 from functools import wraps
-
 from g import DEFAULT_UID, DEFAULT_GID, host_root_dir
+
 
 # To meet security requirement
 # By default it will change file mode to 0600, and make the owner of the file to 10000:10000
@@ -51,22 +53,6 @@ def validate(conf, **kwargs):
         if storage_provider_config == "":
             raise Exception(
                 "Error: no provider configurations are provided for provider %s" % storage_provider_name)
-
-    # Redis validate
-    redis_host = conf.get("configuration", "redis_host")
-    if redis_host is None or len(redis_host) < 1:
-        raise Exception(
-            "Error: redis_host in harbor.yml needs to point to an endpoint of Redis server or cluster.")
-
-    redis_port = conf.get("configuration", "redis_port")
-    if len(redis_port) < 1:
-        raise Exception(
-            "Error: redis_port in harbor.yml needs to point to the port of Redis server or cluster.")
-
-    redis_db_index = conf.get("configuration", "redis_db_index").strip()
-    if len(redis_db_index.split(",")) != 3:
-        raise Exception(
-            "Error invalid value for redis_db_index: %s. please set it as 1,2,3" % redis_db_index)
 
 def validate_crt_subj(dirty_subj):
     subj_list = [item for item in dirty_subj.strip().split("/") \
@@ -175,5 +161,5 @@ def get_realpath(path: str) -> Path:
     """
 
     if os.path.isdir(host_root_dir):
-        return os.path.join(host_root_dir, path.lstrip('/'))
+        return host_root_dir.joinpath(path.lstrip('/'))
     return Path(path)

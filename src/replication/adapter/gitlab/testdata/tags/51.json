@@ -1,0 +1,22 @@
+[
+  {
+    "name": "harbor",
+    "path": "library/example-dockers:harbor",
+    "location": "registry.gitlab.com/library/example-dockers:harbor"
+  },
+  {
+    "name": "latest",
+    "path": "library/example-dockers:latest",
+    "location": "registry.gitlab.com/library/example-dockers:latest"
+  },
+  {
+    "name": "v2",
+    "path": "library/example-dockers:v2",
+    "location": "registry.gitlab.com/library/example-dockers:v2"
+  },
+  {
+    "name": "v3",
+    "path": "library/example-dockers:v3",
+    "location": "registry.gitlab.com/library/example-dockers:v3"
+  }
+]

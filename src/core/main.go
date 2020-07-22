@@ -17,17 +17,19 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
-
+	_ "github.com/astaxie/beego/session/redis_sentinel"
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	_ "github.com/goharbor/harbor/src/controller/event/handler"
@@ -46,7 +48,6 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
-	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/server"
@@ -100,11 +101,61 @@ func main() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
 
-	redisURL := os.Getenv("_REDIS_URL")
+	redisURL := os.Getenv("_REDIS_URL_CORE")
 	if len(redisURL) > 0 {
+		u, err := url.Parse(redisURL)
+		if err != nil {
+			panic("bad _REDIS_URL:" + redisURL)
+		}
 		gob.Register(models.User{})
-		beego.BConfig.WebConfig.Session.SessionProvider = "redis"
-		beego.BConfig.WebConfig.Session.SessionProviderConfig = redisURL
+		if u.Scheme == "redis+sentinel" {
+			ps := strings.Split(u.Path, "/")
+			if len(ps) < 2 {
+				panic("bad redis sentinel url: no master name")
+			}
+			ss := make([]string, 5)
+			ss[0] = strings.Join(strings.Split(u.Host, ","), ";") // host
+			ss[1] = "100"                                         // pool
+			if u.User != nil {
+				password, isSet := u.User.Password()
+				if isSet {
+					ss[2] = password
+				}
+			}
+			if len(ps) > 2 {
+				db, err := strconv.Atoi(ps[2])
+				if err != nil {
+					panic("bad redis sentinel url: bad db")
+				}
+				if db != 0 {
+					ss[3] = ps[2]
+				}
+			}
+			ss[4] = ps[1] // monitor name
+
+			beego.BConfig.WebConfig.Session.SessionProvider = "redis_sentinel"
+			beego.BConfig.WebConfig.Session.SessionProviderConfig = strings.Join(ss, ",")
+		} else {
+			ss := make([]string, 5)
+			ss[0] = u.Host // host
+			ss[1] = "100"  // pool
+			if u.User != nil {
+				password, isSet := u.User.Password()
+				if isSet {
+					ss[2] = password
+				}
+			}
+			if len(u.Path) > 1 {
+				if _, err := strconv.Atoi(u.Path[1:]); err != nil {
+					panic("bad redis url: bad db")
+				}
+				ss[3] = u.Path[1:]
+			}
+			ss[4] = u.Query().Get("idle_timeout_seconds")
+
+			beego.BConfig.WebConfig.Session.SessionProvider = "redis"
+			beego.BConfig.WebConfig.Session.SessionProviderConfig = strings.Join(ss, ",")
+		}
 	}
 	beego.AddTemplateExt("htm")
 
@@ -125,11 +176,6 @@ func main() {
 	if err := config.Load(); err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
-
-	// init the jobservice client
-	job.Init()
-	// init the scheduler
-	scheduler.Init()
 
 	password, err := config.InitialAdminPassword()
 	if err != nil {
@@ -200,14 +246,6 @@ func registerScanners() {
 	}
 
 	if config.WithClair() {
-		clairDB, err := config.ClairDB()
-		if err != nil {
-			log.Fatalf("failed to load clair database information: %v", err)
-		}
-		if err := dao.InitClairDB(clairDB); err != nil {
-			log.Fatalf("failed to initialize clair database: %v", err)
-		}
-
 		log.Info("Registering Clair scanner")
 		wantedScanners = append(wantedScanners, scanner.Registration{
 			Name:            clairScanner,
