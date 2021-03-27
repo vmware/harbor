@@ -16,7 +16,7 @@ package bearer
 
 import (
 	"fmt"
-	"github.com/docker/distribution/reference"
+	"github.com/distribution/distribution/reference"
 	"net/http"
 	"regexp"
 	"strings"

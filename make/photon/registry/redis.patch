@@ -30,18 +30,18 @@ index 978851bb..a8379071 100644
  
 +	"github.com/FZambia/sentinel"
 +
- 	"github.com/docker/distribution"
- 	"github.com/docker/distribution/configuration"
- 	dcontext "github.com/docker/distribution/context"
+ 	"github.com/distribution/distribution"
+ 	"github.com/distribution/distribution/configuration"
+ 	dcontext "github.com/distribution/distribution/context"
 @@ -24,7 +27,7 @@ import (
- 	"github.com/docker/distribution/notifications"
- 	"github.com/docker/distribution/reference"
- 	"github.com/docker/distribution/registry/api/errcode"
--	"github.com/docker/distribution/registry/api/v2"
-+	v2 "github.com/docker/distribution/registry/api/v2"
- 	"github.com/docker/distribution/registry/auth"
- 	registrymiddleware "github.com/docker/distribution/registry/middleware/registry"
- 	repositorymiddleware "github.com/docker/distribution/registry/middleware/repository"
+ 	"github.com/distribution/distribution/notifications"
+ 	"github.com/distribution/distribution/reference"
+ 	"github.com/distribution/distribution/registry/api/errcode"
+-	"github.com/distribution/distribution/registry/api/v2"
++	v2 "github.com/distribution/distribution/registry/api/v2"
+ 	"github.com/distribution/distribution/registry/auth"
+ 	registrymiddleware "github.com/distribution/distribution/registry/middleware/registry"
+ 	repositorymiddleware "github.com/distribution/distribution/registry/middleware/repository"
 @@ -498,6 +501,44 @@ func (app *App) configureRedis(configuration *configuration.Configuration) {
  		return
  	}
@@ -128,14 +128,14 @@ index 12c0b61c..8a644d83 100644
 --- a/registry/handlers/app_test.go
 +++ b/registry/handlers/app_test.go
 @@ -11,7 +11,7 @@ import (
- 	"github.com/docker/distribution/configuration"
- 	"github.com/docker/distribution/context"
- 	"github.com/docker/distribution/registry/api/errcode"
--	"github.com/docker/distribution/registry/api/v2"
-+	v2 "github.com/docker/distribution/registry/api/v2"
- 	"github.com/docker/distribution/registry/auth"
- 	_ "github.com/docker/distribution/registry/auth/silly"
- 	"github.com/docker/distribution/registry/storage"
+ 	"github.com/distribution/distribution/configuration"
+ 	"github.com/distribution/distribution/context"
+ 	"github.com/distribution/distribution/registry/api/errcode"
+-	"github.com/distribution/distribution/registry/api/v2"
++	v2 "github.com/distribution/distribution/registry/api/v2"
+ 	"github.com/distribution/distribution/registry/auth"
+ 	_ "github.com/distribution/distribution/registry/auth/silly"
+ 	"github.com/distribution/distribution/registry/storage"
 @@ -140,7 +140,29 @@ func TestAppDispatcher(t *testing.T) {
  // TestNewApp covers the creation of an application via NewApp with a
  // configuration.

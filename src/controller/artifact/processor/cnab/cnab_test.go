@@ -19,7 +19,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/docker/distribution"
+	"github.com/distribution/distribution"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"

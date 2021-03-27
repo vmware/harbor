@@ -3,7 +3,7 @@
 package distribution
 
 import (
-	distribution "github.com/docker/distribution"
+	distribution "github.com/distribution/distribution"
 	mock "github.com/stretchr/testify/mock"
 )
 

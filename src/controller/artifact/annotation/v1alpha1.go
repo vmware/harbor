@@ -13,7 +13,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	reg "github.com/goharbor/harbor/src/pkg/registry"
 
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution/manifest/schema2"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 

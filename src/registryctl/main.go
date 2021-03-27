@@ -24,15 +24,15 @@ import (
 	"github.com/goharbor/harbor/src/registryctl/config"
 	"github.com/goharbor/harbor/src/registryctl/handlers"
 
-	_ "github.com/docker/distribution/registry/storage/driver/azure"
-	_ "github.com/docker/distribution/registry/storage/driver/filesystem"
-	_ "github.com/docker/distribution/registry/storage/driver/gcs"
-	_ "github.com/docker/distribution/registry/storage/driver/inmemory"
-	_ "github.com/docker/distribution/registry/storage/driver/middleware/cloudfront"
-	_ "github.com/docker/distribution/registry/storage/driver/middleware/redirect"
-	_ "github.com/docker/distribution/registry/storage/driver/oss"
-	_ "github.com/docker/distribution/registry/storage/driver/s3-aws"
-	_ "github.com/docker/distribution/registry/storage/driver/swift"
+	_ "github.com/distribution/distribution/registry/storage/driver/azure"
+	_ "github.com/distribution/distribution/registry/storage/driver/filesystem"
+	_ "github.com/distribution/distribution/registry/storage/driver/gcs"
+	_ "github.com/distribution/distribution/registry/storage/driver/inmemory"
+	_ "github.com/distribution/distribution/registry/storage/driver/middleware/cloudfront"
+	_ "github.com/distribution/distribution/registry/storage/driver/middleware/redirect"
+	_ "github.com/distribution/distribution/registry/storage/driver/oss"
+	_ "github.com/distribution/distribution/registry/storage/driver/s3-aws"
+	_ "github.com/distribution/distribution/registry/storage/driver/swift"
 )
 
 // RegistryCtl for registry controller

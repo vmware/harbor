@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/docker/distribution/registry/auth/token"
+	"github.com/distribution/distribution/registry/auth/token"
 	"github.com/docker/libtrust"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
@@ -137,7 +137,7 @@ func MakeToken(username, service string, access []*token.ResourceActions) (*mode
 		return nil, err
 	}
 	// Add kid to token header for compatibility with docker distribution's code
-	// see https://github.com/docker/distribution/blob/release/2.7/registry/auth/token/token.go#L197
+	// see https://github.com/distribution/distribution/blob/release/2.7/registry/auth/token/token.go#L197
 	k, err := libtrust.UnmarshalPrivateKeyPEM(options.PrivateKey)
 	if err != nil {
 		return nil, err

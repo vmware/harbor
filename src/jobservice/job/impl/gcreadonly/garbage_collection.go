@@ -187,7 +187,7 @@ func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 }
 
 // cleanCache is to clean the registry cache for GC.
-// To do this is because the issue https://github.com/docker/distribution/issues/2094
+// To do this is because the issue https://github.com/distribution/distribution/issues/2094
 func (gc *GarbageCollector) cleanCache() error {
 	pool, err := redislib.GetRedisPool("GarbageCollector", gc.redisURL, &redislib.PoolParam{
 		PoolMaxIdle:           0,

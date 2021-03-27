@@ -16,7 +16,7 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/docker/distribution/registry/storage/driver"
+	"github.com/distribution/distribution/registry/storage/driver"
 	"github.com/goharbor/harbor/src/lib/errors"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"

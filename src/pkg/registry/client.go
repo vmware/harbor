@@ -26,11 +26,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/manifestlist"
-	_ "github.com/docker/distribution/manifest/ocischema" // register oci manifest unmarshal function
-	"github.com/docker/distribution/manifest/schema1"
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution"
+	"github.com/distribution/distribution/manifest/manifestlist"
+	_ "github.com/distribution/distribution/manifest/ocischema" // register oci manifest unmarshal function
+	"github.com/distribution/distribution/manifest/schema1"
+	"github.com/distribution/distribution/manifest/schema2"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"

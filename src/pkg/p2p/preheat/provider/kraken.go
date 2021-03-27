@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution/manifest/schema2"
 	cm "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"

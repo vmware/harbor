@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/docker/distribution/manifest/manifestlist"
+	"github.com/distribution/distribution/manifest/manifestlist"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"

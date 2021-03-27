@@ -21,7 +21,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/docker/distribution/registry/client/auth/challenge"
+	"github.com/distribution/distribution/registry/client/auth/challenge"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/lib"

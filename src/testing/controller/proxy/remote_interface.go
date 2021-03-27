@@ -5,7 +5,7 @@ package proxy
 import (
 	io "io"
 
-	distribution "github.com/docker/distribution"
+	distribution "github.com/distribution/distribution"
 
 	mock "github.com/stretchr/testify/mock"
 )

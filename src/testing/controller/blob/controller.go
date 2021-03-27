@@ -7,7 +7,7 @@ import (
 
 	blob "github.com/goharbor/harbor/src/controller/blob"
 
-	distribution "github.com/docker/distribution"
+	distribution "github.com/distribution/distribution"
 
 	mock "github.com/stretchr/testify/mock"
 

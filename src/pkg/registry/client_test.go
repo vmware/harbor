@@ -16,7 +16,7 @@ package registry
 
 import (
 	"encoding/json"
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/stretchr/testify/suite"

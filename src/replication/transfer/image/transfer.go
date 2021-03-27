@@ -22,13 +22,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/distribution/manifest/manifestlist"
-	"github.com/docker/distribution/manifest/schema1"
+	"github.com/distribution/distribution/manifest/manifestlist"
+	"github.com/distribution/distribution/manifest/schema1"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution"
+	"github.com/distribution/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"

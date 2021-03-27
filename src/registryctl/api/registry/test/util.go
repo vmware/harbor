@@ -1,11 +1,11 @@
 package test
 
 import (
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/reference"
-	"github.com/docker/distribution/registry/storage"
-	"github.com/docker/distribution/registry/storage/driver"
+	"github.com/distribution/distribution"
+	"github.com/distribution/distribution/context"
+	"github.com/distribution/distribution/reference"
+	"github.com/distribution/distribution/registry/storage"
+	"github.com/distribution/distribution/registry/storage/driver"
 	"github.com/docker/libtrust"
 	"github.com/opencontainers/go-digest"
 	"io"

@@ -22,7 +22,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/docker/distribution/registry/auth/token"
+	"github.com/distribution/distribution/registry/auth/token"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
@@ -36,7 +36,7 @@ var creatorMap map[string]Creator
 var registryFilterMap map[string]accessFilter
 var notaryFilterMap map[string]accessFilter
 var actionScopeMap = map[rbac.Action]string{
-	// Scopes checked by distribution, see: https://github.com/docker/distribution/blob/master/registry/handlers/app.go
+	// Scopes checked by distribution, see: https://github.com/distribution/distribution/blob/master/registry/handlers/app.go
 	rbac.ActionPull:   "pull",
 	rbac.ActionPush:   "push",
 	rbac.ActionDelete: "delete",

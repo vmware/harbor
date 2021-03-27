@@ -21,7 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"time"
 
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/blob/models"

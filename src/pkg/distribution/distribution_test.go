@@ -17,10 +17,10 @@ package distribution
 import (
 	"testing"
 
-	_ "github.com/docker/distribution/manifest/manifestlist"
-	_ "github.com/docker/distribution/manifest/ocischema"
-	_ "github.com/docker/distribution/manifest/schema1"
-	_ "github.com/docker/distribution/manifest/schema2"
+	_ "github.com/distribution/distribution/manifest/manifestlist"
+	_ "github.com/distribution/distribution/manifest/ocischema"
+	_ "github.com/distribution/distribution/manifest/schema1"
+	_ "github.com/distribution/distribution/manifest/schema2"
 )
 
 func TestParseSessionID(t *testing.T) {

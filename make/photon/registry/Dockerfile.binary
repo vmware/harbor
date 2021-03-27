@@ -1,6 +1,6 @@
 FROM golang:1.15.6
 
-ENV DISTRIBUTION_DIR /go/src/github.com/docker/distribution
+ENV DISTRIBUTION_DIR /go/src/github.com/distribution/distribution
 ENV BUILDTAGS include_oss include_gcs
 
 WORKDIR $DISTRIBUTION_DIR

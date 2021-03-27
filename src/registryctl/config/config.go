@@ -16,9 +16,9 @@ package config
 
 import (
 	"fmt"
-	"github.com/docker/distribution/configuration"
-	storagedriver "github.com/docker/distribution/registry/storage/driver"
-	"github.com/docker/distribution/registry/storage/driver/factory"
+	"github.com/distribution/distribution/configuration"
+	storagedriver "github.com/distribution/distribution/registry/storage/driver"
+	"github.com/distribution/distribution/registry/storage/driver/factory"
 	"github.com/goharbor/harbor/src/lib/log"
 	"io/ioutil"
 	"os"

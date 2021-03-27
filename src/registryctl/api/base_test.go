@@ -15,7 +15,7 @@
 package api
 
 import (
-	"github.com/docker/distribution/registry/storage/driver"
+	"github.com/distribution/distribution/registry/storage/driver"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"net/http"
 	"net/http/httptest"

@@ -15,7 +15,7 @@
 package registry
 
 import (
-	"github.com/docker/distribution"
+	"github.com/distribution/distribution"
 	"github.com/stretchr/testify/mock"
 	"io"
 	"net/http"

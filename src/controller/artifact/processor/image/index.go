@@ -17,7 +17,7 @@ package image
 import (
 	"context"
 
-	"github.com/docker/distribution/manifest/manifestlist"
+	"github.com/distribution/distribution/manifest/manifestlist"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
 	"github.com/goharbor/harbor/src/lib/log"

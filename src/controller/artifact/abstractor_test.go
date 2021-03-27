@@ -26,9 +26,9 @@ import (
 	tpro "github.com/goharbor/harbor/src/testing/pkg/processor"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
 
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/schema1"
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution"
+	"github.com/distribution/distribution/manifest/schema1"
+	"github.com/distribution/distribution/manifest/schema2"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 )

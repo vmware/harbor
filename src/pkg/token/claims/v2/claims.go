@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/docker/distribution/registry/auth/token"
+	"github.com/distribution/distribution/registry/auth/token"
 )
 
 const (

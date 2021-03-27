@@ -5,7 +5,7 @@ import (
 	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"strings"
 
-	registry_token "github.com/docker/distribution/registry/auth/token"
+	registry_token "github.com/distribution/distribution/registry/auth/token"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/project"

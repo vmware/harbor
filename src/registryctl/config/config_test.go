@@ -20,7 +20,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	_ "github.com/docker/distribution/registry/storage/driver/filesystem"
+	_ "github.com/distribution/distribution/registry/storage/driver/filesystem"
 )
 
 func TestConfigDoesNotExists(t *testing.T) {

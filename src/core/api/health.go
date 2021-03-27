@@ -24,7 +24,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/docker/distribution/health"
+	"github.com/distribution/distribution/health"
 	"github.com/goharbor/harbor/src/common/dao"
 	httputil "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"

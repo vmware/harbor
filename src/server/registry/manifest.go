@@ -115,7 +115,7 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 
 	// When got the response from the backend docker registry, the manifest and
 	// tag are both ready, so we don't need to handle the issue anymore:
-	// https://github.com/docker/distribution/issues/2625
+	// https://github.com/distribution/distribution/issues/2625
 
 	var tags []string
 	dgt := reference

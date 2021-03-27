@@ -21,8 +21,8 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution"
+	"github.com/distribution/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/replication/model"
 	trans "github.com/goharbor/harbor/src/replication/transfer"

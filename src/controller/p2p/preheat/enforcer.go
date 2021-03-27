@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"strings"
 
-	tk "github.com/docker/distribution/registry/auth/token"
+	tk "github.com/distribution/distribution/registry/auth/token"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"

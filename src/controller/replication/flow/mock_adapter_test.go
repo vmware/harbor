@@ -3,7 +3,7 @@
 package flow
 
 import (
-	distribution "github.com/docker/distribution"
+	distribution "github.com/distribution/distribution"
 
 	io "io"
 

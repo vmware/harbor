@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	registry_token "github.com/docker/distribution/registry/auth/token"
+	registry_token "github.com/distribution/distribution/registry/auth/token"
 )
 
 func TestGenerate(t *testing.T) {

@@ -17,9 +17,9 @@ package proxy
 import (
 	"context"
 	"fmt"
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/manifestlist"
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution"
+	"github.com/distribution/distribution/manifest/manifestlist"
+	"github.com/distribution/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/lib"
 	libCache "github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"

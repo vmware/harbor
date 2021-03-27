@@ -18,7 +18,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/models"
 	commom_regctl "github.com/goharbor/harbor/src/common/registryctl"
 	"github.com/goharbor/harbor/src/controller/project"

@@ -18,29 +18,29 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/docker/distribution"
+	"github.com/distribution/distribution"
 	"github.com/opencontainers/go-digest"
 
 	// docker schema1 manifest
-	_ "github.com/docker/distribution/manifest/schema1"
+	_ "github.com/distribution/distribution/manifest/schema1"
 	// docker schema2 manifest
-	_ "github.com/docker/distribution/manifest/schema2"
+	_ "github.com/distribution/distribution/manifest/schema2"
 	// manifestlist
-	_ "github.com/docker/distribution/manifest/manifestlist"
+	_ "github.com/distribution/distribution/manifest/manifestlist"
 	// oci schema
-	_ "github.com/docker/distribution/manifest/ocischema"
-	ref "github.com/docker/distribution/reference"
+	_ "github.com/distribution/distribution/manifest/ocischema"
+	ref "github.com/distribution/distribution/reference"
 	"github.com/goharbor/harbor/src/common/utils"
 )
 
-// Descriptor alias type of github.com/docker/distribution.Descriptor
+// Descriptor alias type of github.com/distribution/distribution.Descriptor
 type Descriptor = distribution.Descriptor
 
-// Manifest alias type of github.com/docker/distribution.Manifest
+// Manifest alias type of github.com/distribution/distribution.Manifest
 type Manifest = distribution.Manifest
 
 var (
-	// UnmarshalManifest alias func from `github.com/docker/distribution`
+	// UnmarshalManifest alias func from `github.com/distribution/distribution`
 	UnmarshalManifest = distribution.UnmarshalManifest
 )
 

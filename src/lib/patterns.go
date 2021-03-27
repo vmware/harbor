@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/docker/distribution/reference"
+	"github.com/distribution/distribution/reference"
 	"github.com/opencontainers/go-digest"
 )
 

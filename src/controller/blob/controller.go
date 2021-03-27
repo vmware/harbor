@@ -20,7 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"time"
 
-	"github.com/docker/distribution"
+	"github.com/distribution/distribution"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"

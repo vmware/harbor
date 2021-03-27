@@ -174,13 +174,37 @@ github.com/dghubble/sling
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 ## explicit
 github.com/dgrijalva/jwt-go
-# github.com/docker/distribution v2.7.1+incompatible
+# github.com/distribution/distribution v2.7.1+incompatible
 ## explicit
+github.com/distribution/distribution
+github.com/distribution/distribution/configuration
+github.com/distribution/distribution/context
+github.com/distribution/distribution/health
+github.com/distribution/distribution/manifest
+github.com/distribution/distribution/manifest/manifestlist
+github.com/distribution/distribution/manifest/ocischema
+github.com/distribution/distribution/manifest/schema1
+github.com/distribution/distribution/manifest/schema2
+github.com/distribution/distribution/reference
+github.com/distribution/distribution/registry/auth/token
+github.com/distribution/distribution/registry/client/auth/challenge
+github.com/distribution/distribution/registry/storage
+github.com/distribution/distribution/registry/storage/driver
+github.com/distribution/distribution/registry/storage/driver/azure
+github.com/distribution/distribution/registry/storage/driver/factory
+github.com/distribution/distribution/registry/storage/driver/filesystem
+github.com/distribution/distribution/registry/storage/driver/gcs
+github.com/distribution/distribution/registry/storage/driver/inmemory
+github.com/distribution/distribution/registry/storage/driver/middleware/cloudfront
+github.com/distribution/distribution/registry/storage/driver/middleware/redirect
+github.com/distribution/distribution/registry/storage/driver/oss
+github.com/distribution/distribution/registry/storage/driver/s3-aws
+github.com/distribution/distribution/registry/storage/driver/swift
+github.com/distribution/distribution/testutil
+# github.com/docker/distribution v2.7.1+incompatible
 github.com/docker/distribution
-github.com/docker/distribution/configuration
 github.com/docker/distribution/context
 github.com/docker/distribution/digestset
-github.com/docker/distribution/health
 github.com/docker/distribution/manifest
 github.com/docker/distribution/manifest/manifestlist
 github.com/docker/distribution/manifest/ocischema
@@ -190,25 +214,12 @@ github.com/docker/distribution/metrics
 github.com/docker/distribution/reference
 github.com/docker/distribution/registry/api/errcode
 github.com/docker/distribution/registry/auth
-github.com/docker/distribution/registry/auth/token
-github.com/docker/distribution/registry/client/auth/challenge
 github.com/docker/distribution/registry/client/transport
-github.com/docker/distribution/registry/storage
 github.com/docker/distribution/registry/storage/cache
 github.com/docker/distribution/registry/storage/driver
-github.com/docker/distribution/registry/storage/driver/azure
 github.com/docker/distribution/registry/storage/driver/base
 github.com/docker/distribution/registry/storage/driver/factory
-github.com/docker/distribution/registry/storage/driver/filesystem
-github.com/docker/distribution/registry/storage/driver/gcs
-github.com/docker/distribution/registry/storage/driver/inmemory
 github.com/docker/distribution/registry/storage/driver/middleware
-github.com/docker/distribution/registry/storage/driver/middleware/cloudfront
-github.com/docker/distribution/registry/storage/driver/middleware/redirect
-github.com/docker/distribution/registry/storage/driver/oss
-github.com/docker/distribution/registry/storage/driver/s3-aws
-github.com/docker/distribution/registry/storage/driver/swift
-github.com/docker/distribution/testutil
 github.com/docker/distribution/uuid
 github.com/docker/distribution/version
 # github.com/docker/docker v1.4.2-0.20200213202729-31a86c4ab209

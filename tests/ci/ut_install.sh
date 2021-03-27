@@ -4,7 +4,7 @@ set -x
 set -e
 
 sudo apt-get update && sudo apt-get install -y libldap2-dev
-go get -d github.com/docker/distribution
+go get -d github.com/distribution/distribution
 go get -d github.com/docker/libtrust
 go get -d github.com/lib/pq
 go get golang.org/x/lint/golint

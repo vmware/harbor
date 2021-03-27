@@ -16,7 +16,7 @@ package proxy
 
 import (
 	"fmt"
-	"github.com/docker/distribution"
+	"github.com/distribution/distribution"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/registry"

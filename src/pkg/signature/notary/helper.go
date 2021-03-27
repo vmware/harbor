@@ -22,7 +22,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/docker/distribution/registry/auth/token"
+	"github.com/distribution/distribution/registry/auth/token"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/core/config"
 	tokenutil "github.com/goharbor/harbor/src/core/service/token"

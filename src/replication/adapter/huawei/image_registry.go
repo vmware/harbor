@@ -3,7 +3,7 @@ package huawei
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/docker/distribution"
+	"github.com/distribution/distribution"
 	"github.com/goharbor/harbor/src/replication/model"
 	"io/ioutil"
 	"net/http"

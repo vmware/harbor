@@ -19,7 +19,7 @@ import (
 	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"testing"
 
-	"github.com/docker/distribution/registry/auth/token"
+	"github.com/distribution/distribution/registry/auth/token"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/project/models"
