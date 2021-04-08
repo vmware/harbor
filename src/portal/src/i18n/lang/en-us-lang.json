@@ -827,6 +827,7 @@
         "LABEL": "Labels",
         "REPOSITORY": "Repository",
         "REPO_READ_ONLY": "Repository Read Only",
+        "Allow_ANONYMOUS": "Allow anonymous access",
         "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks enabled",
         "SYSTEM": "System Settings",
         "PROJECT_QUOTAS": "Project Quotas",
@@ -906,7 +907,6 @@
             "LDAP_GROUP_MEMBERSHIP_INFO": "The attribute indicates the membership of LDAP group, default value is memberof, in some LDAP server it could be \"ismemberof\"",
             "GROUP_SCOPE": "LDAP Group Scope",
             "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default."
-
         },
         "UAA": {
             "ENDPOINT": "UAA Endpoint",
@@ -1224,7 +1224,6 @@
         "ON": "on",
         "AT": "at",
         "NOSCHEDULE": "An error occurred in Get schedule"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "Schedule to GC",

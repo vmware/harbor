@@ -71,7 +71,8 @@
                     <span>{{'CONFIG.TOOLTIP.ROOT_CERT_DOWNLOAD' | translate}}</span>
                 </clr-tooltip-content>
             </clr-tooltip>
-            <a #certDownloadLink class="cert-down" [href]="downloadLink" target="_blank">{{'CONFIG.ROOT_CERT_LINK' | translate}}</a>
+            <a #certDownloadLink class="cert-down" [href]="downloadLink"
+                target="_blank">{{'CONFIG.ROOT_CERT_LINK' | translate}}</a>
         </label>
         <clr-checkbox-container *ngIf="!withAdmiral">
             <label id="repo_read_only_lbl" for="repoReadOnly">{{'CONFIG.REPO_READ_ONLY' | translate}}
@@ -87,7 +88,14 @@
                     [ngModel]="systemSettings.read_only.value" (ngModelChange)="setRepoReadOnlyValue($event)" />
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
-
+        <clr-checkbox-container *ngIf="!withAdmiral">
+            <label id="allow_anonymous_lbl" for="allowAnonymous">{{'CONFIG.ALLOW_ANONYMOUS' | translate}}
+            </label>
+            <clr-checkbox-wrapper>
+                <input type="checkbox" clrCheckbox name="allowAnonymous" id="allowAnonymous"
+                    [ngModel]="systemSettings.allow_anonymous.value" (ngModelChange)="setAllowAnonymousValue($event)" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
 
         <div class="clr-form-control d-f">
             <label
@@ -119,8 +127,8 @@
                             <div>
                                 <clr-textarea-container class="flex-direction-column">
                                     <label>{{'CVE_ALLOWLIST.ENTER'|translate}}</label>
-                                    <textarea id="allowlist-textarea" class="w-100 font-italic" clrTextarea [(ngModel)]="cveIds"
-                                        name="cveIds"></textarea>
+                                    <textarea id="allowlist-textarea" class="w-100 font-italic" clrTextarea
+                                        [(ngModel)]="cveIds" name="cveIds"></textarea>
                                     <clr-control-helper>{{'CVE_ALLOWLIST.HELP'|translate}}</clr-control-helper>
                                 </clr-textarea-container>
                             </div>
@@ -134,7 +142,7 @@
                             </li>
                             <li *ngFor="let item of systemAllowlist?.items;let i = index;">
                                 <a href="javascript:void(0)" (click)="goToDetail(item.cve_id)">{{item.cve_id}}</a>
-                                <a  class="float-lg-right" href="javascript:void(0)" (click)="deleteItem(i)">
+                                <a class="float-lg-right" href="javascript:void(0)" (click)="deleteItem(i)">
                                     <clr-icon shape="times-circle"></clr-icon>
                                 </a>
                             </li>

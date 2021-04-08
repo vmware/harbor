@@ -16,6 +16,7 @@ package project
 
 import (
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
@@ -33,6 +34,12 @@ func (pru *rbacUser) GetUserName() string {
 
 // GetPolicies returns policies of the visitor
 func (pru *rbacUser) GetPolicies() []*types.Policy {
+	cur := config.AllowAnonymous()
+	// return nil if anonymous access is not allowed
+	if !cur {
+		return nil
+	}
+
 	policies := pru.policies
 
 	if pru.project.IsPublic() {
