@@ -157,7 +157,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// it's a solution to workaround the restriction of project creation API:
 	// only normal users can create projects
 	ownerName := secCtx.GetUsername()
-	if secCtx.IsSolutionUser() || strings.HasPrefix(ownerName, config.RobotPrefix()) {
+	if secCtx.IsSolutionUser() || strings.HasPrefix(ownerName, config.RobotPrefix(ctx)) {
 		ownerID = 1
 	} else {
 		user, err := a.userMgr.GetByName(ctx, ownerName)
