@@ -104,7 +104,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin can create project"))
 	}
 
-	// always check for robots if they have permissions to create projects
+	// always check if robots have permissions to create projects
 	if secCtx.Name() == "robot" && !a.isSysAdmin(ctx, rbac.ActionCreate) {
 		log.Errorf("Only sys admin can create project")
                 return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin or users can create project"))
