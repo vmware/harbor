@@ -17,9 +17,13 @@ package dao
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
+	"time"
 
 	beegoorm "github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/lib/cache"
+	_ "github.com/goharbor/harbor/src/lib/cache/memory"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -53,6 +57,7 @@ type DAO interface {
 }
 
 const (
+	artifactCacheTTL = 10 * time.Minute
 	// both tagged and untagged artifacts
 	both = `IN (
 		SELECT DISTINCT art.id FROM artifact art
@@ -76,7 +81,27 @@ func New() DAO {
 	return &dao{}
 }
 
-type dao struct{}
+type dao struct {
+}
+
+func GetKey(query *q.Query) string {
+	if query == nil {
+		return ""
+	}
+
+	// sort the map keys to ensure the cache key is consistent
+	keys := []string{}
+	for k := range query.Keywords {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	key := ""
+	for _, k := range keys {
+		key += fmt.Sprintf("%s=%v", k, query.Keywords[k])
+	}
+	return key
+}
 
 func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 	if query != nil {
@@ -85,11 +110,15 @@ func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 			Keywords: query.Keywords,
 		}
 	}
-	qs, err := querySetter(ctx, query)
-	if err != nil {
-		return 0, err
-	}
-	return qs.Count()
+	var count int64
+	err := cache.FetchOrSave(cache.Default(), GetKey(query), &count, func() (interface{}, error) {
+		qs, err := querySetter(ctx, query)
+		if err != nil {
+			return nil, err
+		}
+		return qs.Count()
+	}, artifactCacheTTL)
+	return count, err
 }
 func (d *dao) List(ctx context.Context, query *q.Query) ([]*Artifact, error) {
 	artifacts := []*Artifact{}
@@ -102,6 +131,7 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*Artifact, error) {
 	}
 	return artifacts, nil
 }
+
 func (d *dao) Get(ctx context.Context, id int64) (*Artifact, error) {
 	artifact := &Artifact{
 		ID: id,
@@ -154,6 +184,7 @@ func (d *dao) Create(ctx context.Context, artifact *Artifact) (int64, error) {
 	}
 	return id, err
 }
+
 func (d *dao) Delete(ctx context.Context, id int64) error {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
@@ -175,6 +206,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 
 	return nil
 }
+
 func (d *dao) Update(ctx context.Context, artifact *Artifact, props ...string) error {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
@@ -189,6 +221,7 @@ func (d *dao) Update(ctx context.Context, artifact *Artifact, props ...string) e
 	}
 	return nil
 }
+
 func (d *dao) CreateReference(ctx context.Context, reference *ArtifactReference) (int64, error) {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
@@ -206,6 +239,7 @@ func (d *dao) CreateReference(ctx context.Context, reference *ArtifactReference)
 	}
 	return id, err
 }
+
 func (d *dao) ListReferences(ctx context.Context, query *q.Query) ([]*ArtifactReference, error) {
 	references := []*ArtifactReference{}
 	qs, err := orm.QuerySetter(ctx, &ArtifactReference{}, query)

@@ -23,6 +23,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/cache"
 )
 
+const MemoryCacheName = "memory"
+
 type entry struct {
 	data        []byte
 	expiratedAt int64
@@ -48,7 +50,7 @@ func (c *Cache) Contains(key string) bool {
 	}
 
 	if e.(*entry).isExpirated() {
-		c.Delete(c.opts.Key(key))
+		_ = c.Delete(c.opts.Key(key))
 		return false
 	}
 
@@ -70,7 +72,7 @@ func (c *Cache) Fetch(key string, value interface{}) error {
 
 	e := v.(*entry)
 	if e.isExpirated() {
-		c.Delete(c.opts.Key(key))
+		_ = c.Delete(c.opts.Key(key))
 		return cache.ErrNotFound
 	}
 
@@ -116,5 +118,5 @@ func New(opts cache.Options) (cache.Cache, error) {
 }
 
 func init() {
-	cache.Register("memory", New)
+	cache.Register(MemoryCacheName, New)
 }

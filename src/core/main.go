@@ -47,8 +47,8 @@ import (
 	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/lib/cache"
-	_ "github.com/goharbor/harbor/src/lib/cache/memory" // memory cache
-	_ "github.com/goharbor/harbor/src/lib/cache/redis"  // redis cache
+	"github.com/goharbor/harbor/src/lib/cache/memory"
+	_ "github.com/goharbor/harbor/src/lib/cache/redis" // redis cache
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/metric"
@@ -162,8 +162,13 @@ func main() {
 			beego.BConfig.WebConfig.Session.SessionProviderConfig = strings.Join(ss, ",")
 		}
 
-		log.Info("initializing cache ...")
+		log.Infof("initializing %s cache ...", u.Scheme)
 		if err := cache.Initialize(u.Scheme, redisURL); err != nil {
+			log.Fatalf("failed to initialize cache: %v", err)
+		}
+	} else {
+		log.Info("initializing in-memory cache ...")
+		if err := cache.Initialize(memory.MemoryCacheName, ""); err != nil {
 			log.Fatalf("failed to initialize cache: %v", err)
 		}
 	}
