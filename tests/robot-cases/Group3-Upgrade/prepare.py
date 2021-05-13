@@ -56,7 +56,7 @@ class HarborAPI:
         request(url+"projects", 'post', **body)
 
     def create_user(self, username):
-        payload = {"username":username, "email":username+"@vmware.com", "password":"Harbor12345", "realname":username, "comment":"string"}
+        payload = {"username":username, "email":username+"@harbortest.com", "password":"Harbor12345", "realname":username, "comment":"string"}
         body=dict(body=payload)
         request(url+"users", 'post', **body)
 

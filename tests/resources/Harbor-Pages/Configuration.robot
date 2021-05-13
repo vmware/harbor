@@ -193,12 +193,12 @@ Switch To Email
     Sleep  1
 
 Config Email
-    Input Text  xpath=//*[@id='mailServer']  smtp.vmware.com
+    Input Text  xpath=//*[@id='mailServer']  smtp.harbortest.com
     Input Text  xpath=//*[@id='emailPort']  25
-    Input Text  xpath=//*[@id='emailUsername']  example@vmware.com
+    Input Text  xpath=//*[@id='emailUsername']  example@harbortest.com
     Input Text  xpath=//*[@id='emailPassword']  example
-    Input Text  xpath=//*[@id='emailFrom']  example<example@vmware.com>
-    Sleep  1    
+    Input Text  xpath=//*[@id='emailFrom']  example<example@harbortest.com>
+    Sleep  1
     Retry Element Click  xpath=//*[@id='emailSSL-wrapper']/label
     Sleep  1
     Retry Element Click  xpath=//*[@id='emailInsecure-wrapper']/label
@@ -207,10 +207,10 @@ Config Email
     Sleep  6
 
 Verify Email
-    Textfield Value Should Be  xpath=//*[@id='mailServer']  smtp.vmware.com
+    Textfield Value Should Be  xpath=//*[@id='mailServer']  smtp.harbortest.com
     Textfield Value Should Be  xpath=//*[@id='emailPort']  25
-    Textfield Value Should Be  xpath=//*[@id='emailUsername']  example@vmware.com
-    Textfield Value Should Be  xpath=//*[@id='emailFrom']  example<example@vmware.com>
+    Textfield Value Should Be  xpath=//*[@id='emailUsername']  example@harbortest.com
+    Textfield Value Should Be  xpath=//*[@id='emailFrom']  example<example@harbortest.com>
     Checkbox Should Be Selected  xpath=//*[@id='emailSSL']
     Checkbox Should Not Be Selected  xpath=//*[@id='emailInsecure']
 

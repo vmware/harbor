@@ -86,7 +86,7 @@ Wait Until Element Is Visible And Enabled
 
 Retry Action Keyword
     [Arguments]  ${keyword}  @{param}
-    Retry Keyword N Times When Error  3  ${keyword}  @{param}
+    Retry Keyword N Times When Error  5  ${keyword}  @{param}
 
 Retry Wait Element
     [Arguments]  ${element_xpath}

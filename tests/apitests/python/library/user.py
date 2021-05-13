@@ -13,7 +13,7 @@ class User(base.Base):
         if realname is None:
             realname = base._random_name("realname")
         if email is None:
-            email = '%s@%s.com' % (realname,"vmware")
+            email = '%s@%s.com' % (realname,"harbortest")
         if user_password is None:
             user_password = "Harbor12345678"
         if role_id is None:

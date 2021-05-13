@@ -27,7 +27,7 @@ Test Case - Registry Basic Verfication
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
 
-    Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=true
+    Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@harbortest.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=true
     Push image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
     Pull image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
     Go Into Project  project${d}
@@ -38,7 +38,7 @@ Test Case - Registry Basic Verfication
 Test Case - Clair Basic Verfication
     Init Chrome Driver
     ${d}=  get current date  result_format=%m%s
-    Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
+    Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@harbortest.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
     Push Image  ${ip}  tester${d}  Test1@34  project${d}  hello-world
     Go Into Project  project${d}
     Go Into Repo  project${d}/hello-world

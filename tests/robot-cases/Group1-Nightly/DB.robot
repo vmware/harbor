@@ -33,20 +33,20 @@ Test Case - Create An New User
     Enable Self Reg
     Logout Harbor
 
-    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@harbortest.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Close Browser
 
 Test Case - Update User Comment
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@harbortest.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Update User Comment  Test12#4
     Logout Harbor
 
 Test Case - Update Password
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@harbortest.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Change Password  Test1@34  Test12#4
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  tester${d}  Test12#4
@@ -55,11 +55,11 @@ Test Case - Update Password
 Test Case - Delete Multi User
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
-    Create An New User  ${HARBOR_URL}  deletea${d}  testa${d}@vmware.com  test${d}  Test1@34  harbor
+    Create An New User  ${HARBOR_URL}  deletea${d}  testa${d}@harbortest.com  test${d}  Test1@34  harbor
     Logout Harbor
-    Create An New User  ${HARBOR_URL}  deleteb${d}  testb${d}@vmware.com  test${d}  Test1@34  harbor
+    Create An New User  ${HARBOR_URL}  deleteb${d}  testb${d}@harbortest.com  test${d}  Test1@34  harbor
     Logout Harbor
-    Create An New User  ${HARBOR_URL}  deletec${d}  testc${d}@vmware.com  test${d}  Test1@34  harbor
+    Create An New User  ${HARBOR_URL}  deletec${d}  testc${d}@harbortest.com  test${d}  Test1@34  harbor
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
     Switch To User Tag
@@ -95,7 +95,7 @@ Test Case - Admin Add New Users
     Switch To Configure
     Self Reg Should Be Enabled
     Switch to User Tag
-    Add A New User   username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
+    Add A New User   username=tester${d}  email=tester${d}@harbortest.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     # can add a new user when self-reg is disabled
     Switch To Configure
     Self Reg Should Be Enabled
@@ -103,5 +103,5 @@ Test Case - Admin Add New Users
     Disable Self Reg
     Self Reg Should Be Disabled
     Switch to User Tag
-    Add A New User   username=tester2${d}  email=tester2${d}@vmware.com  realname=harbortest2  newPassword=Test1@34  comment=harbortest2
+    Add A New User   username=tester2${d}  email=tester2${d}@harbortest.com  realname=harbortest2  newPassword=Test1@34  comment=harbortest2
     Close Browser
