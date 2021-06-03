@@ -3,7 +3,7 @@ import os
 import yaml
 from urllib.parse import urlencode
 from g import versions_file_path, host_root_dir, DEFAULT_UID, INTERNAL_NO_PROXY_DN
-from models import InternalTLS, Metric
+from models import InternalTLS, Metric, IPv6
 from utils.misc import generate_random_string, owner_can_read, other_can_read
 
 default_db_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
@@ -133,6 +133,13 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
                 config_dict['public_url'] = '{protocol}://{hostname}'.format(**config_dict)
             else:
                 config_dict['public_url'] = '{protocol}://{hostname}:{http_port}'.format(**config_dict)
+
+    # IPv6
+    ipv6_config = configs.get('ipv6')
+    if ipv6_config:
+        config_dict['ipv6'] = IPv6(ipv6_config['enabled'], ipv6_config['subnet'], ipv6_config['gateway'])
+    else:
+        config_dict['ipv6'] = IPv6()
 
     # DB configs
     db_configs = configs.get('database')

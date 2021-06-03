@@ -47,7 +47,8 @@ http {
   }
 
   server {
-    listen 8080;
+    listen 8080
+    listen [::]:8080;
     server_tokens off;
     # disable any limits to avoid HTTP 413 for large image uploads
     client_max_body_size 0;
@@ -220,6 +221,7 @@ http {
 
   server {
     listen 9090;
+    listen [::]:9090;
     location = /metrics {
       if ($arg_comp = core) { proxy_pass http://core_metrics; }
       if ($arg_comp = jobservice) { proxy_pass http://js_metrics; }

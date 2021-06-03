@@ -22,6 +22,7 @@ services:
         target: /etc/rsyslog.d/rsyslog_docker.conf
     ports:
       - 127.0.0.1:1514:10514
+      - ::1:1514:10514
     networks:
       - harbor
   registry:
@@ -67,7 +68,7 @@ services:
     logging:
       driver: "syslog"
       options:
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "tcp://localhost:1514"
         tag: "registry"
   registryctl:
     image: goharbor/harbor-registryctl:{{version}}
@@ -111,7 +112,7 @@ services:
     logging:
       driver: "syslog"
       options:
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "tcp://localhost:1514"
         tag: "registryctl"
 {% if external_database == False %}
   postgresql:
@@ -142,7 +143,7 @@ services:
     logging:
       driver: "syslog"
       options:
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "tcp://localhost:1514"
         tag: "postgresql"
     shm_size: '1gb'
 {% endif %}
@@ -209,7 +210,7 @@ services:
     logging:
       driver: "syslog"
       options:
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "tcp://localhost:1514"
         tag: "core"
   portal:
     image: goharbor/harbor-portal:{{version}}
@@ -242,7 +243,7 @@ services:
     logging:
       driver: "syslog"
       options:
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "tcp://localhost:1514"
         tag: "portal"
 
   jobservice:
@@ -281,7 +282,7 @@ services:
     logging:
       driver: "syslog"
       options:
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "tcp://localhost:1514"
         tag: "jobservice"
 {% if external_redis == False %}
   redis:
@@ -309,7 +310,7 @@ services:
     logging:
       driver: "syslog"
       options:
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "tcp://localhost:1514"
         tag: "redis"
 {% endif %}
   proxy:
@@ -364,7 +365,7 @@ services:
     logging:
       driver: "syslog"
       options:
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "tcp://localhost:1514"
         tag: "proxy"
 {% if with_notary %}
   notary-server:
@@ -404,7 +405,7 @@ services:
     logging:
       driver: "syslog"
       options:
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "tcp://localhost:1514"
         tag: "notary-server"
   notary-signer:
     image: goharbor/notary-signer-photon:{{notary_version}}
@@ -445,7 +446,7 @@ services:
     logging:
       driver: "syslog"
       options:
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "tcp://localhost:1514"
         tag: "notary-signer"
 {% endif %}
 {% if with_trivy %}
@@ -484,7 +485,7 @@ services:
     logging:
       driver: "syslog"
       options:
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "tcp://localhost:1514"
         tag: "trivy-adapter"
     env_file:
       ./common/config/trivy-adapter/env
@@ -528,7 +529,7 @@ services:
     logging:
       driver: "syslog"
       options:
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "tcp://localhost:1514"
         tag: "chartmuseum"
     env_file:
       ./common/config/chartserver/env
@@ -555,12 +556,20 @@ services:
     logging:
       driver: "syslog"
       options:
-        syslog-address: "tcp://127.0.0.1:1514"
+        syslog-address: "tcp://localhost:1514"
         tag: "exporter"
 {% endif %}
 networks:
   harbor:
     external: false
+    {% if ipv6.enabled %}
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: {{ ipv6.subnet }}
+          gateway: {{ ipv6.gateway }}
+    {% endif %}
 {% if with_notary %}
   harbor-notary:
     external: false

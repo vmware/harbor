@@ -2,6 +2,7 @@ import os
 import secrets
 import string
 import sys
+import ipaddress
 from pathlib import Path
 from functools import wraps
 from g import DEFAULT_UID, DEFAULT_GID, host_root_dir
@@ -166,3 +167,11 @@ def get_realpath(path: str) -> Path:
 
 def port_number_valid(port:int):
     return 0 < port < 65535
+
+
+def is_valid_ipv6_address(address):
+    try:
+        ipaddress.IPv6Address(address)
+    except Exception:
+        return False
+    return True

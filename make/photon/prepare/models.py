@@ -4,7 +4,7 @@ from pathlib import Path
 from shutil import copytree, rmtree
 
 from g import internal_tls_dir, DEFAULT_GID, DEFAULT_UID, PG_GID, PG_UID
-from utils.misc import check_permission, owner_can_read, get_realpath, port_number_valid
+from utils.misc import check_permission, owner_can_read, get_realpath, port_number_valid, is_valid_ipv6_address
 from utils.cert import san_existed
 
 class InternalTLS:
@@ -150,3 +150,16 @@ class Metric:
     def validate(self):
         if not port_number_valid(self.port):
             raise Exception('Port number in metrics is not valid')
+
+class IPv6:
+    def __init__(self, enabled: bool = False, subnet: str = '2001:3984:3989::/64', gateway: str = '2001:3984:3989::1'):
+        self.enabled = enabled
+        self.subnet = subnet
+        self.gateway = gateway
+
+
+    def validate(self):
+        if not is_valid_ipv6_address(self.subnet):
+            raise Exception('ipv6.subnet is not a valid ipv6 address')
+        if not is_valid_ipv6_address(self.gateway):
+            raise Exception('ipv6.gateway is not a valid ipv6 address')

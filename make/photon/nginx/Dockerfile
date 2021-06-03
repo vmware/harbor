@@ -6,7 +6,7 @@ VOLUME /var/cache/nginx /var/log/nginx /run
 
 STOPSIGNAL SIGQUIT
 
-HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080 || exit 1
+HEALTHCHECK CMD curl --fail -s http://localhost:8080 || exit 1
 
 USER nginx
 

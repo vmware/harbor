@@ -1,5 +1,6 @@
   server {
     listen 4443 ssl;
+    listen [::]:4443 ssl;
     server_tokens off;
     # ssl
     ssl_certificate {{ssl_cert}};

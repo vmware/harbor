@@ -63,4 +63,9 @@ def prepare_docker_compose(configs, with_trivy, with_notary, with_chartmuseum):
     if metric:
         rendering_variables['metric'] = metric
 
+    # for ipv6
+    ipv6 = configs.get('ipv6')
+    if ipv6:
+        rendering_variables['ipv6'] = ipv6
+
     render_jinja(docker_compose_template_path, docker_compose_yml_path,  mode=0o644, **rendering_variables)
