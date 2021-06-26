@@ -162,7 +162,9 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// set the owner as the system admin when the API being called by replication
 	// it's a solution to workaround the restriction of project creation API:
 	// only normal users can create projects
-	if secCtx.IsSolutionUser() || secCtx.Name() == "robot" {
+	if secCtx.Name() == "robot" {
+		ownerID = 0
+	} else if secCtx.IsSolutionUser() {
 		ownerID = 1
 	} else {
 		ownerName := secCtx.GetUsername()
