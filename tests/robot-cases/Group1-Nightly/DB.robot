@@ -86,22 +86,3 @@ Test Case - Edit Self-Registration
     # Restore setting
     Enable Self Reg
     Close Browser
-
-Test Case - Admin Add New Users
-    Init Chrome Driver
-    ${d}=   Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    # can add a new user when self-reg is enbled
-    Switch To Configure
-    Self Reg Should Be Enabled
-    Switch to User Tag
-    Add A New User   username=tester${d}  email=tester${d}@harbortest.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
-    # can add a new user when self-reg is disabled
-    Switch To Configure
-    Self Reg Should Be Enabled
-    Sleep  1
-    Disable Self Reg
-    Self Reg Should Be Disabled
-    Switch to User Tag
-    Add A New User   username=tester2${d}  email=tester2${d}@harbortest.com  realname=harbortest2  newPassword=Test1@34  comment=harbortest2
-    Close Browser
