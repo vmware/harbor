@@ -1406,7 +1406,7 @@
         "NAME": "Name",
         "NAME_EXISTS": "Name already exists",
         "NAME_REQUIRED": "Name is required",
-        "NAME_REX": "Name should be at least 2 characters long with lower case characters, numbers and ._- and must begin with letters or numbers.",
+        "NAME_REX": "Name should be at least 2 characters long with lower case letters, numbers and ._- and must begin with letters or numbers.",
         "DESCRIPTION": "Description",
         "ENDPOINT": "Endpoint",
         "ENDPOINT_EXISTS": "EndpointUrl already exists",
@@ -1612,7 +1612,7 @@
         "PREHEAT_EXPLAIN": "Preheat will migrate the image to the p2p network",
         "CRITERIA_EXPLAIN": "As specified in 'Deployment security' section under Configuration tab",
         "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote provider uses a self-signed or untrusted certificate.",
-        "NAME_TOOLTIP": "Policy name should be at least 2 characters long with lower case characters, numbers and ._- and must begin with letters or numbers.",
+        "NAME_TOOLTIP": "Policy name should be at least 2 characters long with lower case letters, numbers and ._- and must begin with letters or numbers.",
         "NEED_HELP": "Please ask your system admin to add a provider first"
     },
     "PAGINATION": {
@@ -1679,7 +1679,7 @@
         "CONFIRM_SECRET": "Confirm Secret",
         "SECRET_AGAIN": "Input secret again",
         "INCONSISTENT": "Two secrets are inconsistent",
-        "NAME_TOOLTIP": "Robot name should be 1~255 characters long with lower case characters, numbers and ._- and must begin with letters or numbers.",
+        "NAME_TOOLTIP": "Robot name should be 1~255 characters long with lower case letters, numbers and ._- and must begin with letters or numbers.",
         "ENABLE_NEW_SECRET": "Enable this option to manually specify a new secret",
         "DELETE": "Delete",
         "ARTIFACT_LABEL": "Artifact label",
