@@ -46,7 +46,10 @@ jobs:
         with:
           path: src/github.com/goharbor/harbor
       - name: Build Base Image
-        if: contains(steps.changed-files.outputs.modified, 'Dockerfile.base') || contains(steps.changed-files.outputs.modified, 'VERSION')
+        if: |
+            contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
+            contains(steps.changed-files.outputs.modified, 'VERSION') ||
+            contains(steps.changed-files.outputs.modified, '.buildbase')
         run: |
           set -x
           echo "BUILD_BASE=true" >> $GITHUB_ENV
