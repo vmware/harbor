@@ -111,17 +111,19 @@ func (l *Auth) attachLDAPGroup(ldapUsers []models.LdapUser, u *models.User, sess
 
 	}
 	userGroups := make([]models.UserGroup, 0)
+	// fetch all groups from LDAP
+	ldapGroups, err := sess.SearchAllGroups()
+	if err != nil {
+		log.Warningf("Failed to fetch ldap groups:%v", err)
+	}
+	// if group is in list, append it to user
 	for _, dn := range ldapUsers[0].GroupDNList {
-		lGroups, err := sess.SearchGroupByDN(dn)
-		if err != nil {
-			log.Warningf("Can not get the ldap group name with DN %v, error %v", dn, err)
-			continue
+		for _, lGroup := range ldapGroups {
+			if lGroup.GroupDN == dn {
+				userGroups = append(userGroups, models.UserGroup{GroupName: lGroup.GroupName, LdapGroupDN: lGroup.GroupDN, GroupType: common.LDAPGroupType})
+				break
+			}
 		}
-		if len(lGroups) == 0 {
-			log.Warningf("Can not get the ldap group name with DN %v", dn)
-			continue
-		}
-		userGroups = append(userGroups, models.UserGroup{GroupName: lGroups[0].GroupName, LdapGroupDN: dn, GroupType: common.LDAPGroupType})
 	}
 	u.GroupIDs, err = group.PopulateGroup(userGroups)
 	if err != nil {

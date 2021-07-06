@@ -62,6 +62,7 @@ export class Configuration {
     ldap_search_dn?: StringValueItem;
     ldap_search_password?: StringValueItem;
     ldap_timeout: NumberValueItem;
+    ldap_page_size: NumberValueItem;
     ldap_uid: StringValueItem;
     ldap_url: StringValueItem;
     ldap_verify_cert: BoolValueItem;
@@ -115,6 +116,7 @@ export class Configuration {
         this.ldap_search_dn = new StringValueItem("", true);
         this.ldap_search_password = new StringValueItem("", true);
         this.ldap_timeout = new NumberValueItem(5, true);
+        this.ldap_page_size = new NumberValueItem(0, true);
         this.ldap_uid = new StringValueItem("", true);
         this.ldap_url = new StringValueItem("", true);
         this.ldap_verify_cert = new BoolValueItem(true, true);

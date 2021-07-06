@@ -247,6 +247,21 @@
 
     <section *ngIf="showLdap">
 
+        <clr-input-container>
+            <label for="ldapPageSize">{{'CONFIG.LDAP.LDAP_PAGE_SIZE' | translate}}
+                <clr-tooltip>
+                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        <span>{{'CONFIG.LDAP.LDAP_PAGE_SIZE_INFO' | translate}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <input clrInput name="ldapPageSize" type="text" #ldapPageSizeInput="ngModel"
+                [(ngModel)]="currentConfig.ldap_page_size.value" id="ldapPageSize" size="20" pattern="^[0-9]+$"
+                [disabled]="disabled(currentConfig.ldap_page_size)" />
+            <clr-control-error>{{'TOOLTIP.NUMBER_REQUIRED' | translate}}</clr-control-error>
+        </clr-input-container>
+
         <clr-checkbox-container>
             <label for="ldapVerifyCert">{{'CONFIG.LDAP.VERIFY_CERT' | translate}}
                     <clr-tooltip>

@@ -68,6 +68,7 @@ const (
 	LDAPFilter                       = "ldap_filter"
 	LDAPScope                        = "ldap_scope"
 	LDAPTimeout                      = "ldap_timeout"
+	LDAPPageSize                     = "ldap_page_size"
 	LDAPVerifyCert                   = "ldap_verify_cert"
 	LDAPGroupBaseDN                  = "ldap_group_base_dn"
 	LDAPGroupSearchFilter            = "ldap_group_search_filter"

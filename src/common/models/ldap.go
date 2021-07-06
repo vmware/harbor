@@ -23,6 +23,7 @@ type LdapConf struct {
 	LdapFilter            string `json:"ldap_filter"`
 	LdapUID               string `json:"ldap_uid"`
 	LdapScope             int    `json:"ldap_scope"`
+	LdapPageSize          int    `json:"ldap_page_size"`
 	LdapConnectionTimeout int    `json:"ldap_connection_timeout"`
 	LdapVerifyCert        bool   `json:"ldap_verify_cert"`
 }

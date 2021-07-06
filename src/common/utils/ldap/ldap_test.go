@@ -31,6 +31,7 @@ var ldapTestConfig = map[string]interface{}{
 	common.LDAPFilter:           "",
 	common.LDAPScope:            3,
 	common.LDAPTimeout:          30,
+	common.LDAPPageSize:         0,
 	common.AdminInitialPassword: "password",
 }
 
@@ -52,6 +53,7 @@ var defaultConfigWithVerifyCert = map[string]interface{}{
 	common.LDAPFilter:                 "",
 	common.LDAPScope:                  3,
 	common.LDAPTimeout:                30,
+	common.LDAPPageSize:               0,
 	common.LDAPVerifyCert:             true,
 	common.TokenServiceURL:            "http://token_service",
 	common.RegistryURL:                "http://registry",

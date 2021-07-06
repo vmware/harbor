@@ -315,7 +315,15 @@ func (session *Session) SearchLdapAttribute(baseDN, filter string, attributes []
 		nil,
 	)
 
-	result, err := session.ldapConn.Search(searchRequest)
+	var result *goldap.SearchResult
+	var err error
+
+	if session.ldapConfig.LdapPageSize > 0 {
+		result, err = session.ldapConn.SearchWithPaging(searchRequest, uint32(session.ldapConfig.LdapPageSize))
+	} else {
+		result, err = session.ldapConn.Search(searchRequest)
+	}
+
 	if result != nil {
 		log.Debugf("Found entries:%v\n", len(result.Entries))
 	} else {
@@ -410,7 +418,7 @@ func (session *Session) searchGroup(groupDN, filter, gName, groupNameAttribute s
 	}
 
 	// There maybe many groups under the LDAP group base DN
-	// If return all groups in LDAP group base DN, it might get "Size Limit Exceeded" error
+	// If return all groups in LDAP group base DN, it can take a long time
 	// Take the groupDN as the baseDN in the search request to avoid return too many records
 	result, err := session.SearchLdapAttribute(groupDN, ldapFilter, []string{groupNameAttribute})
 	if err != nil {
@@ -429,6 +437,41 @@ func (session *Session) searchGroup(groupDN, filter, gName, groupNameAttribute s
 	}
 	ldapGroups = append(ldapGroups, group)
 
+	return ldapGroups, nil
+}
+
+// SearchAllGroups -- Fetch all groups matching the filter from LDAP
+func (session *Session) SearchAllGroups() ([]models.LdapGroup, error) {
+	ldapGroups := make([]models.LdapGroup, 0)
+
+	// Search all groups with LDAP group filter condition
+	ldapFilter, err := createGroupSearchFilter(session.ldapGroupConfig.LdapGroupFilter, "", session.ldapGroupConfig.LdapGroupNameAttribute)
+	if err != nil {
+		log.Errorf("wrong filter format: filter:%v, groupNameAttribute:%v", session.ldapGroupConfig.LdapGroupFilter, session.ldapGroupConfig.LdapGroupNameAttribute)
+		return ldapGroups, err
+	}
+
+	// There maybe many groups under the LDAP group base DN
+	// If return all groups in LDAP group base DN, it can take a long time
+	result, err := session.SearchLdapAttribute(session.groupBaseDN(), ldapFilter, []string{session.ldapGroupConfig.LdapGroupNameAttribute})
+	if err != nil {
+		return ldapGroups, err
+	}
+	if len(result.Entries) == 0 {
+		return ldapGroups, nil
+	}
+
+	for _, entry := range result.Entries {
+		groupName := ""
+		if len(entry.Attributes) > 0 {
+			groupName = entry.Attributes[0].Values[0]
+		}
+		group := models.LdapGroup{
+			GroupDN:   entry.DN,
+			GroupName: groupName,
+		}
+		ldapGroups = append(ldapGroups, group)
+	}
 	return ldapGroups, nil
 }
 

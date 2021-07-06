@@ -883,6 +883,8 @@
             "VERIFY_CERT": "LDAP Verify Certificate",
             "LDAP_GROUP_BASE_DN": "LDAP Group Base DN",
             "LDAP_GROUP_BASE_DN_INFO": "The base DN from which to look up a group in LDAP/AD.",
+            "LDAP_PAGE_SIZE": "LDAP Page Size",
+            "LDAP_PAGE_SIZE_INFO": "Set this parameter to use paged quieries to LDAP. If this parameter is zero then unpaged quieries will be used.",
             "LDAP_GROUP_FILTER": "LDAP Group Filter",
             "LDAP_GROUP_FILTER_INFO": "The filter to look up an LDAP/AD group, use objectclass=groupOfNames by default.",
             "LDAP_GROUP_GID": "LDAP Group GID",
