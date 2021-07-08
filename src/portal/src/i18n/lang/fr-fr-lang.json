@@ -27,7 +27,7 @@
         "OK": "OK",
         "DELETE": "SUPPRIMER",
         "LOG_IN": "S'IDENTIFIER",
-        "LOG_IN_OIDC": "Connexion via OIDC fournisseur",
+        "LOG_IN_OIDC": "Connexion via un fournisseur OIDC",
         "SIGN_UP_LINK": "Ouvrir un compte",
         "SIGN_UP": "S'INSCRIRE",
         "CONFIRM": "CONFIRMER",
