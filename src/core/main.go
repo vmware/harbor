@@ -27,6 +27,7 @@ import (
 	"time"
 
 	configCtl "github.com/goharbor/harbor/src/controller/config"
+	"github.com/goharbor/harbor/src/pkg/oidc"
 
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
@@ -234,6 +235,9 @@ func main() {
 	}
 
 	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
+
+	log.Info("Fix empty subiss for meta info data.")
+	oidc.FixEmptySubIss(orm.Context())
 	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
 }
 
