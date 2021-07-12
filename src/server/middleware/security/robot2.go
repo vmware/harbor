@@ -2,6 +2,7 @@ package security
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	robotCtx "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -60,10 +61,17 @@ func (r *robot2) Generate(req *http.Request) security.Context {
 	var accesses []*types.Policy
 	for _, p := range robot.Permissions {
 		for _, a := range p.Access {
+			var resource string
+			if a.Resource == rbac.ResourceProject && p.Kind == "project" {
+				resource = p.Scope
+			} else {
+				resource = fmt.Sprintf("%s/%s", p.Scope, a.Resource)
+			}
+
 			accesses = append(accesses, &types.Policy{
 				Action:   a.Action,
 				Effect:   a.Effect,
-				Resource: types.Resource(fmt.Sprintf("%s/%s", p.Scope, a.Resource)),
+				Resource: types.Resource(resource),
 			})
 		}
 	}
