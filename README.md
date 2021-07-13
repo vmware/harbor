@@ -57,7 +57,7 @@ For learning the architecture design of Harbor, check the document [Architecture
 
 **On a Linux host:** docker 17.06.0-ce+ and docker-compose 1.18.0+ .
 
-Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](https://goharbor.io/docs/2.0.0/install-config/)** to install Harbor.
+Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](https://goharbor.io/docs/latest/install-config/)** to install Harbor.
 
 If you want to deploy Harbor on Kubernetes, please use the **[Harbor chart](https://github.com/goharbor/harbor-helm)**.
 
@@ -84,7 +84,7 @@ The [compatibility list](https://goharbor.io/docs/edge/install-config/harbor-com
 
 ## Demos
 
-* **[Live Demo](https://demo.goharbor.io)** - A demo environment with the latest Harbor stable build installed. For additional information please refer to [this page](https://goharbor.io/docs/2.0.0/install-config/demo-server/).
+* **[Live Demo](https://demo.goharbor.io)** - A demo environment with the latest Harbor stable build installed. For additional information please refer to [this page](https://goharbor.io/docs/latest/install-config/demo-server/).
 * **[Video Demos](https://github.com/goharbor/harbor/wiki/Video-demos-for-Harbor)** - Demos for Harbor features and continuously updated.
 
 ## Partners and Users
