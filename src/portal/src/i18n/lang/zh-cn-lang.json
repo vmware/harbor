@@ -1681,6 +1681,7 @@
         "ENABLE_NEW_SECRET": "开启此项以便手动指定新令牌",
         "DELETE": "删除",
         "ARTIFACT_LABEL": "Artifact 标签",
+        "HELM_CHART_VERSION_LABEL": "Helm Chart Version 标签",
         "SCAN": "扫描",
         "SCANNER_PULL": "扫描器拉取",
         "SEARCH_BY_NAME": "按名称(不含前缀)搜索",

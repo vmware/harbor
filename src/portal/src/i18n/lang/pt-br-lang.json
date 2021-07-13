@@ -1679,6 +1679,7 @@
         "ENABLE_NEW_SECRET": "Enable this option to manually specify a new secret",
         "DELETE": "Delete",
         "ARTIFACT_LABEL": "Artifact label",
+        "HELM_CHART_VERSION_LABEL": "Helm Chart Version label",
         "SCAN": "Scan",
         "SCANNER_PULL": "Scanner Pull",
         "SEARCH_BY_NAME": "Search by name(without prefix)",

@@ -107,6 +107,7 @@ export const ACTION_RESOURCE_I18N_MAP = {
     'helm-chart-version': 'SYSTEM_ROBOT.HELM_VERSION',
     'tag': 'REPLICATION.TAG',
     'artifact-label': 'SYSTEM_ROBOT.ARTIFACT_LABEL',
+    'helm-chart-version-label': 'SYSTEM_ROBOT.HELM_CHART_VERSION_LABEL',
     'scan': 'SYSTEM_ROBOT.SCAN',
     'scanner-pull': 'SYSTEM_ROBOT.SCANNER_PULL'
 };
