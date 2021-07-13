@@ -20,6 +20,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -97,6 +98,7 @@ func (p *pgsql) Register(alias ...string) error {
 	// and https://github.com/astaxie/beego/issues/4059 for more info.
 	db, _ := orm.GetDB(an)
 	db.SetMaxOpenConns(p.maxOpenConns)
+	db.SetConnMaxLifetime(5 * time.Minute)
 
 	return nil
 }
