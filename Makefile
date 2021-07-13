@@ -446,7 +446,7 @@ build_base_docker:
 	if [ -n "$(REGISTRYUSER)" ] && [ -n "$(REGISTRYPASSWORD)" ] ; then \
 		docker login -u $(REGISTRYUSER) -p $(REGISTRYPASSWORD) ; \
 	else \
-		echo "No docker credentials provided, please make sure enough priviledges to access docker hub!" ; \
+		echo "No docker credentials provided, please make sure enough privileges to access docker hub!" ; \
 	fi
 	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \
