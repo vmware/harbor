@@ -79,6 +79,12 @@ func (s *SecurityContext) IsSolutionUser() bool {
 	return false
 }
 
+// IsSystemLevel returns if a robot is system or project level
+// true if robot is system level otherwise false
+func (s *SecurityContext) IsSystemLevel() bool {
+	return s.isSystemLevel
+}
+
 // Can returns whether the robot can do action on resource
 func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource types.Resource) bool {
 	s.once.Do(func() {

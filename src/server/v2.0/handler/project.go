@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
+	robotSecurity "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/controller/p2p/preheat"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/quota"
@@ -103,6 +104,11 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin can create project"))
 	}
 
+	if !onlyAdmin && secCtx.Name() == "robot" && !secCtx.(*robotSecurity.SecurityContext).IsSystemLevel() {
+		log.Errorf("Only sys admin or real users can create project")
+		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin or real user can create project"))
+	}
+
 	req := params.Project
 
 	if req.RegistryID != nil && !a.isSysAdmin(ctx, rbac.ActionCreate) {
@@ -155,7 +161,9 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// set the owner as the system admin when the API being called by replication
 	// it's a solution to workaround the restriction of project creation API:
 	// only normal users can create projects
-	if secCtx.IsSolutionUser() {
+	if secCtx.Name() == "robot" {
+		ownerID = 0
+	} else if secCtx.IsSolutionUser() {
 		ownerID = 1
 	} else {
 		ownerName := secCtx.GetUsername()
