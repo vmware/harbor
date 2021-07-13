@@ -145,6 +145,7 @@ var (
 		{Name: common.OIDCAdminGroup, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}, Description: `The OIDC group which has the harbor admin privileges`},
 		{Name: common.OIDCScope, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}, Description: `The scope of the OIDC provider`},
 		{Name: common.OIDCUserClaim, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}, Description: `The attribute claims the username`},
+		{Name: common.OIDCEmailClaim, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}},
 		{Name: common.OIDCVerifyCert, Scope: UserScope, Group: OIDCGroup, DefaultValue: "true", ItemType: &BoolType{}, Description: `Verify the OIDC provider's certificate'`},
 		{Name: common.OIDCAutoOnboard, Scope: UserScope, Group: OIDCGroup, DefaultValue: "false", ItemType: &BoolType{}, Description: `Auto onboard the OIDC user`},
 		{Name: common.OIDCExtraRedirectParms, Scope: UserScope, Group: OIDCGroup, DefaultValue: "{}", ItemType: &StringToStringMapType{}, Description: `Extra parameters to add when redirect request to OIDC provider`},

@@ -272,6 +272,7 @@ func TestOIDCSetting(t *testing.T) {
 		common.OIDCScope:        "openid, profile",
 		common.OIDCGroupsClaim:  "my_group",
 		common.OIDCUserClaim:    "username",
+		common.OIDCEmailClaim:   "email",
 		common.OIDCCLientID:     "client",
 		common.OIDCClientSecret: "secret",
 		common.ExtEndpoint:      "https://harbor.test",
@@ -289,6 +290,7 @@ func TestOIDCSetting(t *testing.T) {
 	assert.Equal(t, "https://harbor.test/c/oidc/callback", v.RedirectURL)
 	assert.ElementsMatch(t, []string{"openid", "profile"}, v.Scope)
 	assert.Equal(t, "username", v.UserClaim)
+	assert.Equal(t, "email", v.EmailClaim)
 }
 
 func TestSplitAndTrim(t *testing.T) {

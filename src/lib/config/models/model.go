@@ -54,6 +54,7 @@ type OIDCSetting struct {
 	RedirectURL        string            `json:"redirect_url"`
 	Scope              []string          `json:"scope"`
 	UserClaim          string            `json:"user_claim"`
+	EmailClaim         string            `json:"email_claim"`
 	ExtraRedirectParms map[string]string `json:"extra_redirect_parms"`
 }
 

@@ -187,6 +187,7 @@ func OIDCSetting(ctx context.Context) (*cfgModels.OIDCSetting, error) {
 		RedirectURL:        extEndpoint + common.OIDCCallbackPath,
 		Scope:              scope,
 		UserClaim:          mgr.Get(ctx, common.OIDCUserClaim).GetString(),
+		EmailClaim:         mgr.Get(ctx, common.OIDCEmailClaim).GetString(),
 		ExtraRedirectParms: mgr.Get(ctx, common.OIDCExtraRedirectParms).GetStringToStringMap(),
 	}, nil
 }

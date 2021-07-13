@@ -103,6 +103,7 @@ export class Configuration {
     oidc_auto_onboard?: BoolValueItem;
     oidc_scope?: StringValueItem;
     oidc_user_claim?: StringValueItem;
+    oidc_email_claim?: StringValueItem;
     count_per_project: NumberValueItem;
     storage_per_project: NumberValueItem;
     cfg_expiration: NumberValueItem;
@@ -167,6 +168,7 @@ export class Configuration {
         this.oidc_groups_claim = new StringValueItem('', true);
         this.oidc_admin_group = new StringValueItem('', true);
         this.oidc_user_claim = new StringValueItem('', true);
+        this.oidc_email_claim = new StringValueItem('', true);
         this.count_per_project = new NumberValueItem(-1, true);
         this.storage_per_project = new NumberValueItem(-1, true);
     }

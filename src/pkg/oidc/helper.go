@@ -303,6 +303,9 @@ func mergeUserInfo(remote, local *UserInfo) *UserInfo {
 	} else {
 		res.Groups = []string{}
 	}
+	if res.Email == "" {
+		res.Email = local.Email
+	}
 	return res
 }
 
@@ -337,16 +340,25 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 	if err := c.Claims(res); err != nil {
 		return nil, err
 	}
-	if setting.UserClaim != "" {
+	if setting.UserClaim != "" || setting.EmailClaim != "" {
 		allClaims := make(map[string]interface{})
 		if err := c.Claims(&allClaims); err != nil {
 			return nil, err
 		}
 
-		if username, ok := allClaims[setting.UserClaim].(string); ok {
-			res.Username = username
-		} else {
-			log.Warningf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", setting.UserClaim)
+		if setting.UserClaim != "" {
+			if username, ok := allClaims[setting.UserClaim].(string); ok {
+				res.Username = username
+			} else {
+				log.Warningf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", setting.UserClaim)
+			}
+		}
+		if setting.EmailClaim != "" {
+			if email, ok := allClaims[setting.EmailClaim].(string); ok {
+				res.Email = email
+			} else {
+				log.Warningf("OIDC. Failed to recover Email from claim. Claim '%s' is invalid or not a string", setting.EmailClaim)
+			}
 		}
 	}
 	res.Groups, res.hasGroupClaim = groupsFromClaims(c, setting.GroupsClaim)

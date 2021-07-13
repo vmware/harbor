@@ -436,6 +436,19 @@
                 [(ngModel)]="currentConfig.oidc_user_claim.value" id="oidcUserClaim" size="40"
                 [disabled]="!currentConfig.oidc_auto_onboard.value || disabled(currentConfig.oidc_user_claim)" pattern="^[a-zA-Z0-9_-]*$">
         </clr-input-container>
+        <clr-input-container>
+            <label  for="oidcEmailClaim">{{'CONFIG.OIDC.EMAIL_CLAIM' | translate}}
+                <clr-tooltip>
+                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        <span>{{'TOOLTIP.OIDC_EMAIL_CLAIM' | translate}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <input autocomplete="off" clrInput name="oidcEmailClaim" type="text" #oidcEmailClaimInput="ngModel"
+                   [(ngModel)]="currentConfig.oidc_email_claim.value" id="oidcEmailClaim" size="40"
+                   [disabled]="!currentConfig.oidc_auto_onboard.value || disabled(currentConfig.oidc_email_claim)" pattern="^[a-zA-Z0-9_-]*$">
+        </clr-input-container>
         <div class="oidc-tip">{{ 'CONFIG.OIDC.OIDC_REDIREC_URL' | translate}}
             <span>{{redirectUrl}}/c/oidc/callback</span>
         </div>

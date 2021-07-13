@@ -107,6 +107,7 @@
         "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters.",
         "OIDC_AUTOONBOARD": "Skip the onboarding screen, so user cannot change its username. Username is provided from ID Token",
         "OIDC_USER_CLAIM": "The name of the claim in the ID Token where the username is retrieved from. If not specified, it will default to 'name'",
+        "OIDC_EMAIL_CLAIM": "The name of the claim in the ID Token where the email is retrieved from. If not specified, it will default to 'email'",
         "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number"
     },
     "PLACEHOLDER": {
@@ -949,6 +950,7 @@
             "OIDC_VERIFYCERT": "Verify Certificate",
             "OIDC_AUTOONBOARD": "Automatic onboarding",
             "USER_CLAIM": "Username Claim",    
+            "EMAIL_CLAIM": "Email Claim",
             "OIDC_SETNAME": "Set OIDC Username",
             "OIDC_SETNAMECONTENT": "You must create a Harbor username the first time when authenticating via a third party(OIDC).This will be used within Harbor to be associated with projects, roles, etc.",
             "OIDC_USERNAME": "Username",

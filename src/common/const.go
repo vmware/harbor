@@ -115,6 +115,7 @@ const (
 	OIDCExtraRedirectParms           = "oidc_extra_redirect_parms"
 	OIDCScope                        = "oidc_scope"
 	OIDCUserClaim                    = "oidc_user_claim"
+	OIDCEmailClaim                   = "oidc_email_claim"
 
 	CfgDriverDB                       = "db"
 	NewHarborAdminName                = "admin@harbor.local"
