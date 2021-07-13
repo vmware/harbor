@@ -198,7 +198,7 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         config_dict['storage_provider_config'] = {}
 
     if storage_config.get('redirect'):
-        config_dict['storage_redirect_disabled'] = storage_config['redirect']['disabled']
+        config_dict['storage_redirect_disabled'] = storage_config['redirect']['disable']
 
     # Global proxy configs
     proxy_config = configs.get('proxy') or {}
