@@ -112,7 +112,8 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, username string, sec
 		}
 		encToken, _ := utils.ReversibleEncrypt(string(tb), key)
 		oidcUser.Token = encToken
-		err = dm.metaDao.Update(ctx, oidcUser)
+		// only updates the token column of the record
+		err = dm.metaDao.Update(ctx, oidcUser, "token")
 		if err != nil {
 			log.Errorf("Failed to persist token, user id: %d, error: %v", oidcUser.UserID, err)
 		}
