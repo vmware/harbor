@@ -29,6 +29,17 @@ func TestFetchCharts(t *testing.T) {
 	server := test.NewServer([]*test.RequestHandlerMapping{
 		{
 			Method:  http.MethodGet,
+			Pattern: "/api/projects/library",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				data := `{
+					"name": "library",
+					"metadata": {"public":true}
+				}`
+				w.Write([]byte(data))
+			},
+		},
+		{
+			Method:  http.MethodGet,
 			Pattern: "/api/projects",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `[{

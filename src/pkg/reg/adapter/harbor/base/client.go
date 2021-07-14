@@ -114,16 +114,12 @@ func (c *Client) ListProjects(name string) ([]*Project, error) {
 
 // GetProject gets the specific project
 func (c *Client) GetProject(name string) (*Project, error) {
-	projects, err := c.ListProjects(name)
-	if err != nil {
+	project := &Project{}
+	url := fmt.Sprintf("%s/projects/%s", c.BasePath(), name)
+	if err := c.C.Get(url, project); err != nil {
 		return nil, err
 	}
-	for _, project := range projects {
-		if project.Name == name {
-			return project, nil
-		}
-	}
-	return nil, nil
+	return project, nil
 }
 
 // BasePath returns the API base path that contains version part
