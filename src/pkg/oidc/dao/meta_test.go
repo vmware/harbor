@@ -74,6 +74,7 @@ func (suite *MetaDaoTestSuite) TestGetByUsername() {
 	ou, err := suite.dao.GetByUsername(ctx, suite.username)
 	suite.Nil(err)
 	suite.Equal(suite.userID, ou.UserID)
+	suite.Equal("ca4bb144-4b5c-4d1b-9469-69cb3768af8fhttps://sso.andrea.muellerpublic.de/auth/realms/harbor", ou.SubIss)
 	suite.Equal("xxxx", ou.Token)
 }
 
