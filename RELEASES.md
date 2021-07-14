@@ -16,13 +16,12 @@ Patch releases are based on the major/minor release branch, the release cadence 
 ### Minor Release Support Matrix
 | Version | Supported          |
 | ------- | ------------------ |
+| Harbor v2.3.x   | :white_check_mark: |
 | Harbor v2.2.x   | :white_check_mark: |
 | Harbor v2.1.x   | :white_check_mark: |
-| Harbor v2.0.x   | :white_check_mark: |
-| Harbor v1.10.x   | :white_check_mark: |
 
 ### Upgrade path and support policy
-The upgrade path for Harbor is (1) 1.0.x patch releases are always compatible with its major and minor version. For example, previous released 1.8.x can be upgraded to most recent 1.8.4 release. (2) Harbor only supports two previous minor releases to upgrade to current minor release. For example, 1.9.0 will only support 1.7.0 and 1.8.0 to upgrade from, 1.6.0 to 1.9.0 is not supported. One should upgrade to 1.8.0 first, then to 1.9.0.
+The upgrade path for Harbor is (1) 2.2.x patch releases are always compatible with its major and minor version. For example, previous released 2.2.x can be upgraded to most recent 2.2.3 release. (2) Harbor only supports two previous minor releases to upgrade to current minor release. For example, 2.3.0 will only support 2.1.0 and 2.2.0 to upgrade from, 2.0.0 to 2.3.0 is not supported. One should upgrade to 2.2.0 first, then to 2.3.0.
 The Harbor project maintains release branches for the three most recent minor releases, each minor release will be maintained for approximately 9 months.
 
 ### Next Release
