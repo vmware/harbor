@@ -289,8 +289,12 @@ func mergeUserInfo(remote, local *UserInfo) *UserInfo {
 		Subject: local.Subject,
 		Issuer:  local.Issuer,
 		// Used data from userinfo
-		Username: remote.Username,
-		Email:    remote.Email,
+		Email: remote.Email,
+	}
+	if remote.Username != "" {
+		res.Username = remote.Username
+	} else {
+		res.Username = local.Username
 	}
 	if remote.hasGroupClaim {
 		res.Groups = remote.Groups

@@ -379,6 +379,32 @@ func TestMergeUserInfo(t *testing.T) {
 				hasGroupClaim: true,
 			},
 		},
+		{
+			fromInfo: &UserInfo{
+				Issuer:        "",
+				Subject:       "",
+				Username:      "",
+				Email:         "kevin@whatever.com",
+				Groups:        []string{},
+				hasGroupClaim: false,
+			},
+			fromIDToken: &UserInfo{
+				Issuer:        "issuer-whatever",
+				Subject:       "subject-kevin",
+				Username:      "kevin",
+				Email:         "kevin@whatever.com",
+				Groups:        []string{"g1", "g2"},
+				hasGroupClaim: true,
+			},
+			expected: &UserInfo{
+				Issuer:        "issuer-whatever",
+				Subject:       "subject-kevin",
+				Username:      "kevin",
+				Email:         "kevin@whatever.com",
+				Groups:        []string{"g1", "g2"},
+				hasGroupClaim: true,
+			},
+		},
 	}
 
 	for _, tc := range s {
