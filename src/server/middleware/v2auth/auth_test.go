@@ -75,6 +75,7 @@ func TestMain(m *testing.M) {
 	}
 	conf := map[string]interface{}{
 		common.ExtEndpoint: "https://harbor.test",
+		common.TokenServiceURL: "https://core-service/service/token",
 		common.CoreURL:     "https://harbor.core:8443",
 	}
 	config.InitWithSettings(conf)
@@ -254,7 +255,7 @@ func TestGetChallenge(t *testing.T) {
 	}{
 		{
 			request:   req1,
-			challenge: `Bearer realm="https://harbor.test/service/token",service="harbor-registry"`,
+			challenge: `Bearer realm="https://core-service/service/token",service="harbor-registry"`,
 		},
 		{
 			request:   req1x,
@@ -270,7 +271,7 @@ func TestGetChallenge(t *testing.T) {
 		},
 		{
 			request:   req3,
-			challenge: `Bearer realm="https://harbor.test/service/token",service="harbor-registry",scope="repository:project_1/ubuntu:pull,push repository:project_2/ubuntu:pull"`,
+			challenge: `Bearer realm="https://core-service/service/token",service="harbor-registry",scope="repository:project_1/ubuntu:pull,push repository:project_2/ubuntu:pull"`,
 		},
 		{
 			request:   req3x,

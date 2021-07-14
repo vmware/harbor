@@ -166,6 +166,12 @@ func GetChartMuseumEndpoint() (string, error) {
 	return chartEndpoint, nil
 }
 
+// TokenServiceURL returns the token service URL of Harbor: protocol://host:port/service/token
+func TokenServiceURL() (string, error) {
+	return defaultMgr().Get(backgroundCtx, common.TokenServiceURL).GetString(), nil
+}
+
+
 // ExtEndpoint returns the external URL of Harbor: protocol://host:port
 func ExtEndpoint() (string, error) {
 	return defaultMgr().Get(backgroundCtx, common.ExtEndpoint).GetString(), nil

@@ -122,7 +122,7 @@ var (
 		{Name: common.RegistryControllerURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "REGISTRY_CONTROLLER_URL", DefaultValue: "http://registryctl:8080", ItemType: &StringType{}, Editable: false},
 		{Name: common.SelfRegistration, Scope: UserScope, Group: BasicGroup, EnvKey: "SELF_REGISTRATION", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `Whether the Harbor instance supports self-registration.  If it''s set to false, admin need to add user to the instance.`},
 		{Name: common.TokenExpiration, Scope: UserScope, Group: BasicGroup, EnvKey: "TOKEN_EXPIRATION", DefaultValue: "30", ItemType: &IntType{}, Editable: false, Description: `The expiration time of the token for internal Registry, in minutes.`},
-		{Name: common.TokenServiceURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "TOKEN_SERVICE_URL", DefaultValue: "http://core:8080/service/token", ItemType: &StringType{}, Editable: false},
+		{Name: common.TokenServiceURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "TOKEN_SERVICE_URL", DefaultValue: "", ItemType: &StringType{}, Editable: false},
 
 		{Name: common.UAAClientID, Scope: UserScope, Group: UAAGroup, EnvKey: "UAA_CLIENTID", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `The client id of UAA`},
 		{Name: common.UAAClientSecret, Scope: UserScope, Group: UAAGroup, EnvKey: "UAA_CLIENTSECRET", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `The client secret of the UAA`},

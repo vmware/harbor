@@ -98,11 +98,10 @@ func getChallenge(req *http.Request, accessList []access) string {
 		return `Basic realm="harbor"`
 	}
 	// No auth header, treat it as CLI and redirect to token service
-	ep, err := tokenSvcEndpoint(req)
+	tokenSvc, err := tokenSvcEndpointSvc(req)
 	if err != nil {
-		logger.Errorf("failed to get the endpoint for token service, error: %v", err)
+		logger.Errorf("failed to get the token service url, error: %v", err)
 	}
-	tokenSvc := fmt.Sprintf("%s/service/token", strings.TrimSuffix(ep, "/"))
 	scope := ""
 	for _, a := range accessList {
 		if len(scope) > 0 {
@@ -117,12 +116,22 @@ func getChallenge(req *http.Request, accessList []access) string {
 	return challenge
 }
 
-func tokenSvcEndpoint(req *http.Request) (string, error) {
+func tokenSvcEndpointSvc(req *http.Request) (string, error) {
 	rawCoreURL := config.InternalCoreURL()
 	if match(req.Context(), req.Host, rawCoreURL) {
-		return rawCoreURL, nil
+		return formatServiceTokenUrl(rawCoreURL), nil
 	}
-	return config.ExtEndpoint()
+
+	if serviceUrl, err := config.TokenServiceURL(); serviceUrl != "" {
+		return serviceUrl, err
+	}
+	extEndpoint, err := config.ExtEndpoint()
+
+	return formatServiceTokenUrl(extEndpoint), err
+}
+
+func formatServiceTokenUrl(url string) string {
+	return fmt.Sprintf("%s/service/token", strings.TrimSuffix(url, "/"))
 }
 
 func match(ctx context.Context, reqHost, rawURL string) bool {
