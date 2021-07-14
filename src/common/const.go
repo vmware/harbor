@@ -150,7 +150,7 @@ const (
 	OIDCCallbackPath = "/c/oidc/callback"
 	OIDCLoginPath    = "/c/oidc/login"
 
-	AuthProxyRediretPath = "/c/authproxy/redirect"
+	AuthProxyRedirectPath = "/c/authproxy/redirect"
 
 	ChartUploadCtxKey   = contextKey("chart_upload_event")
 	ChartDownloadCtxKey = contextKey("chart_download_event")
