@@ -71,7 +71,7 @@ CREATE TABLE quota
   hard          JSONB              NOT NULL,
   creation_time timestamp default CURRENT_TIMESTAMP,
   update_time   timestamp default CURRENT_TIMESTAMP,
-  UNIQUE (reference, reference_id)
+  UNIQUE (reference_id,reference)
 );
 
 /* add quota usage table */
@@ -83,7 +83,7 @@ CREATE TABLE quota_usage
   used          JSONB              NOT NULL,
   creation_time timestamp default CURRENT_TIMESTAMP,
   update_time   timestamp default CURRENT_TIMESTAMP,
-  UNIQUE (reference, reference_id)
+  UNIQUE (reference_id,reference)
 );
 
 /* only set quota and usage for 'library', and let the sync quota handling others. */
