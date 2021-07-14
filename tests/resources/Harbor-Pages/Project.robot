@@ -254,7 +254,7 @@ Click Index Achieve
     Retry Element Click  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256') and contains(.,'${tag_name}')]//clr-dg-cell[1]//clr-tooltip//a
 
 Go Into Index And Contain Artifacts
-    [Arguments]  ${tag_name}  ${total_artifact_count}=3  ${archive_count}=0
+    [Arguments]  ${tag_name}  ${total_artifact_count}=3  ${archive_count}=0  ${return_immediately}=${false}
     Retry Double Keywords When Error  Click Index Achieve  ${tag_name}  Page Should Contain Element  ${tag_table_column_os_arch}
     FOR  ${n}  IN RANGE  1  10
         ${out1}  Run Keyword And Ignore Error  Page Should Contain Element  ${artifact_rows}  limit=${total_artifact_count}
@@ -262,7 +262,8 @@ Go Into Index And Contain Artifacts
         Exit For Loop If  '${out1[0]}'=='PASS' and '${out2[0]}'=='PASS'
         Sleep  3
     END
-    Run Keyword If  '${out1[0]}'=='FAIL' or '${out2[0]}'=='FAIL'  Capture Page Screenshot
+    ${result}=  Set Variable If  '${out1[0]}'=='FAIL' or '${out2[0]}'=='FAIL'  FAIL  PASS
+    Return From Keyword If  '${return_immediately}' == '${true}'  ${result}
     Should Be Equal As Strings  '${out1[0]}'  'PASS'
     Should Be Equal As Strings  '${out2[0]}'  'PASS'
 

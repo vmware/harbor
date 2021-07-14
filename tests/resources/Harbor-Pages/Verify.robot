@@ -565,6 +565,7 @@ Verify Quotas Display
         Log All  storage_usage_unit:${storage_usage_unit}
         Log All  storage_total_size:${storage_total_size}
         Log All  storage_quota_ret:${storage_quota_ret}
-        Should Match Regexp  ${storage_quota_ret}  ${storage_usage_without_unit}(\\\.\\d{1,2})*${storage_usage_unit} of ${storage_total_size}
+        ${str_expected}=  Replace String  ${storage_usage_without_unit}(\\\.\\d{1,2})*${storage_usage_unit} of ${storage_total_size}  B  iB
+        Should Match Regexp  ${storage_quota_ret}  ${str_expected}
     END
     Close Browser

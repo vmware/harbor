@@ -241,7 +241,7 @@ Test Case - Replication Of Push Images from Self To Harbor By Push Event
     Create An New Project And Go Into Project    project_dest${d}
     Push Special Image To Project  project${d}  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${image}  tags=@{tags}  size=${image_size}
     # Use tag as identifier for this artifact
-    Image Should Be Replicated To Project  project_dest${d}  ${image}  tag=${tag1}  expected_image_size_in_regexp=4(\\\.\\d{1,2})*GB
+    Image Should Be Replicated To Project  project_dest${d}  ${image}  tag=${tag1}  expected_image_size_in_regexp=4(\\\.\\d{1,2})*GiB
     Close Browser
 
 Test Case - Replication Of Pull Images from AWS-ECR To Self
